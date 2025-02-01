@@ -1,5 +1,7 @@
 #include "external/glad/glad.h"
 #include "external/glfw/glfw3.h"
+#include "external/imgui/ImGuiManager.hpp"
+#include "external/imgui/imgui.h"
 #include <iostream>
 
 int main(int argc, char **argv) {
@@ -26,6 +28,8 @@ int main(int argc, char **argv) {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
+
+
     // Initialize Glad to load OpenGL functions
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize Glad!" << std::endl;
@@ -35,10 +39,20 @@ int main(int argc, char **argv) {
     // Get OpenGL version info
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
+	ImGuiManager imgui(window);
+
+	imgui.Initialize();
+
     // Main rendering loop
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.2f, 0.3f, 1.0f); // Clear the background with a color
         glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
+
+		imgui.BeginFrame();
+		ImGui::Begin("Hello");
+
+		ImGui::End();
+		imgui.EndFrame();
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -46,6 +60,8 @@ int main(int argc, char **argv) {
         // Poll for and process events
         glfwPollEvents();
     }
+
+	imgui.Deinitialize();
 
     // Clean up and exit
     glfwDestroyWindow(window);
