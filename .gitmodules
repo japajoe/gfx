@@ -4,3 +4,6 @@
 [submodule "libs/miniaudioex"]
 	path = libs/miniaudioex
 	url = https://github.com/japajoe/miniaudioex
+[submodule "libs/freetype"]
+	path = libs/freetype
+	url = https://github.com/freetype/freetype
