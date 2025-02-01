@@ -16,19 +16,24 @@ set(FT_REQUIRE_PNG OFF CACHE BOOL "Disable support of PNG compressed OpenType em
 set(FT_REQUIRE_HARFBUZZ OFF CACHE BOOL "Disable HarfBuzz (used for improving auto-hinting of OpenType fonts)")
 set(FT_REQUIRE_BROTLI OFF CACHE BOOL "Disable support of compressed WOFF2 fonts")
 
+set(GLM_BUILD_LIBRARY OFF CACHE BOOL "Build glm as dynamic/static library")
+
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/miniaudioex)
 add_subdirectory(libs/freetype)
+add_subdirectory(libs/glm)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 
 include_directories(
     "${PROJECT_SOURCE_DIR}/include/"
-	"${PROJECT_SOURCE_DIR}/include/external/glad"
-	"${PROJECT_SOURCE_DIR}/include/external/glfw"
-	"${PROJECT_SOURCE_DIR}/include/external/imgui"
+	"${PROJECT_SOURCE_DIR}/include/Core"
+	"${PROJECT_SOURCE_DIR}/include/External/glad"
+	"${PROJECT_SOURCE_DIR}/include/External/glfw"
+	"${PROJECT_SOURCE_DIR}/include/External/imgui"
+	"${PROJECT_SOURCE_DIR}/include/Graphics"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw miniaudioex freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw miniaudioex freetype glm)
