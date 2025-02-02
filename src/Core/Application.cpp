@@ -3,6 +3,7 @@
 #include "../External/glfw/glfw3.h"
 #include "../Graphics/Graphics.hpp"
 #include "../Graphics/Image.hpp"
+#include "../Audio/Audio.hpp"
 #include "Input.hpp"
 #include "Time.hpp"
 #include "GameBehaviour.hpp"
@@ -221,12 +222,14 @@ namespace GFX
     void Application::Initialize()
     {
 		Graphics::Initialize();
+        Audio::Initialize(44100, 2);
     }
 
 	void Application::Deinitialize()
 	{
         GameBehaviour::OnBehaviourApplicationQuit();
 		Graphics::Deinitialize();
+        Audio::Deinitialize();
 	}
 
 	void Application::NewFrame()
@@ -234,6 +237,7 @@ namespace GFX
         Time::NewFrame();
         Input::NewFrame();
         GameBehaviour::NewFrame();
+        Audio::NewFrame();
         Graphics::NewFrame();
 	}
 

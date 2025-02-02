@@ -3,6 +3,8 @@
 #include "../External/glfw/glfw3.h"
 #include "../Core/Application.hpp"
 #include "../Core/GameBehaviour.hpp"
+#include "../Core/GameObject.hpp"
+#include "../Core/Camera.hpp"
 #include "../External/imgui/imgui.h"
 #include "Graphics2D.hpp"
 
@@ -16,6 +18,11 @@ namespace GFX
 		viewport = Rectangle(0, 0, 512, 512);
 		imgui.Initialize(Application::GetNativeWindow());
 		Graphics2D::Initialize();
+
+		auto camObject = GameObject::Create();
+		camObject->AddComponent<Camera>();
+
+		//auto uboCamera = CreateUniformBuffer<UniformCameraInfo>(Camera::UBO_BINDING_INDEX, 1);
 	}
 
 	void Graphics::Deinitialize()

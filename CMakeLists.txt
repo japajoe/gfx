@@ -27,12 +27,17 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 
 include_directories(
     "${PROJECT_SOURCE_DIR}/include/"
+	"${PROJECT_SOURCE_DIR}/include/Audio"
+	"${PROJECT_SOURCE_DIR}/include/Audio/DSP"
 	"${PROJECT_SOURCE_DIR}/include/Core"
 	"${PROJECT_SOURCE_DIR}/include/External/glad"
 	"${PROJECT_SOURCE_DIR}/include/External/glfw"
 	"${PROJECT_SOURCE_DIR}/include/External/imgui"
+	"${PROJECT_SOURCE_DIR}/include/External/miniaudioex"
 	"${PROJECT_SOURCE_DIR}/include/Graphics"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Buffers"
+	"${PROJECT_SOURCE_DIR}/include/System"
+	"${PROJECT_SOURCE_DIR}/include/System/Collections"
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
 )
 
