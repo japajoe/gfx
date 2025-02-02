@@ -37,7 +37,7 @@ namespace GFX
 	float Color::Normalize(int value)
 	{
 		if(value <= 0)
-			return 0;
+			return 0;		
 		return (float)value / 255.0f;
 	}
 }

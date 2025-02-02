@@ -769,13 +769,13 @@ namespace GFX
         AddVertices(&command);
 	}
 
-    void Graphics2D::ParseColorsFromText(std::string &text, std::vector<TextColorInfo> &colors, size_t &count)
-	{
+    void Graphics2D::ParseColorsFromText(std::string& text, std::vector<TextColorInfo>& colors, size_t& count) 
+    {
         size_t pos = 0;
         size_t textLength = text.length();
 
         while (pos < textLength) 
-		{
+        {
             // Find the opening brace
             size_t start = text.find('{', pos);
             if (start == std::string::npos) break;
@@ -786,21 +786,29 @@ namespace GFX
 
             // Extract the color code
             std::string colorCode = text.substr(start + 1, end - start - 1);
-            
+
             // Validate the length of the color code
             if (colorCode.length() == 8) 
-			{
-                float r = static_cast<float>(std::stoi(colorCode.substr(0, 2), nullptr, 16));
-                float g = static_cast<float>(std::stoi(colorCode.substr(2, 2), nullptr, 16));
-                float b = static_cast<float>(std::stoi(colorCode.substr(4, 2), nullptr, 16));
-                float a = static_cast<float>(std::stoi(colorCode.substr(6, 2), nullptr, 16));
+            {
+                int r = std::stoi(colorCode.substr(0, 2), nullptr, 16);
+                int g = std::stoi(colorCode.substr(2, 2), nullptr, 16);
+                int b = std::stoi(colorCode.substr(4, 2), nullptr, 16);
+                int a = std::stoi(colorCode.substr(6, 2), nullptr, 16);
 
-				if(count > colors.size())
-					CheckTemporaryBuffer(colors, 1);
+                // Normalize the color values
+                float normalizedR = r / 255.0f;
+                float normalizedG = g / 255.0f;
+                float normalizedB = b / 255.0f;
+                float normalizedA = a / 255.0f;
+
+                // Color buffer needs to have more capacity at this point
+                if (count >= colors.size()) {
+                    CheckTemporaryBuffer(colors, 1);
+                }
 
                 if (count < colors.size()) 
-				{
-                    colors[count++] = {start, Color{r, g, b, a}};
+                {
+                    colors[count++] = TextColorInfo{ start, Color(normalizedR, normalizedG, normalizedB, normalizedA) };
                 }
             }
 
@@ -831,7 +839,8 @@ namespace GFX
             return (text.find('{') != std::string::npos) && (text.find('}') != std::string::npos);
         };
 
-		if(richText) {
+		if(richText) 
+        {
 			if(containsBraces(currentText))
 			{
 				ParseColorsFromText(currentText, textColorInfoTemp, colorCount);
@@ -859,8 +868,8 @@ namespace GFX
 		float originY = pos.y;
 		float scale = font->GetPixelScale(fontSize);
 
-		for(size_t i = 0; i < textLength; i++) {
-			char ch = text[i];
+		for(size_t i = 0; i < currentText.size(); i++) {
+			char ch = currentText[i];
 
 			if(ch == '\n') 
 			{

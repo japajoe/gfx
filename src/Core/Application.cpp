@@ -5,6 +5,7 @@
 #include "../Graphics/Image.hpp"
 #include "Input.hpp"
 #include "Time.hpp"
+#include "GameBehaviour.hpp"
 #include <iostream>
 
 namespace GFX
@@ -169,6 +170,7 @@ namespace GFX
         while(!glfwWindowShouldClose(pWindow))
         {
 			NewFrame();
+            EndFrame();
             glfwSwapBuffers(pWindow);
             glfwPollEvents();
         }
@@ -223,6 +225,7 @@ namespace GFX
 
 	void Application::Deinitialize()
 	{
+        GameBehaviour::OnBehaviourApplicationQuit();
 		Graphics::Deinitialize();
 	}
 
@@ -230,11 +233,13 @@ namespace GFX
 	{
         Time::NewFrame();
         Input::NewFrame();
+        GameBehaviour::NewFrame();
+        Graphics::NewFrame();
+	}
 
-        if(newFrame)
-            newFrame();
-
-		Graphics::NewFrame();
+	void Application::EndFrame()
+	{
+        GameBehaviour::EndFrame();
         Input::EndFrame();
 	}
 

@@ -2,6 +2,7 @@
 #include "../External/glad/glad.h"
 #include "../External/glfw/glfw3.h"
 #include "../Core/Application.hpp"
+#include "../Core/GameBehaviour.hpp"
 #include "../External/imgui/imgui.h"
 #include "Graphics2D.hpp"
 
@@ -25,17 +26,28 @@ namespace GFX
 
 	void Graphics::NewFrame()
 	{
-		glClearColor(1, 1, 1, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Clear();
+		Render3DPass();
+		Render2DPass();
+	}
 
+	void Graphics::Render2DPass()
+	{
 		Graphics2D::NewFrame();
-
 		imgui.BeginFrame();
-		
-		ImGui::Begin("Test");
-		ImGui::End();
-
+		GameBehaviour::OnBehaviourGUI();
 		imgui.EndFrame();
+	}
+
+	void Graphics::Render3DPass()
+	{
+
+	}
+
+	void Graphics::Clear()
+	{
+		glClearColor(0.05, 0.05, 0.05, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void Graphics::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)

@@ -8,12 +8,12 @@ namespace GFX
 {
 	struct Vertex2D
 	{
-        Vector2 position;
-        Vector2 uv;
-        Color color;
-        Vertex2D();
-        Vertex2D(const Vector2 &position, const Vector2 &uv);
-        Vertex2D(const Vector2 &position, const Vector2 &uv, const Color &color);
+		Vector2 position;
+		Vector2 uv;
+		Color color;
+		Vertex2D();
+		Vertex2D(const Vector2 &position, const Vector2 &uv);
+		Vertex2D(const Vector2 &position, const Vector2 &uv, const Color &color);
 	};
 }
 

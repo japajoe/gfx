@@ -56,6 +56,7 @@ namespace GFX
         void Initialize();
         void Deinitialize();
         void NewFrame();
+        void EndFrame();
         static void OnError(int32_t error_code, const char *description);
         static void OnWindowResize(GLFWwindow *window, int32_t width, int32_t height);
         static void OnWindowMove(GLFWwindow *window, int32_t x, int32_t y);

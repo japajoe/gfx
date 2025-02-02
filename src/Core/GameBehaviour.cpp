@@ -1,0 +1,151 @@
+#include "GameBehaviour.hpp"
+#include "GameObject.hpp"
+#include "Application.hpp"
+
+namespace GFX
+{
+    GameBehaviour::GameBehaviour() : Component()
+    {
+        GameBehaviour::AddBehaviour(this);
+    }
+
+    GameBehaviour::~GameBehaviour()
+    {
+        GameBehaviour::RemoveBehaviour(this);
+    }
+
+    void GameBehaviour::OnApplicationQuit()
+    {
+
+    }
+
+    void GameBehaviour::OnUpdate()
+    {
+
+    }
+
+    void GameBehaviour::OnLateUpdate()
+    {
+
+    }
+
+    void GameBehaviour::OnFixedUpdate()
+    {
+
+    }
+
+    void GameBehaviour::OnGUI()
+    {
+
+    }
+
+    void GameBehaviour::OnEndFrame()
+    {
+
+    }
+
+    std::vector<GameBehaviour*> GameBehaviour::behaviours;
+
+    void GameBehaviour::AddBehaviour(GameBehaviour *behaviour)
+    {
+        for(size_t i = 0; i < behaviours.size(); i++)
+        {
+            if(behaviours[i] == behaviour)
+                return;
+        }
+
+        behaviours.push_back(behaviour);
+    }
+
+    void GameBehaviour::RemoveBehaviour(GameBehaviour *behaviour)
+    {
+        bool found = false;
+        size_t index = 0;
+
+        for(size_t i = 0; i < behaviours.size(); i++)
+        {
+            if(behaviours[i] == behaviour)
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        if(found)
+        {
+            behaviours.erase(behaviours.begin() + index);
+        }
+    }
+
+	void GameBehaviour::NewFrame()
+	{
+		OnBehaviourUpdate();
+		OnBehaviourLateUpdate();
+	}
+
+	void GameBehaviour::EndFrame()
+	{
+		OnBehaviourEndFrame();
+	}
+
+    void GameBehaviour::OnBehaviourApplicationQuit()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnApplicationQuit();
+        }
+
+        behaviours.clear();
+
+        GameObject::DestroyAll();
+    }
+
+    void GameBehaviour::OnBehaviourUpdate()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnUpdate();
+        }
+    }
+
+    void GameBehaviour::OnBehaviourLateUpdate()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnLateUpdate();
+        }
+    }
+
+    void GameBehaviour::OnBehaviourFixedUpdate()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnFixedUpdate();
+        }
+    }
+
+    void GameBehaviour::OnBehaviourGUI()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnGUI();
+        }
+    }
+
+    void GameBehaviour::OnBehaviourEndFrame()
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnEndFrame();
+        }
+
+        GameObject::OnEndFrame();
+    }
+}
