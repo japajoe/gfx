@@ -32,6 +32,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/External/glfw"
 	"${PROJECT_SOURCE_DIR}/include/External/imgui"
 	"${PROJECT_SOURCE_DIR}/include/Graphics"
+	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
