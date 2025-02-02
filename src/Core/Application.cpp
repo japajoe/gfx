@@ -21,6 +21,7 @@ namespace GFX
         this->config = config;
         this->pWindow = nullptr;
         this->loaded = nullptr;
+        this->newFrame = nullptr;
         instance = this;
     }
 
@@ -32,6 +33,7 @@ namespace GFX
         this->config.flags = flags;
         this->pWindow = nullptr;
         this->loaded = nullptr;
+        this->newFrame = nullptr;
         instance = this;
     }
 
@@ -40,6 +42,7 @@ namespace GFX
 		this->config = other.config;
 		this->pWindow = other.pWindow;
 		this->loaded = other.loaded;
+        this->newFrame = other.newFrame;
 	}
 
 	Application::Application(Application &&other) noexcept
@@ -47,6 +50,7 @@ namespace GFX
 		this->config = std::move(other.config);
 		this->pWindow = std::exchange(other.pWindow, nullptr);
 		this->loaded = std::move(other.loaded);
+        this->newFrame = std::move(other.newFrame);
 	}
 
 	Application& Application::operator=(const Application &other)
@@ -56,6 +60,7 @@ namespace GFX
 			this->config = other.config;
 			this->pWindow = other.pWindow;
 			this->loaded = other.loaded;
+            this->newFrame = other.newFrame;
 		}
 		return *this;
 	}
@@ -67,6 +72,7 @@ namespace GFX
 			this->config = std::move(other.config);
 			this->pWindow = std::exchange(other.pWindow, nullptr);
 			this->loaded = std::move(other.loaded);
+            this->newFrame = std::move(other.newFrame);
 		}
 		return *this;
 	}
@@ -224,6 +230,10 @@ namespace GFX
 	{
         Time::NewFrame();
         Input::NewFrame();
+
+        if(newFrame)
+            newFrame();
+
 		Graphics::NewFrame();
         Input::EndFrame();
 	}

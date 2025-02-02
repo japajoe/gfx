@@ -1,0 +1,30 @@
+#ifndef GFX_TEXTURE2D_HPP
+#define GFX_TEXTURE2D_HPP
+
+#include "Texture.hpp"
+#include "Image.hpp"
+
+namespace GFX
+{
+	class Texture2D : public Texture
+	{
+	public:
+		Texture2D();
+		Texture2D(const Image *image);
+		Texture2D(uint32_t id, uint32_t width, uint32_t height);
+        Texture2D(const Texture2D &other);
+        Texture2D(Texture2D &&other) noexcept;
+        Texture2D& operator=(const Texture2D &other);
+        Texture2D& operator=(Texture2D &&other) noexcept;
+		void Bind(uint32_t unit) override;
+		void Unbind() override;
+		void Delete() override;
+		uint32_t GetWidth() const;
+		uint32_t GetHeight() const;
+	private:
+		uint32_t width;
+		uint32_t height;
+	};
+}
+
+#endif

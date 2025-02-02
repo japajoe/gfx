@@ -11,6 +11,7 @@ struct GLFWwindow;
 namespace GFX
 {
     using LoadEventCallback = std::function<void(void)>;
+    using NewFrameCallback = std::function<void(void)>;
 
     enum WindowFlags_
     {
@@ -35,6 +36,7 @@ namespace GFX
     {
     public:
         LoadEventCallback loaded;
+        NewFrameCallback newFrame;
 		~Application();
         Application(const Configuration &config);
         Application(const char *title, int width, int height, WindowFlags flags);
