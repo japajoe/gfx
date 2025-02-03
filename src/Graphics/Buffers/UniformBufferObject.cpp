@@ -1,10 +1,39 @@
 #include "UniformBufferObject.hpp"
+#include <utility>
 
 namespace GFX
 {
     UniformBufferObject::UniformBufferObject()
     {
         this->id = 0;
+    }
+
+    UniformBufferObject::UniformBufferObject(const UniformBufferObject &other)
+    {
+        id = other.id;
+    }
+
+    UniformBufferObject::UniformBufferObject(UniformBufferObject &&other) noexcept
+    {
+        id = std::exchange(other.id, 0);
+    }
+
+    UniformBufferObject& UniformBufferObject::operator=(const UniformBufferObject &other)
+    {
+        if(this != &other)
+        {
+            id = other.id;
+        }
+        return *this;
+    }
+
+    UniformBufferObject& UniformBufferObject::operator=(UniformBufferObject &&other) noexcept
+    {
+        if(this != &other)
+        {
+            id = std::exchange(other.id, 0);
+        }
+        return *this;
     }
 
     void UniformBufferObject::Generate()

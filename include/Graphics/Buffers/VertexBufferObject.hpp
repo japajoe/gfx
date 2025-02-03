@@ -11,6 +11,10 @@ namespace GFX
         GLuint id;
     public:
         VertexBufferObject();
+        VertexBufferObject(const VertexBufferObject &other);
+        VertexBufferObject(VertexBufferObject &&other) noexcept;
+        VertexBufferObject& operator=(const VertexBufferObject &other);
+        VertexBufferObject& operator=(VertexBufferObject &&other) noexcept;
         void Generate();
         void Delete();
         void Bind();

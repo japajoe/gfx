@@ -1,11 +1,19 @@
 #include "Graphics.hpp"
+#include "Texture2D.hpp"
+#include "Shader.hpp"
+#include "Font.hpp"
+#include "Buffers/UniformBufferObject.hpp"
+#include "Shaders/DiffuseShader.hpp"
 #include "../External/glad/glad.h"
-#include "../External/glfw/glfw3.h"
 #include "../Core/Application.hpp"
+#include "../Core/Constants.hpp"
+#include "../Core/Debug.hpp"
 #include "../Core/GameBehaviour.hpp"
 #include "../Core/GameObject.hpp"
 #include "../Core/Camera.hpp"
-#include "../External/imgui/imgui.h"
+#include "../Core/Light.hpp"
+#include "../Core/Resources.hpp"
+#include "../Embedded/RobotoMonoRegular.hpp"
 #include "Graphics2D.hpp"
 
 namespace GFX
@@ -22,7 +30,32 @@ namespace GFX
 		auto camObject = GameObject::Create();
 		camObject->AddComponent<Camera>();
 
-		//auto uboCamera = CreateUniformBuffer<UniformCameraInfo>(Camera::UBO_BINDING_INDEX, 1);
+		auto lightObject = GameObject::Create();
+		lightObject->AddComponent<Light>();
+
+		//Create default font
+		Font font;
+		if(font.LoadFromMemory(RobotoMonoRegular::GetData(), RobotoMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
+		{
+			if(font.GenerateTexture())
+			{				
+				Resources::AddFont("Default", font);
+			}
+		}
+		//Create default textures
+		Resources::AddTexture2D("Default", Texture2D(2, 2, Color::White()));
+
+		//Create shaders
+		auto diffuseShader = Resources::AddShader("Diffuse", DiffuseShader::Create());
+
+		//Create uniform buffers
+		auto uboCamera = UniformBufferObject::Create<UniformCameraInfo>(UniformBindingIndex_Camera, 1);
+		auto uboLights = UniformBufferObject::Create<UniformLightInfo>(UniformBindingIndex_Lights, Light::MAX_LIGHTS);
+
+		Resources::AddUniformBuffer("Camera", uboCamera);
+		Resources::AddUniformBuffer("Lights", uboLights);
+
+		BindShaderToUniformBuffers(diffuseShader);
 	}
 
 	void Graphics::Deinitialize()
@@ -31,11 +64,26 @@ namespace GFX
 		Graphics2D::Deinitialize();
 	}
 
+
+
 	void Graphics::NewFrame()
 	{
 		Clear();
+		UpdateUniformBuffers();
+		RenderShadowPass();
 		Render3DPass();
 		Render2DPass();
+	}
+
+	void Graphics::UpdateUniformBuffers()
+	{
+		Camera::UpdateUniformBuffer();
+		Light::UpdateUniformBuffer();
+	}
+
+	void Graphics::RenderShadowPass()
+	{
+
 	}
 
 	void Graphics::Render2DPass()
@@ -53,7 +101,16 @@ namespace GFX
 
 	void Graphics::Clear()
 	{
-		glClearColor(0.05, 0.05, 0.05, 1.0);
+		auto camera = Camera::GetMain();
+		if(camera != nullptr)
+		{
+			auto color = camera->GetClearColor();
+			glClearColor(color.r, color.g, color.b, color.a);
+		}	
+		else
+		{
+			glClearColor(0.05, 0.05, 0.05, 1.0);
+		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -69,5 +126,20 @@ namespace GFX
 	Rectangle Graphics::GetViewport()
 	{
 		return viewport;
+	}
+
+	void Graphics::BindShaderToUniformBuffers(Shader *shader)
+	{
+		if(shader == nullptr)
+		{
+			Debug::WriteLine("Can't bind shader to uniform buffers because shader is null");
+			return;
+		}
+
+		auto uboCamera = Resources::FindUniformBuffer("Camera");
+		auto uboLights = Resources::FindUniformBuffer("Lights");
+
+		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, "Camera");
+		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, "Lights");
 	}
 }

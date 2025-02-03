@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "Transform.hpp"
 #include "GameObject.hpp"
+#include "Resources.hpp"
 #include "../Graphics/Buffers/UniformBufferObject.hpp"
 #include "../Graphics/Graphics.hpp"
 #include "../External/glm/glm.hpp"
@@ -10,7 +11,7 @@ namespace GFX
     static bool setCallback = true;
     Camera *Camera::pMainCamera = nullptr;
 	EventHandler<WindowResizeEvent> Graphics::windowResize;
-	constexpr uint32_t Camera::UBO_BINDING_INDEX;
+    UniformBufferObject *Camera::ubo = nullptr;
 
     Camera::Camera() : Component()
     {
@@ -134,7 +135,11 @@ namespace GFX
 
     void Camera::UpdateUniformBuffer()
     {
+        if(ubo == nullptr)
+            ubo = Resources::FindUniformBuffer("Camera");
 
+        if(ubo == nullptr)
+            return;
     }
 
     void Camera::OnWindowResize(int width, int height)

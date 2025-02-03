@@ -1,10 +1,39 @@
 #include "VertexArrayObject.hpp"
+#include <utility>
 
 namespace GFX
 {
     VertexArrayObject::VertexArrayObject()
     {
         id = 0;
+    }
+
+    VertexArrayObject::VertexArrayObject(const VertexArrayObject &other)
+    {
+        id = other.id;
+    }
+
+    VertexArrayObject::VertexArrayObject(VertexArrayObject &&other) noexcept
+    {
+        id = std::exchange(other.id, 0);
+    }
+
+    VertexArrayObject& VertexArrayObject::operator=(const VertexArrayObject &other)
+    {
+        if(this != &other)
+        {
+            id = other.id;
+        }
+        return *this;
+    }
+
+    VertexArrayObject& VertexArrayObject::operator=(VertexArrayObject &&other) noexcept
+    {
+        if(this != &other)
+        {
+            id = std::exchange(other.id, 0);
+        }
+        return *this;
     }
 
     void VertexArrayObject::Generate()

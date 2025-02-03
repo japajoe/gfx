@@ -34,6 +34,16 @@ namespace GFX
 	{
 		return point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height;
 	}
+
+	Vector2 Rectangle::GetPosition() const
+	{
+		return Vector2(x, y);
+	}
+
+	Vector2 Rectangle::GetSizeFromRectangle() const
+	{
+		return Vector2(width, height);
+	}
 	
 	Rectangle Rectangle::GetRectAtRowAndColumn(float leftIndent, float topIndent, float width, float height, int row, int column, int offsetX, int offsetY)
 	{

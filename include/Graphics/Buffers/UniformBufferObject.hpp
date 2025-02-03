@@ -2,6 +2,7 @@
 #define GFX_UNIFORMBUFFEROBJECT_HPP
 
 #include "../../External/glad/glad.h"
+#include <vector>
 
 namespace GFX
 {
@@ -11,6 +12,10 @@ namespace GFX
         GLuint id;
     public:
         UniformBufferObject();
+        UniformBufferObject(const UniformBufferObject &other);
+        UniformBufferObject(UniformBufferObject &&other) noexcept;
+        UniformBufferObject& operator=(const UniformBufferObject &other);
+        UniformBufferObject& operator=(UniformBufferObject &&other) noexcept;
         void Generate();
         void Delete();
         void Bind();
@@ -22,6 +27,23 @@ namespace GFX
         void UniformBlockBinding(GLuint shaderProgram, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
         void BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const char *blockName);
         GLuint GetId() const;
+        
+        template<typename T>
+        static UniformBufferObject Create(GLuint bindingIndex, GLuint numItems)
+        {
+            UniformBufferObject ubo;
+            ubo.Generate();
+            ubo.Bind();
+
+            std::vector<T> data;
+			data.resize(numItems);
+            
+            ubo.BufferData(data.size() * sizeof(T), data.data(), GL_DYNAMIC_DRAW);
+            ubo.BindBufferBase(bindingIndex);
+            ubo.Unbind();
+
+            return ubo;
+        }
     };
 }
 

@@ -1,10 +1,39 @@
 #include "VertexBufferObject.hpp"
+#include <utility>
 
 namespace GFX
 {
     VertexBufferObject::VertexBufferObject()
     {
         id = 0;
+    }
+
+    VertexBufferObject::VertexBufferObject(const VertexBufferObject &other)
+    {
+        id = other.id;
+    }
+
+    VertexBufferObject::VertexBufferObject(VertexBufferObject &&other) noexcept
+    {
+        id = std::exchange(other.id, 0);
+    }
+
+    VertexBufferObject& VertexBufferObject::operator=(const VertexBufferObject &other)
+    {
+        if(this != &other)
+        {
+            id = other.id;
+        }
+        return *this;
+    }
+
+    VertexBufferObject& VertexBufferObject::operator=(VertexBufferObject &&other) noexcept
+    {
+        if(this != &other)
+        {
+            id = std::exchange(other.id, 0);
+        }
+        return *this;
     }
 
     void VertexBufferObject::Generate()

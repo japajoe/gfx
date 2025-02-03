@@ -10,6 +10,8 @@
 
 namespace GFX
 {
+    class UniformBufferObject;
+
     struct UniformCameraInfo
     {
         Matrix4 view;
@@ -21,6 +23,7 @@ namespace GFX
 
     class Camera : public Component
     {
+    friend class Graphics;
     private:
         static Camera *pMainCamera;
         Matrix4 projection;
@@ -29,12 +32,13 @@ namespace GFX
         float nearClippingPlane;
         float farClippingPlane;
         void Initialize();
+        static UniformBufferObject *ubo;
         static void OnWindowResize(int width, int height);
+        static void UpdateUniformBuffer();
     protected:
         void OnInitialize() override;
         void OnDestroy() override;
     public:
-		static constexpr uint32_t UBO_BINDING_INDEX = 0;
         Camera();
         Matrix4 GetProjectionMatrix() const;
         Matrix4 GetViewMatrix() const;
@@ -48,8 +52,7 @@ namespace GFX
         Color GetClearColor() const;
         Vector3 WorldToScreenPoint(const Vector3 &worldPoint);
         Vector3 ScreenToWorldPoint(const Vector2 &screenPoint);
-        static Camera *GetMain();
-        static void UpdateUniformBuffer();
+        static Camera *GetMain();        
     };
 }
 

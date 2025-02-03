@@ -11,6 +11,10 @@ namespace GFX
         GLuint id;
     public:
         ElementBufferObject();
+        ElementBufferObject(const ElementBufferObject &other);
+        ElementBufferObject(ElementBufferObject &&other) noexcept;
+        ElementBufferObject& operator=(const ElementBufferObject &other);
+        ElementBufferObject& operator=(ElementBufferObject &&other) noexcept;
         void Generate();
         void Delete();
         void Bind();

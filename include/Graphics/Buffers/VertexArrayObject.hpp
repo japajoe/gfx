@@ -11,6 +11,10 @@ namespace GFX
         GLuint id;
     public:
         VertexArrayObject();
+        VertexArrayObject(const VertexArrayObject &other);
+        VertexArrayObject(VertexArrayObject &&other) noexcept;
+        VertexArrayObject& operator=(const VertexArrayObject &other);
+        VertexArrayObject& operator=(VertexArrayObject &&other) noexcept;
         void Generate();
         void Delete();
         void Bind();

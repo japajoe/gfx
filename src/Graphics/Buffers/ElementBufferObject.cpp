@@ -1,10 +1,39 @@
 #include "ElementBufferObject.hpp"
+#include <utility>
 
 namespace GFX
 {
     ElementBufferObject::ElementBufferObject()
     {
         id = 0;
+    }
+
+    ElementBufferObject::ElementBufferObject(const ElementBufferObject &other)
+    {
+        id = other.id;
+    }
+
+    ElementBufferObject::ElementBufferObject(ElementBufferObject &&other) noexcept
+    {
+        id = std::exchange(other.id, 0);
+    }
+
+    ElementBufferObject& ElementBufferObject::operator=(const ElementBufferObject &other)
+    {
+        if(this != &other)
+        {
+            id = other.id;
+        }
+        return *this;
+    }
+
+    ElementBufferObject& ElementBufferObject::operator=(ElementBufferObject &&other) noexcept
+    {
+        if(this != &other)
+        {
+            id = std::exchange(other.id, 0);
+        }
+        return *this;
     }
 
     void ElementBufferObject::Generate()
