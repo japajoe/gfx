@@ -44,6 +44,8 @@ namespace GFX
 		void Bind();
 		void Unbind();
 		void UpdateUniformBuffer();
+		static bool IsEnabled();
+		static void SetEnabled(bool enabled);
 	};
 };
 

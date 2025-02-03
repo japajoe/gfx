@@ -2,6 +2,7 @@
 #include "Transform.hpp"
 #include "GameObject.hpp"
 #include "Resources.hpp"
+#include "Constants.hpp"
 #include "../Graphics/Buffers/UniformBufferObject.hpp"
 #include "../Graphics/Graphics.hpp"
 #include "../External/glm/glm.hpp"
@@ -141,7 +142,7 @@ namespace GFX
     void Camera::UpdateUniformBuffer()
     {
         if(ubo == nullptr)
-            ubo = Resources::FindUniformBuffer("Camera");
+            ubo = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferCamera));
 
         if(ubo == nullptr)
             return;

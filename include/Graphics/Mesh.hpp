@@ -21,6 +21,10 @@ namespace GFX
     public:
         Mesh();
         Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices, bool calculateNormals);
+        Mesh(const Mesh &other);
+        Mesh(Mesh &&other) noexcept;
+        Mesh& operator=(const Mesh &other);
+        Mesh& operator=(Mesh &&other) noexcept;
         std::vector<Vertex> &GetVertices();
         std::vector<uint32_t> &GetIndices();
         size_t GetVerticesCount() const;

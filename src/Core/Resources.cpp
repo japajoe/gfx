@@ -1,4 +1,5 @@
 #include "Resources.hpp"
+#include "../Core/Debug.hpp"
 
 namespace GFX
 {
@@ -7,12 +8,27 @@ namespace GFX
 	std::unordered_map<std::string,Shader> Resources::shaders;
 	std::unordered_map<std::string,Texture2D> Resources::textures2D;
 	std::unordered_map<std::string,Texture3D> Resources::textures3D;
+	std::unordered_map<std::string,Mesh> Resources::meshes;
+
+	static void LogAdd(const std::string &type, const std::string &name)
+	{
+		Debug::WriteLine("[" + type + "] " + name + " successfully added");
+	}
+
+	static void LogError(const std::string &type, const std::string &name)
+	{
+		Debug::WriteLine("[" + type + "] " + name + " failed to add");
+	}
 
 	UniformBufferObject *Resources::AddUniformBuffer(const std::string &name, const UniformBufferObject &ubo)
 	{
 		if(uniformBuffers.contains(name))
+		{
+			LogError("UBO", name);
 			return nullptr;
+		}
 		uniformBuffers[name] = ubo;
+		LogAdd("UBO", name);
 		return &uniformBuffers[name];
 	}
 
@@ -26,9 +42,12 @@ namespace GFX
 	Font *Resources::AddFont(const std::string &name, const Font &font)
 	{
 		if(fonts.contains(name))
+		{
+			LogError("FONT", name);
 			return nullptr;
+		}
 		fonts[name] = font;
-		
+		LogAdd("FONT", name);
 		return &fonts[name];
 	}
 
@@ -42,8 +61,12 @@ namespace GFX
 	Shader *Resources::AddShader(const std::string &name, const Shader &shader)
 	{
 		if(shaders.contains(name))
+		{
+			LogError("SHADER", name);
 			return nullptr;
+		}
 		shaders[name] = shader;
+		LogAdd("SHADER", name);
 		return &shaders[name];
 	}
 
@@ -57,8 +80,12 @@ namespace GFX
 	Texture2D *Resources::AddTexture2D(const std::string &name, const Texture2D &texture)
 	{
 		if(textures2D.contains(name))
+		{
+			LogError("TEXTURE2D", name);
 			return nullptr;
+		}
 		textures2D[name] = texture;
+		LogAdd("TEXTURE2D", name);
 		return &textures2D[name];
 	}
 
@@ -72,8 +99,12 @@ namespace GFX
 	Texture3D *Resources::AddTexture3D(const std::string &name, const Texture3D &texture)
 	{
 		if(textures3D.contains(name))
+		{
+			LogError("TEXTURE3D", name);
 			return nullptr;
+		}
 		textures3D[name] = texture;
+		LogAdd("TEXTURE3D", name);
 		return &textures3D[name];
 	}
 
@@ -82,5 +113,24 @@ namespace GFX
 		if(!textures3D.contains(name))
 			return nullptr;
 		return &textures3D[name];
+	}
+
+	Mesh *Resources::AddMesh(const std::string &name, const Mesh &mesh)
+	{
+		if(meshes.contains(name))
+		{
+			LogError("MESH", name);
+			return nullptr;
+		}
+		meshes[name] = mesh;
+		LogAdd("MESH", name);
+		return &meshes[name];
+	}
+
+	Mesh *Resources::FindMesh(const std::string &name)
+	{
+		if(!meshes.contains(name))
+			return nullptr;
+		return &meshes[name];
 	}
 }

@@ -1,6 +1,7 @@
 #include "Mesh.hpp"
 #include "../External/glad/glad.h"
 #include "../External/glm/glm.hpp"
+#include <functional>
 
 namespace GFX
 {
@@ -20,6 +21,62 @@ namespace GFX
 
         if(calculateNormals)
             RecalculateNormals();
+    }
+
+    Mesh::Mesh(const Mesh &other)
+    {
+        vertices = other.vertices;
+        indices = other.indices;
+        sizeOfVertices = other.sizeOfVertices;
+        sizeOfIndices = other.sizeOfIndices;
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+        bounds = other.bounds;
+    }
+
+    Mesh::Mesh(Mesh &&other) noexcept
+    {
+        vertices = std::move(other.vertices);
+        indices = std::move(other.indices);
+        sizeOfVertices = std::exchange(other.sizeOfVertices, 0);
+        sizeOfIndices = std::exchange(other.sizeOfIndices, 0);
+        VAO = std::move(other.VAO);
+        VBO = std::move(other.VBO);
+        EBO = std::move(other.EBO);
+        bounds = std::move(other.bounds);
+    }
+
+    Mesh& Mesh::operator=(const Mesh &other)
+    {
+        if(this != &other)
+        {
+            vertices = other.vertices;
+            indices = other.indices;
+            sizeOfVertices = other.sizeOfVertices;
+            sizeOfIndices = other.sizeOfIndices;
+            VAO = other.VAO;
+            VBO = other.VBO;
+            EBO = other.EBO;
+            bounds = other.bounds;
+        }
+        return *this;
+    }
+
+    Mesh& Mesh::operator=(Mesh &&other) noexcept
+    {
+        if(this != &other)
+        {
+            vertices = std::move(other.vertices);
+            indices = std::move(other.indices);
+            sizeOfVertices = std::exchange(other.sizeOfVertices, 0);
+            sizeOfIndices = std::exchange(other.sizeOfIndices, 0);
+            VAO = std::move(other.VAO);
+            VBO = std::move(other.VBO);
+            EBO = std::move(other.EBO);
+            bounds = std::move(other.bounds);
+        }
+        return *this;
     }
 
     std::vector<Vertex> &Mesh::GetVertices()
@@ -224,6 +281,7 @@ namespace GFX
         }
 
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -350,6 +408,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -442,6 +501,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -483,6 +543,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -529,6 +590,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -605,6 +667,7 @@ namespace GFX
         
         std::vector<GLuint> indices;
         Mesh mesh(vertices, indices, false);
+        mesh.Generate();
         return mesh;
     }
 
@@ -686,6 +749,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -768,6 +832,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -819,6 +884,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 
@@ -859,6 +925,7 @@ namespace GFX
 
         SetScale(vertices, scale);
         Mesh mesh(vertices, indices, true);
+        mesh.Generate();
         return mesh;
     }
 

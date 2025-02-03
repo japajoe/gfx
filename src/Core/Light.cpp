@@ -1,6 +1,7 @@
 #include "Light.hpp"
 #include "GameObject.hpp"
 #include "Resources.hpp"
+#include "Constants.hpp"
 #include "../Graphics/Buffers/UniformBufferObject.hpp"
 #include <cstring>
 
@@ -12,7 +13,7 @@ namespace GFX
 
     Light::Light() : Component()
     {
-        type = LightType::Point;
+        type = LightType::Directional;
         color = Color(255, 255, 255, 255);
         ambient = Color(255, 255, 255, 255);
         diffuse = Color(255, 255, 255, 255);
@@ -177,7 +178,7 @@ namespace GFX
     void Light::UpdateUniformBuffer()
     {
         if(ubo == nullptr)
-            ubo = Resources::FindUniformBuffer("Lights");
+            ubo = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferLights));
 
         if(ubo == nullptr)
             return;

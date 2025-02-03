@@ -4,10 +4,12 @@
 #include "Core/Camera.hpp"
 #include "Core/Input.hpp"
 #include "Core/Resources.hpp"
+#include "Core/Time.hpp"
 #include "Graphics/Graphics2D.hpp"
 #include "Audio/AudioSource.hpp"
 #include "Audio/AudioClip.hpp"
 #include "External/imgui/imgui.h"
+#include "System/Numerics/Quaternion.hpp"
 
 using namespace GFX;
 
@@ -15,12 +17,16 @@ class GameManager : public GameBehaviour
 {
 private:
     Font *font;
+    GameObject *cube = nullptr;
 protected:
     void OnInitialize() override
     {
         auto camera = Camera::GetMain();
         camera->SetClearColor(Color::LightGray());
+        camera->GetTransform()->SetPosition(Vector3(0, 0, 10));
         font = Resources::FindFont("Default");
+
+        cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
     }
 
     Vector2 CalculateTextSize(const std::string &text, float fontSize)
@@ -63,6 +69,14 @@ protected:
         {
             Application::Quit();
         }
+
+        if(!cube)
+            return;
+
+        float y = Time::GetTime();
+        float z = Time::GetTime();
+        auto rotation = Quaternionf::Euler(0, y, y);
+        cube->GetTransform()->SetRotation(rotation);
     }
 
     void OnGUI() override

@@ -7,6 +7,7 @@
 #include "../Core/Debug.hpp"
 #include "../Core/Camera.hpp"
 #include "../Core/Light.hpp"
+#include "../Core/Constants.hpp"
 
 namespace GFX
 {
@@ -19,8 +20,8 @@ namespace GFX
 
 	void Shadow::Generate()
 	{
-		depthMap = Resources::FindTexture3D("Depth");
-		shader = Resources::FindShader("Depth");		
+		depthMap = Resources::FindTexture3D(Constants::GetString(ConstantString::TextureDepth));
+		shader = Resources::FindShader(Constants::GetString(ConstantString::ShaderDepth));
 
 		float farPlane = 1000.0f;
 
@@ -73,6 +74,16 @@ namespace GFX
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, (int)viewport.width, (int)viewport.height);
 	}
+
+    bool Shadow::IsEnabled()
+    {
+        return enabled;
+    }
+
+    void Shadow::SetEnabled(bool enabled)
+    {
+        Shadow::enabled = enabled;
+    }
 
 	std::vector<Vector4> Shadow::GetFrustumCornersWorldSpace(const Matrix4 &projview)
 	{
@@ -201,7 +212,7 @@ namespace GFX
 	void Shadow::UpdateUniformBuffer()
 	{
 		if(ubo == nullptr)
-			ubo = Resources::FindUniformBuffer("Shadow");
+            ubo = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferShadow));
 
 		if(ubo == nullptr)
 			return;

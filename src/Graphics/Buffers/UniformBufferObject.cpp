@@ -85,9 +85,9 @@ namespace GFX
 		glUniformBlockBinding(shaderProgram, uniformBlockIndex, uniformBlockBinding);
 	}
 
-	void UniformBufferObject::BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const char *blockName)
+	void UniformBufferObject::BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const std::string &blockName)
 	{
-		GLuint blockIndex = glGetUniformBlockIndex(shaderProgram, blockName);
+		GLuint blockIndex = glGetUniformBlockIndex(shaderProgram, blockName.c_str());
 		glUniformBlockBinding(shaderProgram, blockIndex, bindingIndex);
 	}
 }

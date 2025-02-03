@@ -3,6 +3,8 @@
 #include "Texture3D.hpp"
 #include "Shader.hpp"
 #include "Font.hpp"
+#include "Mesh.hpp"
+#include "World.hpp"
 #include "Buffers/UniformBufferObject.hpp"
 #include "Shaders/DiffuseShader.hpp"
 #include "Shaders/DepthShader.hpp"
@@ -17,12 +19,23 @@
 #include "../Core/Resources.hpp"
 #include "../Embedded/RobotoMonoRegular.hpp"
 #include "Graphics2D.hpp"
+#include "Renderers/Renderer.hpp"
+#include "Materials/DepthMaterial.hpp"
 
 namespace GFX
 {
 	Rectangle Graphics::viewport;
 	ImGuiManager Graphics::imgui;
 	Shadow Graphics::shadow;
+	std::unique_ptr<DepthMaterial> Graphics::depthMaterial = nullptr;
+	std::vector<Renderer*> Graphics::renderers;
+	std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> Graphics::renderQueue;
+
+    bool CompareRendererOrder::operator()(const Renderer *lhs, const Renderer *rhs) const 
+    {
+        // Lower rendering order gets priority
+        return lhs->GetRenderOrder() > rhs->GetRenderOrder();
+    }
 
 	void Graphics::Initialize(uint32_t width, uint32_t height)
 	{
@@ -36,37 +49,13 @@ namespace GFX
 
 		auto lightObject = GameObject::Create();
 		lightObject->AddComponent<Light>();
+		lightObject->GetTransform()->SetPosition(Vector3(1000, 1000, 1000));
+		lightObject->GetTransform()->LookAt(camObject->GetTransform());
 
-		//Create default font
-		Font font;
-		if(font.LoadFromMemory(RobotoMonoRegular::GetData(), RobotoMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
-		{
-			if(font.GenerateTexture())
-			{				
-				Resources::AddFont("Default", font);
-			}
-		}
-		//Create default textures
-		Resources::AddTexture2D("Default", Texture2D(2, 2, Color::White()));
-		Resources::AddTexture3D("Depth", Texture3D(2048, 2048, 5));
-
-		//Create shaders
-		auto diffuseShader = Resources::AddShader("Diffuse", DiffuseShader::Create());
-		auto depthShader = Resources::AddShader("Depth", DepthShader::Create());
-
-		//Create uniform buffers
-		auto uboCamera = UniformBufferObject::Create<UniformCameraInfo>(UniformBindingIndex_Camera, 1);
-		auto uboLights = UniformBufferObject::Create<UniformLightInfo>(UniformBindingIndex_Lights, Light::MAX_LIGHTS);
-		auto uboShadow = UniformBufferObject::Create<UniformShadowInfo>(UniformBindingIndex_Shadows, 1);
-
-		Resources::AddUniformBuffer("Camera", uboCamera);
-		Resources::AddUniformBuffer("Lights", uboLights);
-		Resources::AddUniformBuffer("Shadow", uboShadow);
-
-		BindShaderToUniformBuffers(diffuseShader);
-		BindShaderToUniformBuffers(depthShader);
-
-		shadow.Generate();
+		CreateFonts();
+		CreateTextures();
+		CreateShaders();
+		CreateMeshes();
 	}
 
 	void Graphics::Deinitialize()
@@ -88,17 +77,47 @@ namespace GFX
 	{
 		Camera::UpdateUniformBuffer();
 		Light::UpdateUniformBuffer();
+		World::UpdateUniformBuffer();
 		shadow.UpdateUniformBuffer();
 	}
 
 	void Graphics::RenderShadowPass()
 	{
+		if(!Shadow::IsEnabled())
+			return;
 
+		auto camera = Camera::GetMain();
+
+        if(renderQueue.size() > 0 && camera != nullptr)
+        {
+            std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> queue = renderQueue;
+
+			shadow.Bind();
+
+            while (!queue.empty()) 
+            {
+                Renderer* currentRenderer = queue.top();
+                currentRenderer->OnRender(depthMaterial.get(), camera);
+                queue.pop();
+            }
+
+			shadow.Unbind();
+        }
 	}
 
 	void Graphics::Render3DPass()
 	{
+        if(renderQueue.size() > 0 && Camera::GetMain() != nullptr)
+        {
+            std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> queue = renderQueue;
 
+            while (!queue.empty()) 
+            {
+                Renderer* currentRenderer = queue.top();
+                currentRenderer->OnRender();
+                queue.pop();
+            }
+        }
 	}
 
 	void Graphics::Render2DPass()
@@ -148,10 +167,126 @@ namespace GFX
 			return;
 		}
 
-		auto uboCamera = Resources::FindUniformBuffer("Camera");
-		auto uboLights = Resources::FindUniformBuffer("Lights");
+		auto uboCamera = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferCamera));
+		auto uboLights = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferLights));
+		auto uboShadow = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferShadow));
+		auto uboWorld = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferWorld));
 
-		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, "Camera");
-		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, "Lights");
+		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, Constants::GetString(ConstantString::UniformBufferCamera));
+		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, Constants::GetString(ConstantString::UniformBufferLights));
+		uboShadow->BindBlockToShader(shader->GetId(), UniformBindingIndex_Shadow, Constants::GetString(ConstantString::UniformBufferShadow));
+		uboWorld->BindBlockToShader(shader->GetId(), UniformBindingIndex_World, Constants::GetString(ConstantString::UniformBufferWorld));
+	}
+
+	void Graphics::CreateShaders()
+	{
+		//Create shaders
+		auto diffuseShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDiffuse), DiffuseShader::Create());
+		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
+
+		//Create uniform buffers
+		auto uboCamera = UniformBufferObject::Create<UniformCameraInfo>(UniformBindingIndex_Camera, 1);
+		auto uboLights = UniformBufferObject::Create<UniformLightInfo>(UniformBindingIndex_Lights, Light::MAX_LIGHTS);
+		auto uboShadow = UniformBufferObject::Create<UniformShadowInfo>(UniformBindingIndex_Shadow, 1);
+		auto uboWorld = UniformBufferObject::Create<UniformWorldInfo>(UniformBindingIndex_World, 1);
+
+		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferCamera), uboCamera);
+		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferLights), uboLights);
+		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferShadow), uboShadow);
+		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferWorld), uboWorld);
+
+		BindShaderToUniformBuffers(diffuseShader);
+		BindShaderToUniformBuffers(depthShader);
+
+		shadow.Generate();
+
+		depthMaterial = std::make_unique<DepthMaterial>();
+	}
+
+	void Graphics::CreateTextures()
+	{
+		//Create default textures
+		Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
+		Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
+	}
+
+	void Graphics::CreateFonts()
+	{
+		//Create default font
+		Font font;
+		if(font.LoadFromMemory(RobotoMonoRegular::GetData(), RobotoMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
+		{
+			if(font.GenerateTexture())
+			{				
+				Resources::AddFont(Constants::GetString(ConstantString::FontDefault), font);
+			}
+		}
+	}
+
+	void Graphics::CreateMeshes()
+	{
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshCapsule), MeshGenerator::CreateCapsule(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshCube), MeshGenerator::CreateCube(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshPlane), MeshGenerator::CreatePlane(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshQuad), MeshGenerator::CreateQuad(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshSphere), MeshGenerator::CreateSphere(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshSkybox), MeshGenerator::CreateSkybox(Vector3f::One()));
+	}
+
+	void Graphics::Add(Renderer *renderer)
+	{
+        if(!renderer)
+            return;
+
+        for(size_t i = 0; i < renderers.size(); i++)
+        {
+            if(renderers[i] == renderer)
+            {
+                Debug::WriteError("[RENDERER] can't add with ID: %llu because it already exists", renderer->GetInstanceId());
+                return;
+            }
+        }
+
+        Debug::WriteLog("[RENDERER] added with ID: %llu", renderer->GetInstanceId());
+
+        renderers.push_back(renderer);
+
+        renderQueue.push(renderer);
+	}
+	
+	void Graphics::Remove(Renderer *renderer)
+	{
+        if(!renderer)
+            return;
+
+        size_t index = 0;
+        bool found = false;
+
+        for(size_t i = 0; i < renderers.size(); i++)
+        {
+            if(renderers[i] == renderer)
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        if(found)
+        {
+            Debug::WriteLog("[RENDERER] removed with ID: %llu", renderer->GetInstanceId());
+            renderers.erase(renderers.begin() + index);
+
+            //Clear render queue and recreate
+            while(!renderQueue.empty())
+            {
+                renderQueue.pop();
+            }
+
+            for(size_t i = 0; i < renderers.size(); i++)
+            {
+                renderQueue.push(renderers[i]);
+            }
+        }
 	}
 }

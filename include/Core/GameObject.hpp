@@ -56,6 +56,7 @@ namespace GFX
         Layer GetLayer() const;
         static void Destroy(GameObject *object);        
         static GameObject *Create();
+        static GameObject *CreatePrimitive(PrimitiveType type);
 
         template <typename T>
         T *GetComponent() const

@@ -3,6 +3,7 @@
 
 #include "../../External/glad/glad.h"
 #include <vector>
+#include <string>
 
 namespace GFX
 {
@@ -25,7 +26,7 @@ namespace GFX
         void BufferSubData(GLintptr offset, GLsizeiptr size, const void *data);
         GLuint GetUniformBlockIndex(GLuint shaderProgram, const char *uniformBlockName);
         void UniformBlockBinding(GLuint shaderProgram, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
-        void BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const char *blockName);
+        void BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const std::string &blockName);
         GLuint GetId() const;
         
         template<typename T>

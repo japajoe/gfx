@@ -1,4 +1,10 @@
 #include "GameObject.hpp"
+#include "Resources.hpp"
+#include "Constants.hpp"
+#include "../Graphics/Mesh.hpp"
+#include "../Graphics/Texture2D.hpp"
+#include "../Graphics/Materials/DiffuseMaterial.hpp"
+#include "../Graphics/Renderers/MeshRenderer.hpp"
 
 namespace GFX
 {
@@ -82,6 +88,27 @@ namespace GFX
     {
         objects.push_back(std::make_unique<GameObject>());
         return objects.back().get();
+    }
+
+    GameObject *GameObject::CreatePrimitive(PrimitiveType type)
+    {
+        auto g = Create();
+        Mesh *mesh = nullptr;
+        MeshRenderer *renderer = g->AddComponent<MeshRenderer>();
+
+        switch(type)
+        {
+            case PrimitiveType::Cube:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCube));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            default:
+                break;
+        }
+
+        return g;
     }
 
     void GameObject::Destroy(GameObject *object)

@@ -8,12 +8,21 @@
 #include "Rectangle.hpp"
 #include <cstdint>
 #include <vector>
+#include <queue>
+#include <memory>
 
 namespace GFX
 {
 	using WindowResizeEvent = std::function<void(uint32_t width, uint32_t height)>;
 
 	class Shader;
+	class Renderer;
+	class DepthMaterial;
+
+    struct CompareRendererOrder 
+    {
+        bool operator()(const Renderer *lhs, const Renderer *rhs) const;
+    };
 
 	class Graphics
 	{
@@ -22,6 +31,9 @@ namespace GFX
 		static Rectangle viewport;
 		static ImGuiManager imgui;
 		static Shadow shadow;
+		static std::unique_ptr<DepthMaterial> depthMaterial;
+		static std::vector<Renderer*> renderers;
+		static std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> renderQueue;
 		static void Initialize(uint32_t width, uint32_t height);
 		static void Deinitialize();
 		static void NewFrame();
@@ -32,9 +44,15 @@ namespace GFX
 		static void Clear();
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		static void BindShaderToUniformBuffers(Shader *shader);
+		static void CreateShaders();
+		static void CreateTextures();
+		static void CreateFonts();
+		static void CreateMeshes();
 	public:
 		static EventHandler<WindowResizeEvent> windowResize;
 		static Rectangle GetViewport();
+		static void Add(Renderer *renderer);
+		static void Remove(Renderer *renderer);
 	};
 }
 

@@ -39,6 +39,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Buffers"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Shaders"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Materials"
+	"${PROJECT_SOURCE_DIR}/include/Graphics/Renderers"
 	"${PROJECT_SOURCE_DIR}/include/System"
 	"${PROJECT_SOURCE_DIR}/include/System/Collections"
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
