@@ -1,4 +1,5 @@
 #include "Core/Application.hpp"
+#include "Core/FirstPersonCamera.hpp"
 #include "Core/GameBehaviour.hpp"
 #include "Core/GameObject.hpp"
 #include "Core/Camera.hpp"
@@ -6,6 +7,8 @@
 #include "Core/Resources.hpp"
 #include "Core/Time.hpp"
 #include "Graphics/Graphics2D.hpp"
+#include "Graphics/Renderers/MeshRenderer.hpp"
+#include "Graphics/Materials/DiffuseMaterial.hpp"
 #include "Audio/AudioSource.hpp"
 #include "Audio/AudioClip.hpp"
 #include "External/imgui/imgui.h"
@@ -22,11 +25,20 @@ protected:
     void OnInitialize() override
     {
         auto camera = Camera::GetMain();
-        camera->SetClearColor(Color::LightGray());
-        camera->GetTransform()->SetPosition(Vector3(0, 0, 10));
+        camera->SetFarClippingPlane(10000);
+        camera->SetClearColor(Color::White());
+        camera->GetTransform()->SetPosition(Vector3(0, 2, 10));
+        camera->GetGameObject()->AddComponent<FirstPersonCamera>();
+        
         font = Resources::FindFont("Default");
 
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
+        cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
+
+        auto plane = GameObject::CreatePrimitive(PrimitiveType::Plane);
+        plane->GetTransform()->SetScale(Vector3(1000, 1, 1000));
+        auto mat = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
+        mat->SetDiffuseColor(Color::Green());
     }
 
     Vector2 CalculateTextSize(const std::string &text, float fontSize)

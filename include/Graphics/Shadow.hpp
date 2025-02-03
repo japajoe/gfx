@@ -10,9 +10,10 @@
 
 namespace GFX
 {
-	class Shader;
 	class Texture3D;
 	class UniformBufferObject;
+	class Camera;
+	class Light;
 
     struct UniformShadowInfo
     {
@@ -28,11 +29,12 @@ namespace GFX
 	{
 	private:
         uint32_t lightFBO;
-        Shader *shader;
         Texture3D *depthMap;
         UniformBufferObject *ubo;
         UniformShadowInfo shadowData;
         std::vector<float> shadowCascadeLevels;
+		Camera *camera;
+		Light *light;
         static bool enabled;
 		std::vector<Vector4> GetFrustumCornersWorldSpace(const Matrix4 &projview);
 		std::vector<Vector4> GetFrustumCornersWorldSpace(const Matrix4 &proj, const Matrix4 &view);

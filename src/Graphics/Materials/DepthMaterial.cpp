@@ -9,10 +9,12 @@ namespace GFX
 	{
 		shader = Resources::FindShader(Constants::GetString(ConstantString::ShaderDepth));
 
+		hasInstanceData = false;
+
 		if(shader != nullptr)
 		{
 			uModel = glGetUniformLocation(shader->GetId(), "uModel");
-			uHasInstanceData = glGetUniformLocation(shader->GetId(), "uHasInstanceData");
+			uHasInstanceData = glGetUniformLocation(shader->GetId(), "uHasInstanceData");			
 		}
 	}
 

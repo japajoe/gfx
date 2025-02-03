@@ -90,4 +90,9 @@ namespace GFX
 		GLuint blockIndex = glGetUniformBlockIndex(shaderProgram, blockName.c_str());
 		glUniformBlockBinding(shaderProgram, blockIndex, bindingIndex);
 	}
+
+    GLuint UniformBufferObject::GetId() const
+    {
+        return id;
+    }
 }

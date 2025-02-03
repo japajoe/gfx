@@ -92,15 +92,53 @@ namespace GFX
 
     GameObject *GameObject::CreatePrimitive(PrimitiveType type)
     {
-        auto g = Create();
+        GameObject *g = Create();
         Mesh *mesh = nullptr;
         MeshRenderer *renderer = g->AddComponent<MeshRenderer>();
+        renderer->SetCastShadows(true);
+        renderer->SetReceiveShadows(true);
 
         switch(type)
         {
+            case PrimitiveType::Capsule:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCapsule));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
             case PrimitiveType::Cube:
             {
                 mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCube));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Hemisphere:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Plane:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshPlane));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Quad:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshQuad));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Skybox:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSkybox));
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Sphere:
+            {
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }

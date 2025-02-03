@@ -4,8 +4,50 @@
 
 namespace GFX
 {
+    AxisKeys::AxisKeys()
+    {
+
+    }
+
+    AxisKeys::AxisKeys(KeyCode positive, KeyCode negative)
+    {
+        this->positive = positive;
+        this->negative = negative;
+    }
+
+    AxisInfo::AxisInfo()
+    {
+
+    }
+
+    AxisInfo::AxisInfo(const std::string &name)
+    {
+        this->name = name;
+    }
+
+    void AxisInfo::AddKeys(KeyCode positive, KeyCode negative)
+    {
+        this->keys.push_back(AxisKeys(positive, negative));
+    }
+
 	Keyboard Input::keyboard;
 	Mouse Input::mouse;
+	std::unordered_map<std::string, AxisInfo> Input::keyToAxisMap;
+
+	void Input::Initialize()
+	{
+        AxisInfo axisHorizontal("Horizontal");
+        AxisInfo axisVertical("Vertical");
+        AxisInfo axisPanning("Panning");
+
+        axisHorizontal.AddKeys(KeyCode::D, KeyCode::A);
+        axisVertical.AddKeys(KeyCode::W, KeyCode::S);
+        axisPanning.AddKeys(KeyCode::R, KeyCode::F);
+        
+        RegisterAxis(axisHorizontal);
+        RegisterAxis(axisVertical);
+        RegisterAxis(axisPanning);
+	}
 
 	void Input::NewFrame()
 	{
@@ -52,6 +94,29 @@ namespace GFX
 	{
 		mouse.SetScrollDirection(x, y);
 	}
+
+    void Input::RegisterAxis(const AxisInfo &axisInfo)
+    {
+        if(keyToAxisMap.count(axisInfo.name) > 0)
+            return;
+        keyToAxisMap[axisInfo.name] = axisInfo;
+    }
+
+    float Input::GetAxis(const std::string &axis)
+    {
+        if (keyToAxisMap.count(axis) > 0)
+        {
+            for (size_t i = 0; i < keyToAxisMap[axis].keys.size(); i++)
+            {
+                if (GetKey(keyToAxisMap[axis].keys[i].positive))
+                    return 1.0f;
+                else if (GetKey(keyToAxisMap[axis].keys[i].negative))
+                    return -1.0f;
+            }
+        }
+
+        return 0.0f;
+    }
 
 	bool Input::GetKey(KeyCode keycode)
 	{

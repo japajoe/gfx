@@ -223,6 +223,7 @@ namespace GFX
     {
 		Graphics::Initialize(config.width, config.height);
         Audio::Initialize(44100, 2);
+        Input::Initialize();
     }
 
 	void Application::Deinitialize()

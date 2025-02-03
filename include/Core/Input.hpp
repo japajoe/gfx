@@ -2,15 +2,38 @@
 #include "Mouse.hpp"
 #include "../External/glm/glm.hpp"
 #include <cstdint>
+#include <vector>
+#include <unordered_map>
+#include <string>
 
 namespace GFX
 {
+    class AxisKeys
+    {
+    public:
+        KeyCode positive;
+        KeyCode negative;
+        AxisKeys();
+        AxisKeys(KeyCode positive, KeyCode negative);
+    };
+
+    class AxisInfo
+    {
+    public:
+        std::string name;
+        std::vector<AxisKeys> keys;
+        AxisInfo();
+        AxisInfo(const std::string &name);
+        void AddKeys(KeyCode positive, KeyCode negative);
+    };
+
     class Input
     {
 	friend class Application;
 	private:
         static Keyboard keyboard;
         static Mouse mouse;
+        static std::unordered_map<std::string, AxisInfo> keyToAxisMap;
         static void NewFrame();
         static void EndFrame();
         static void SetMousePosition(double x, double y);
@@ -20,6 +43,9 @@ namespace GFX
         static void SetButtonState(ButtonCode buttoncode, int state);
         static void SetScrollDirection(double x, double y);
 	public:
+        static void Initialize();
+        static void RegisterAxis(const AxisInfo &axisInfo);
+        static float GetAxis(const std::string &axis);
         static bool GetKey(KeyCode keycode);
         static bool GetKeyDown(KeyCode keycode);
         static bool GetKeyUp(KeyCode keycode);

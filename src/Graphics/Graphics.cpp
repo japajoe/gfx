@@ -48,9 +48,11 @@ namespace GFX
 		camObject->AddComponent<Camera>();
 
 		auto lightObject = GameObject::Create();
-		lightObject->AddComponent<Light>();
-		lightObject->GetTransform()->SetPosition(Vector3(1000, 1000, 1000));
+		auto light = lightObject->AddComponent<Light>();
+		lightObject->GetTransform()->SetPosition(Vector3(100, 100, 100));
 		lightObject->GetTransform()->LookAt(camObject->GetTransform());
+		light->SetType(LightType::Directional);
+		light->SetStrength(0.1f);
 
 		CreateFonts();
 		CreateTextures();
@@ -96,8 +98,11 @@ namespace GFX
 
             while (!queue.empty()) 
             {
-                Renderer* currentRenderer = queue.top();
-                currentRenderer->OnRender(depthMaterial.get(), camera);
+                Renderer* renderer = queue.top();
+				if(renderer->GetCastShadows())
+				{
+                	renderer->OnRender(depthMaterial.get(), camera);
+				}
                 queue.pop();
             }
 
@@ -167,15 +172,25 @@ namespace GFX
 			return;
 		}
 
-		auto uboCamera = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferCamera));
-		auto uboLights = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferLights));
-		auto uboShadow = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferShadow));
-		auto uboWorld = Resources::FindUniformBuffer(Constants::GetString(ConstantString::UniformBufferWorld));
+		std::string sCamera = Constants::GetString(ConstantString::UniformBufferCamera);
+		std::string sLights = Constants::GetString(ConstantString::UniformBufferLights);
+		std::string sShadow = Constants::GetString(ConstantString::UniformBufferShadow);
+		std::string sWorld = Constants::GetString(ConstantString::UniformBufferWorld);
 
-		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, Constants::GetString(ConstantString::UniformBufferCamera));
-		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, Constants::GetString(ConstantString::UniformBufferLights));
-		uboShadow->BindBlockToShader(shader->GetId(), UniformBindingIndex_Shadow, Constants::GetString(ConstantString::UniformBufferShadow));
-		uboWorld->BindBlockToShader(shader->GetId(), UniformBindingIndex_World, Constants::GetString(ConstantString::UniformBufferWorld));
+		auto uboCamera = Resources::FindUniformBuffer(sCamera);
+		auto uboLights = Resources::FindUniformBuffer(sLights);
+		auto uboShadow = Resources::FindUniformBuffer(sShadow);
+		auto uboWorld = Resources::FindUniformBuffer(sWorld);
+
+		glObjectLabel(GL_BUFFER, uboCamera->GetId(), -1, sCamera.c_str());
+		glObjectLabel(GL_BUFFER, uboLights->GetId(), -1, sLights.c_str());
+		glObjectLabel(GL_BUFFER, uboShadow->GetId(), -1, sShadow.c_str());
+		glObjectLabel(GL_BUFFER, uboWorld->GetId(), -1, sWorld.c_str());
+
+		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, sCamera);
+		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, sLights);
+		uboShadow->BindBlockToShader(shader->GetId(), UniformBindingIndex_Shadow, sShadow);
+		uboWorld->BindBlockToShader(shader->GetId(), UniformBindingIndex_World, sWorld);
 	}
 
 	void Graphics::CreateShaders()
@@ -198,16 +213,19 @@ namespace GFX
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
 
-		shadow.Generate();
-
 		depthMaterial = std::make_unique<DepthMaterial>();
+
+		shadow.Generate();
 	}
 
 	void Graphics::CreateTextures()
 	{
 		//Create default textures
-		Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
-		Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
+		auto defaultTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
+		auto depthTexture = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
+
+		defaultTexture->ObjectLabel("TextureDefault");
+		depthTexture->ObjectLabel("TextureDepth");
 	}
 
 	void Graphics::CreateFonts()

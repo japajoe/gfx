@@ -44,7 +44,7 @@ void main() {
 
 	Shader DepthShader::Create()
 	{
-		return Shader(vertexSource, fragmentSource);
+		return Shader(vertexSource, fragmentSource, geometrySource);
 	}
 
 	std::string DepthShader::GetVertexSource()

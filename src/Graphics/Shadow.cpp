@@ -1,5 +1,4 @@
 #include "Shadow.hpp"
-#include "Shader.hpp"
 #include "Texture3D.hpp"
 #include "Buffers/ElementBufferObject.hpp"
 #include "Graphics.hpp"
@@ -15,13 +14,16 @@ namespace GFX
 
 	Shadow::Shadow()
 	{
-
+        depthMap = nullptr;
+		camera = nullptr;
+		light = nullptr;
 	}
 
 	void Shadow::Generate()
 	{
 		depthMap = Resources::FindTexture3D(Constants::GetString(ConstantString::TextureDepth));
-		shader = Resources::FindShader(Constants::GetString(ConstantString::ShaderDepth));
+		camera = Camera::GetMain();
+		light = Light::GetMain();
 
 		float farPlane = 1000.0f;
 
@@ -44,6 +46,7 @@ namespace GFX
         glReadBuffer(GL_NONE);
 
         int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
         if (status != GL_FRAMEBUFFER_COMPLETE)
         {
             Debug::WriteError("CascadedShadowMap framebuffer is not complete");
@@ -55,14 +58,9 @@ namespace GFX
 
 	void Shadow::Bind()
 	{
-		auto camera = Camera::GetMain();
-		
-		if(camera == nullptr)
-			return;
-
 		glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
 		glViewport(0, 0, depthMap->GetWidth(), depthMap->GetHeight());
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_DEPTH_BUFFER_BIT);
         glCullFace(GL_FRONT);  // peter panning
 	}
@@ -112,16 +110,6 @@ namespace GFX
 
 	Matrix4 Shadow::GetLightSpaceMatrix(const float nearPlane, const float farPlane)
 	{
-		auto camera = Camera::GetMain();
-
-		if(camera == nullptr)
-			return Matrix4f::Identity();
-
-		auto light = Light::GetMain();
-
-		if(light == nullptr)
-			return Matrix4f::Identity();
-
         auto viewportRect = Graphics::GetViewport();
 
         const auto proj = glm::perspective(glm::radians(camera->GetFieldOfView()), viewportRect.width / viewportRect.height, nearPlane, farPlane);
@@ -145,6 +133,7 @@ namespace GFX
         float maxY = std::numeric_limits<float>::lowest();
         float minZ = std::numeric_limits<float>::max();
         float maxZ = std::numeric_limits<float>::lowest();
+
         for (const auto& v : corners)
         {
             const auto trf = lightView * v;
@@ -181,12 +170,7 @@ namespace GFX
 
 	std::vector<Matrix4> Shadow::GetLightSpaceMatrices()
 	{
-		auto camera = Camera::GetMain();
-		
         std::vector<Matrix4> ret;
-
-		if(camera == nullptr)
-			return ret;
 
         float cameraNearPlane = camera->GetNearClippingPlane();
         float cameraFarPlane = camera->GetFarClippingPlane();
@@ -217,17 +201,17 @@ namespace GFX
 		if(ubo == nullptr)
 			return;
 
-		auto camera = Camera::GetMain();
-		
-		if(camera == nullptr)
-			return;
-
 		auto lightMatrices = GetLightSpaceMatrices();
 
 		shadowData.farPlane = camera->GetFarClippingPlane();
 		shadowData.shadowBias = 0.005f;
 		shadowData.cascadeCount = shadowCascadeLevels.size();
 		shadowData.enabled = enabled ? 1 : 0;
+
+        // shadowCascadeLevels[0] = farPlane / 50.0f;
+        // shadowCascadeLevels[1] = farPlane / 25.0f;
+        // shadowCascadeLevels[2] = farPlane / 10.0f;
+        // shadowCascadeLevels[3] = farPlane / 2.0f;
 
         for(size_t i = 0; i < lightMatrices.size(); i++)
         {

@@ -2,6 +2,7 @@
 #define GFX_TEXTURE_HPP
 
 #include <cstdint>
+#include <string>
 
 namespace GFX
 {
@@ -15,6 +16,7 @@ namespace GFX
 		virtual void Bind(uint32_t unit) = 0;
 		virtual void Unbind() = 0;
 		virtual void Delete() = 0;
+		void ObjectLabel(const std::string &label);
 	};
 }
 

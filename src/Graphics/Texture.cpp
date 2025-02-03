@@ -1,4 +1,5 @@
 #include "Texture.hpp"
+#include "../External/glad/glad.h"
 
 namespace GFX
 {
@@ -10,5 +11,10 @@ namespace GFX
 	uint32_t Texture::GetId() const 
 	{ 
 		return id; 
+	}
+
+	void Texture::ObjectLabel(const std::string &label)
+	{
+		glObjectLabel(GL_TEXTURE, id, -1, label.c_str());
 	}
 }
