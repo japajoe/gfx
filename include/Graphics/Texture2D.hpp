@@ -9,6 +9,9 @@ namespace GFX
 {
 	class Texture2D : public Texture
 	{
+	private:
+		uint32_t width;
+		uint32_t height;
 	public:
 		Texture2D();
 		Texture2D(const Image *image);
@@ -23,9 +26,6 @@ namespace GFX
 		void Delete() override;
 		uint32_t GetWidth() const;
 		uint32_t GetHeight() const;
-	private:
-		uint32_t width;
-		uint32_t height;
 	};
 }
 

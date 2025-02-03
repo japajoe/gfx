@@ -7,6 +7,7 @@
 #include "../System/Numerics/Vector3.hpp"
 #include "../System/Numerics/Vector4.hpp"
 #include "../Graphics/Color.hpp"
+#include "../Graphics/Frustum.hpp"
 
 namespace GFX
 {
@@ -26,6 +27,7 @@ namespace GFX
     friend class Graphics;
     private:
         static Camera *pMainCamera;
+        Frustum frustum;
         Matrix4 projection;
         Color clearColor;
         float fieldOfView;
@@ -50,6 +52,7 @@ namespace GFX
         float GetFarClippingPlane() const;
         void SetClearColor(const Color &clearColor);
         Color GetClearColor() const;
+        Frustum *GetFrustum();
         Vector3 WorldToScreenPoint(const Vector3 &worldPoint);
         Vector3 ScreenToWorldPoint(const Vector2 &screenPoint);
         static Camera *GetMain();        

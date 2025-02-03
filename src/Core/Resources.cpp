@@ -6,6 +6,7 @@ namespace GFX
 	std::unordered_map<std::string,Font> Resources::fonts;
 	std::unordered_map<std::string,Shader> Resources::shaders;
 	std::unordered_map<std::string,Texture2D> Resources::textures2D;
+	std::unordered_map<std::string,Texture3D> Resources::textures3D;
 
 	UniformBufferObject *Resources::AddUniformBuffer(const std::string &name, const UniformBufferObject &ubo)
 	{
@@ -66,5 +67,20 @@ namespace GFX
 		if(!textures2D.contains(name))
 			return nullptr;
 		return &textures2D[name];
+	}
+
+	Texture3D *Resources::AddTexture3D(const std::string &name, const Texture3D &texture)
+	{
+		if(textures3D.contains(name))
+			return nullptr;
+		textures3D[name] = texture;
+		return &textures3D[name];
+	}
+
+	Texture3D *Resources::FindTexture3D(const std::string &name)
+	{
+		if(!textures3D.contains(name))
+			return nullptr;
+		return &textures3D[name];
 	}
 }

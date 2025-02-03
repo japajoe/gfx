@@ -103,6 +103,11 @@ namespace GFX
         return clearColor;
     }
 
+    Frustum *Camera::GetFrustum()
+    {
+        return &frustum;
+    }
+
     Vector3 Camera::WorldToScreenPoint(const Vector3 &worldPoint)
     {
         Vector4 v(worldPoint.x, worldPoint.y, worldPoint.z, 1);
@@ -140,6 +145,24 @@ namespace GFX
 
         if(ubo == nullptr)
             return;
+
+        Camera *camera = Camera::GetMain();
+
+        if(camera == nullptr)
+            return;
+
+        camera->frustum.Initialize(camera->GetProjectionMatrix() * camera->GetViewMatrix());
+
+        UniformCameraInfo info;
+        info.view = camera->GetViewMatrix();
+        info.projection = camera->GetProjectionMatrix();
+        info.viewProjection = info.projection * info.view;
+        info.position = Vector4(camera->GetTransform()->GetPosition(), 1.0f);
+        info.direction = Vector4(camera->GetTransform()->GetForward(), 1.0f);
+
+        ubo->Bind();
+        ubo->BufferSubData(0, sizeof(UniformCameraInfo), &info);
+        ubo->Unbind();
     }
 
     void Camera::OnWindowResize(int width, int height)

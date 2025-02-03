@@ -221,7 +221,7 @@ namespace GFX
 
     void Application::Initialize()
     {
-		Graphics::Initialize();
+		Graphics::Initialize(config.width, config.height);
         Audio::Initialize(44100, 2);
     }
 

@@ -4,6 +4,7 @@
 #include "../Graphics/Buffers/UniformBufferObject.hpp"
 #include "../Graphics/Shader.hpp"
 #include "../Graphics/Texture2D.hpp"
+#include "../Graphics/Texture3D.hpp"
 #include "../Graphics/Font.hpp"
 #include <unordered_map>
 #include <string>
@@ -17,6 +18,7 @@ namespace GFX
 		static std::unordered_map<std::string,Font> fonts;
 		static std::unordered_map<std::string,Shader> shaders;
 		static std::unordered_map<std::string,Texture2D> textures2D;
+		static std::unordered_map<std::string,Texture3D> textures3D;
 	public:
 		static UniformBufferObject *AddUniformBuffer(const std::string &name, const UniformBufferObject &ubo);
 		static UniformBufferObject *FindUniformBuffer(const std::string &name);
@@ -29,6 +31,9 @@ namespace GFX
 
 		static Texture2D *AddTexture2D(const std::string &name, const Texture2D &texture);
 		static Texture2D *FindTexture2D(const std::string &name);
+
+		static Texture3D *AddTexture3D(const std::string &name, const Texture3D &texture);
+		static Texture3D *FindTexture3D(const std::string &name);
 	};
 }
 

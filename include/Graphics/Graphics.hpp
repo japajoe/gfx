@@ -4,6 +4,7 @@
 #include "../External/imgui/ImGuiManager.hpp"
 #include "../External/glad/glad.h"
 #include "../System/EventHandler.hpp"
+#include "Shadow.hpp"
 #include "Rectangle.hpp"
 #include <cstdint>
 #include <vector>
@@ -18,9 +19,10 @@ namespace GFX
 	{
 	friend class Application;
 	private:
-		static ImGuiManager imgui;
 		static Rectangle viewport;
-		static void Initialize();
+		static ImGuiManager imgui;
+		static Shadow shadow;
+		static void Initialize(uint32_t width, uint32_t height);
 		static void Deinitialize();
 		static void NewFrame();
 		static void UpdateUniformBuffers();

@@ -21,6 +21,7 @@ namespace GFX
         constant = 1.0f;
         linear = 0.09f;
         quadratic = 0.032f;
+        cutoff = 0.0f;
 
         if(lights.size() == 0)
         {
@@ -158,6 +159,16 @@ namespace GFX
         return quadratic;
     }
 
+    void Light::SetCutoff(float cutoff)
+    {
+        this->cutoff = cutoff;
+    }
+
+    float Light::GetCutoff() const
+    {
+        return cutoff;
+    }
+
     Light *Light::GetMain()
     {
         return pMainLight;
@@ -170,5 +181,42 @@ namespace GFX
 
         if(ubo == nullptr)
             return;
+
+        if(lights.size() == 0)
+            return;
+
+        ubo->Bind();
+
+        for(size_t i  = 0; i < lights.size(); i++)
+        {
+            auto light = lights[i];
+            UniformLightInfo info;
+
+            if(light != nullptr)
+            {
+                info.isActive = light->GetGameObject()->GetIsActive() ? 1 : -1;
+                info.type = static_cast<int>(light->GetType());
+                info.constant = light->GetConstant();
+                info.linear = light->GetLinear();
+                info.quadratic = light->GetQuadratic();
+                info.strength = light->GetStrength();
+                info.cutoff = light->GetCutoff();
+                info.padding1 = 0;
+                info.position = Vector4(light->GetTransform()->GetPosition(), 1.0f);
+                info.direction = Vector4(light->GetTransform()->GetForward(), 1.0f);
+                info.color = light->GetColor();
+                info.ambient = light->GetAmbient();
+                info.diffuse = light->GetDiffuse();
+                info.specular = light->GetSpecular();
+            }
+            else
+            {
+                info.isActive = 0;
+            }
+
+            ubo->BufferSubData(i * sizeof(UniformLightInfo), sizeof(UniformLightInfo), &info);
+        }
+
+        ubo->Unbind();
     }
 }

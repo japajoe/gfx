@@ -47,6 +47,11 @@ namespace GFX
         return &EBO;
     }
 
+    BoundingBox Mesh::GetBounds() const
+    {
+        return bounds;
+    }
+
     void Mesh::Generate()
     {
         auto &vertices = GetVertices();
@@ -107,15 +112,12 @@ namespace GFX
             VBO.Unbind();
         }
 
-        // bounds.Clear();
-        // for(size_t i = 0; i < vertices.size(); i++)
-        // {
-        //     bounds.Grow(vertices[i].position);
-        // }
+        bounds.Clear();
 
-        //To do: fix seg fault
-        // if(vertices.size() > 0 && indices.size() > 0)
-        //     bvh.Initialize(vertices, indices);
+        for(size_t i = 0; i < vertices.size(); i++)
+        {
+            bounds.Grow(vertices[i].position);
+        }
     }
 
     void Mesh::Delete()

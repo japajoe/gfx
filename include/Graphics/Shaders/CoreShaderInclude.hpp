@@ -1,3 +1,6 @@
+#ifndef GFX_SHADERCOREINCLUDE_HPP
+#define GFX_SHADERCOREINCLUDE_HPP
+
 #include <string>
 
 namespace GFX
@@ -8,3 +11,5 @@ namespace GFX
 		static std::string GetSource();
 	};
 }
+
+#endif

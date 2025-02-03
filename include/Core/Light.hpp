@@ -30,6 +30,7 @@ namespace GFX
         float constant;
         float linear;
         float quadratic;
+        float cutoff;
         static Light *pMainLight;
         static std::vector<Light*> lights;
 		static UniformBufferObject *ubo;
@@ -57,6 +58,8 @@ namespace GFX
         float GetLinear() const;
         void SetQuadratic(float quadratic);
         float GetQuadratic() const;
+        void SetCutoff(float cutoff);
+        float GetCutoff() const;
         static Light *GetMain();
         static void UpdateUniformBuffer();
     };
@@ -69,8 +72,8 @@ namespace GFX
         float linear;       //4
         float quadratic;    //4
         float strength;     //4
+        float cutoff;       //4
         float padding1;     //4
-        float padding2;     //4
         Vector4 position;   //16
         Vector4 direction;  //16
         Color color;        //16

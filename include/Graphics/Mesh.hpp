@@ -1,13 +1,14 @@
 #ifndef GFX_MESH_HPP
 #define GFX_MESH_HPP
 
-#include "../System/Numerics/Vector3.hpp"
-#include "../System/Numerics/Vector4.hpp"
-#include "../Core/Object.hpp"
+#include "Vertex.hpp"
+#include "BoundingBox.hpp"
 #include "Buffers/ElementBufferObject.hpp"
 #include "Buffers/VertexArrayObject.hpp"
 #include "Buffers/VertexBufferObject.hpp"
-#include "Vertex.hpp"
+#include "../System/Numerics/Vector3.hpp"
+#include "../System/Numerics/Vector4.hpp"
+#include "../Core/Object.hpp"
 #include <vector>
 #include <cstdint>
 #include <string>
@@ -27,6 +28,7 @@ namespace GFX
         VertexArrayObject *GetVAO();
         VertexBufferObject *GetVBO();
         ElementBufferObject *GetEBO();
+        BoundingBox GetBounds() const;
         void Generate();
         void Delete();
         void RecalculateNormals();
@@ -38,6 +40,7 @@ namespace GFX
         VertexArrayObject VAO;
         VertexBufferObject VBO;
         ElementBufferObject EBO;
+        BoundingBox bounds;
         Vector3 SurfaceNormalFromIndices(int32_t indexA, int32_t indexB, int32_t indexC);
     };
 
