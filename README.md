@@ -19,4 +19,4 @@ A game development framework that aims to be cross-platform. The objective isn't
 
 `cmake ..`
 
-`cmake --build`
+`cmake --build .`
