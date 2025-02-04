@@ -1,5 +1,5 @@
 # gfx
-A game development framework that aims to be cross-platform. The objective isn't necessarily to be very efficient but rather to be easy to use. All dependencies are included:
+A game development framework that aims to be cross-platform. The objective isn't necessarily to be very efficient but rather to be easy to use. All dependencies are included and by default are statically linked:
 
 - [Assimp](https://github.com/assimp/assimp)
 - [FreeType](https://github.com/freetype/freetype)
