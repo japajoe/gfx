@@ -44,6 +44,7 @@ namespace GFX
 		static void Clear();
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		static void BindShaderToUniformBuffers(Shader *shader);
+		static void CreateUniformBuffers();
 		static void CreateShaders();
 		static void CreateTextures();
 		static void CreateFonts();

@@ -7,8 +7,10 @@
 #include "Core/Resources.hpp"
 #include "Core/Time.hpp"
 #include "Graphics/Graphics2D.hpp"
+#include "Graphics/GUI.hpp"
 #include "Graphics/Renderers/MeshRenderer.hpp"
 #include "Graphics/Materials/DiffuseMaterial.hpp"
+#include "Graphics/Materials/SkyboxMaterial.hpp"
 #include "Audio/AudioSource.hpp"
 #include "Audio/AudioClip.hpp"
 #include "External/imgui/imgui.h"
@@ -32,6 +34,10 @@ protected:
         
         font = Resources::FindFont("Default");
 
+        auto skybox = GameObject::CreatePrimitive(PrimitiveType::Skybox);
+        auto skyboxMat = skybox->GetComponent<MeshRenderer>()->GetMaterial<SkyboxMaterial>(0);
+        skyboxMat->SetDiffuseColor(Color::SkyBlue());
+
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
         cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
 
@@ -39,6 +45,8 @@ protected:
         plane->GetTransform()->SetScale(Vector3(1000, 1, 1000));
         auto mat = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
         mat->SetDiffuseColor(Color::Green());
+
+
     }
 
     Vector2 CalculateTextSize(const std::string &text, float fontSize)
@@ -75,7 +83,17 @@ protected:
         if(font == nullptr)
             return;
 
-        RenderText(Vector2(10, 10), "Hello world");
+        GUI::BeginFrame();
+        
+        if(GUI::Button(Rectangle(10, 10, 100, 20), "Hello world"))
+        {
+            printf("Button clicked\n");
+        }
+
+        GUI::EndFrame();
+
+
+        //RenderText(Vector2(10, 10), "Hello world");
 
         if(Input::GetKeyDown(KeyCode::Escape))
         {

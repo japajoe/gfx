@@ -27,6 +27,7 @@ namespace GFX
         GLuint GetUniformBlockIndex(GLuint shaderProgram, const char *uniformBlockName);
         void UniformBlockBinding(GLuint shaderProgram, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
         void BindBlockToShader(GLuint shaderProgram, GLuint bindingIndex, const std::string &blockName);
+        void ObjectLabel(const std::string &label);
         GLuint GetId() const;
         
         template<typename T>

@@ -8,6 +8,7 @@
 #include "Buffers/UniformBufferObject.hpp"
 #include "Shaders/DiffuseShader.hpp"
 #include "Shaders/DepthShader.hpp"
+#include "Shaders/SkyboxShader.hpp"
 #include "../External/glad/glad.h"
 #include "../Core/Application.hpp"
 #include "../Core/Constants.hpp"
@@ -56,6 +57,7 @@ namespace GFX
 
 		CreateFonts();
 		CreateTextures();
+		CreateUniformBuffers();
 		CreateShaders();
 		CreateMeshes();
 	}
@@ -164,40 +166,14 @@ namespace GFX
 		return viewport;
 	}
 
-	void Graphics::BindShaderToUniformBuffers(Shader *shader)
+
+
+	void Graphics::CreateUniformBuffers()
 	{
-		if(shader == nullptr)
-		{
-			Debug::WriteLine("Can't bind shader to uniform buffers because shader is null");
-			return;
-		}
-
-		std::string sCamera = Constants::GetString(ConstantString::UniformBufferCamera);
-		std::string sLights = Constants::GetString(ConstantString::UniformBufferLights);
-		std::string sShadow = Constants::GetString(ConstantString::UniformBufferShadow);
-		std::string sWorld = Constants::GetString(ConstantString::UniformBufferWorld);
-
-		auto uboCamera = Resources::FindUniformBuffer(sCamera);
-		auto uboLights = Resources::FindUniformBuffer(sLights);
-		auto uboShadow = Resources::FindUniformBuffer(sShadow);
-		auto uboWorld = Resources::FindUniformBuffer(sWorld);
-
-		glObjectLabel(GL_BUFFER, uboCamera->GetId(), -1, sCamera.c_str());
-		glObjectLabel(GL_BUFFER, uboLights->GetId(), -1, sLights.c_str());
-		glObjectLabel(GL_BUFFER, uboShadow->GetId(), -1, sShadow.c_str());
-		glObjectLabel(GL_BUFFER, uboWorld->GetId(), -1, sWorld.c_str());
-
-		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, sCamera);
-		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, sLights);
-		uboShadow->BindBlockToShader(shader->GetId(), UniformBindingIndex_Shadow, sShadow);
-		uboWorld->BindBlockToShader(shader->GetId(), UniformBindingIndex_World, sWorld);
-	}
-
-	void Graphics::CreateShaders()
-	{
-		//Create shaders
-		auto diffuseShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDiffuse), DiffuseShader::Create());
-		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
+		auto sCamera = Constants::GetString(ConstantString::UniformBufferCamera);
+		auto sLights = Constants::GetString(ConstantString::UniformBufferLights);
+		auto sShadow = Constants::GetString(ConstantString::UniformBufferShadow);
+		auto sWorld = Constants::GetString(ConstantString::UniformBufferWorld);
 
 		//Create uniform buffers
 		auto uboCamera = UniformBufferObject::Create<UniformCameraInfo>(UniformBindingIndex_Camera, 1);
@@ -205,13 +181,27 @@ namespace GFX
 		auto uboShadow = UniformBufferObject::Create<UniformShadowInfo>(UniformBindingIndex_Shadow, 1);
 		auto uboWorld = UniformBufferObject::Create<UniformWorldInfo>(UniformBindingIndex_World, 1);
 
-		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferCamera), uboCamera);
-		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferLights), uboLights);
-		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferShadow), uboShadow);
-		Resources::AddUniformBuffer(Constants::GetString(ConstantString::UniformBufferWorld), uboWorld);
+		uboCamera.ObjectLabel(sCamera);
+		uboLights.ObjectLabel(sLights);
+		uboShadow.ObjectLabel(sShadow);
+		uboWorld.ObjectLabel(sWorld);
+
+		Resources::AddUniformBuffer(sCamera, uboCamera);
+		Resources::AddUniformBuffer(sLights, uboLights);
+		Resources::AddUniformBuffer(sShadow, uboShadow);
+		Resources::AddUniformBuffer(sWorld, uboWorld);
+	}
+
+	void Graphics::CreateShaders()
+	{
+		//Create shaders
+		auto diffuseShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDiffuse), DiffuseShader::Create());
+		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
+		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
+		BindShaderToUniformBuffers(skyboxShader);
 
 		depthMaterial = std::make_unique<DepthMaterial>();
 
@@ -223,9 +213,11 @@ namespace GFX
 		//Create default textures
 		auto defaultTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
 		auto depthTexture = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
+		auto defaultCubemap = Resources::AddTextureCubeMap(Constants::GetString(ConstantString::TextureDefaultCubeMap), TextureCubeMap(2, 2, Color::White()));
 
 		defaultTexture->ObjectLabel("TextureDefault");
 		depthTexture->ObjectLabel("TextureDepth");
+		defaultCubemap->ObjectLabel("TextureDefaultCubeMap");
 	}
 
 	void Graphics::CreateFonts()
@@ -249,6 +241,30 @@ namespace GFX
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshQuad), MeshGenerator::CreateQuad(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshSphere), MeshGenerator::CreateSphere(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshSkybox), MeshGenerator::CreateSkybox(Vector3f::One()));
+	}
+
+	void Graphics::BindShaderToUniformBuffers(Shader *shader)
+	{
+		if(shader == nullptr)
+		{
+			Debug::WriteLine("Can't bind shader to uniform buffers because shader is null");
+			return;
+		}
+
+		auto sCamera = Constants::GetString(ConstantString::UniformBufferCamera);
+		auto sLights = Constants::GetString(ConstantString::UniformBufferLights);
+		auto sShadow = Constants::GetString(ConstantString::UniformBufferShadow);
+		auto sWorld = Constants::GetString(ConstantString::UniformBufferWorld);
+
+		auto uboCamera = Resources::FindUniformBuffer(sCamera);
+		auto uboLights = Resources::FindUniformBuffer(sLights);
+		auto uboShadow = Resources::FindUniformBuffer(sShadow);
+		auto uboWorld = Resources::FindUniformBuffer(sWorld);
+
+		uboCamera->BindBlockToShader(shader->GetId(), UniformBindingIndex_Camera, sCamera);
+		uboLights->BindBlockToShader(shader->GetId(), UniformBindingIndex_Lights, sLights);
+		uboShadow->BindBlockToShader(shader->GetId(), UniformBindingIndex_Shadow, sShadow);
+		uboWorld->BindBlockToShader(shader->GetId(), UniformBindingIndex_World, sWorld);
 	}
 
 	void Graphics::Add(Renderer *renderer)

@@ -91,6 +91,11 @@ namespace GFX
 		glUniformBlockBinding(shaderProgram, blockIndex, bindingIndex);
 	}
 
+    void UniformBufferObject::ObjectLabel(const std::string &label)
+    {
+        glObjectLabel(GL_BUFFER, id, -1, label.c_str());
+    }
+
     GLuint UniformBufferObject::GetId() const
     {
         return id;

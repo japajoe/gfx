@@ -8,6 +8,7 @@ namespace GFX
 	std::unordered_map<std::string,Shader> Resources::shaders;
 	std::unordered_map<std::string,Texture2D> Resources::textures2D;
 	std::unordered_map<std::string,Texture3D> Resources::textures3D;
+	std::unordered_map<std::string,TextureCubeMap> Resources::texturesCubemap;
 	std::unordered_map<std::string,Mesh> Resources::meshes;
 
 	static void LogAdd(const std::string &type, const std::string &name)
@@ -113,6 +114,25 @@ namespace GFX
 		if(!textures3D.contains(name))
 			return nullptr;
 		return &textures3D[name];
+	}
+
+	TextureCubeMap *Resources::AddTextureCubeMap(const std::string &name, const TextureCubeMap &texture)
+	{
+		if(texturesCubemap.contains(name))
+		{
+			LogError("TEXTURECUBEMAP", name);
+			return nullptr;
+		}
+		texturesCubemap[name] = texture;
+		LogAdd("TEXTURECUBEMAP", name);
+		return &texturesCubemap[name];
+	}
+	
+	TextureCubeMap *Resources::FindTextureCubeMap(const std::string &name)
+	{
+		if(!texturesCubemap.contains(name))
+			return nullptr;
+		return &texturesCubemap[name];
 	}
 
 	Mesh *Resources::AddMesh(const std::string &name, const Mesh &mesh)

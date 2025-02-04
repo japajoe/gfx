@@ -4,6 +4,7 @@
 #include "../Graphics/Mesh.hpp"
 #include "../Graphics/Texture2D.hpp"
 #include "../Graphics/Materials/DiffuseMaterial.hpp"
+#include "../Graphics/Materials/SkyboxMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
 
 namespace GFX
@@ -87,7 +88,9 @@ namespace GFX
     GameObject *GameObject::Create()
     {
         objects.push_back(std::make_unique<GameObject>());
-        return objects.back().get();
+        GameObject *g = objects.back().get();
+        g->SetLayer(Layer_Default);
+        return g;
     }
 
     GameObject *GameObject::CreatePrimitive(PrimitiveType type)
@@ -132,8 +135,15 @@ namespace GFX
             }
             case PrimitiveType::Skybox:
             {
+                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
                 mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSkybox));
-                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                renderer->Add(mesh, std::make_shared<SkyboxMaterial>());
+                renderer->SetCastShadows(false);
+                renderer->SetReceiveShadows(false);
+                renderer->SetRenderOrder(999);
+                auto settings = renderer->GetSettings(0);
+                settings->cullFace = false;
+                settings->depthTest = false;
                 break;
             }
             case PrimitiveType::Sphere:

@@ -5,6 +5,7 @@
 #include "../Graphics/Shader.hpp"
 #include "../Graphics/Texture2D.hpp"
 #include "../Graphics/Texture3D.hpp"
+#include "../Graphics/TextureCubeMap.hpp"
 #include "../Graphics/Font.hpp"
 #include "../Graphics/Mesh.hpp"
 #include <unordered_map>
@@ -20,6 +21,7 @@ namespace GFX
 		static std::unordered_map<std::string,Shader> shaders;
 		static std::unordered_map<std::string,Texture2D> textures2D;
 		static std::unordered_map<std::string,Texture3D> textures3D;
+		static std::unordered_map<std::string,TextureCubeMap> texturesCubemap;
 		static std::unordered_map<std::string,Mesh> meshes;
 	public:
 		static UniformBufferObject *AddUniformBuffer(const std::string &name, const UniformBufferObject &ubo);
@@ -36,6 +38,9 @@ namespace GFX
 
 		static Texture3D *AddTexture3D(const std::string &name, const Texture3D &texture);
 		static Texture3D *FindTexture3D(const std::string &name);
+
+		static TextureCubeMap *AddTextureCubeMap(const std::string &name, const TextureCubeMap &texture);
+		static TextureCubeMap *FindTextureCubeMap(const std::string &name);
 
 		static Mesh *AddMesh(const std::string &name, const Mesh &mesh);
 		static Mesh *FindMesh(const std::string &name);

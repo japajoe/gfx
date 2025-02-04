@@ -10,11 +10,11 @@ set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 
 set(MINIAUDIOEX_BUILD_SHARED OFF CACHE BOOL "Build miniaudioex shared library")
 
-set(FT_REQUIRE_ZLIB OFF CACHE BOOL "Require system zlib instead of internal zlib library")
-set(FT_REQUIRE_BZIP2 OFF CACHE BOOL "Disable support of bzip2 compressed fonts")
-set(FT_REQUIRE_PNG OFF CACHE BOOL "Disable support of PNG compressed OpenType embedded bitmaps")
-set(FT_REQUIRE_HARFBUZZ OFF CACHE BOOL "Disable HarfBuzz (used for improving auto-hinting of OpenType fonts)")
-set(FT_REQUIRE_BROTLI OFF CACHE BOOL "Disable support of compressed WOFF2 fonts")
+set(FT_DISABLE_ZLIB ON CACHE BOOL "Disable use of system zlib and use internal zlib library instead")
+set(FT_DISABLE_BZIP2 ON CACHE BOOL "Disable support of bzip2 compressed fonts")
+set(FT_DISABLE_PNG ON CACHE BOOL "Disable support of PNG compressed OpenType embedded bitmaps")
+set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "Disable HarfBuzz (used for improving auto-hinting of OpenType fonts)")
+set(FT_DISABLE_BROTLI ON CACHE BOOL "Disable support of compressed WOFF2 fonts")
 
 set(GLM_BUILD_LIBRARY OFF CACHE BOOL "Build glm as dynamic/static library")
 
