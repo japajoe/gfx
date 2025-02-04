@@ -5,6 +5,7 @@
 #include "../Graphics/Texture2D.hpp"
 #include "../Graphics/Materials/DiffuseMaterial.hpp"
 #include "../Graphics/Materials/SkyboxMaterial.hpp"
+#include "../Graphics/Materials/ProceduralSkyboxMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
 
 namespace GFX
@@ -131,6 +132,19 @@ namespace GFX
             {
                 mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshQuad));
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::ProceduralSkybox:
+            {
+                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
+                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                renderer->Add(mesh, std::make_shared<ProceduralSkyboxMaterial>());
+                renderer->SetCastShadows(false);
+                renderer->SetReceiveShadows(false);
+                renderer->SetRenderOrder(999);
+                auto settings = renderer->GetSettings(0);
+                settings->cullFace = false;
+                settings->depthTest = false;
                 break;
             }
             case PrimitiveType::Skybox:

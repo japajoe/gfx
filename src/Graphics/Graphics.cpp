@@ -9,6 +9,7 @@
 #include "Shaders/DiffuseShader.hpp"
 #include "Shaders/DepthShader.hpp"
 #include "Shaders/SkyboxShader.hpp"
+#include "Shaders/ProceduralSkyboxShader.hpp"
 #include "../External/glad/glad.h"
 #include "../Core/Application.hpp"
 #include "../Core/Constants.hpp"
@@ -198,10 +199,12 @@ namespace GFX
 		auto diffuseShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDiffuse), DiffuseShader::Create());
 		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
+		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
 		BindShaderToUniformBuffers(skyboxShader);
+		BindShaderToUniformBuffers(proceduralSkyboxShader);
 
 		depthMaterial = std::make_unique<DepthMaterial>();
 

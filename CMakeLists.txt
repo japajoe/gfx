@@ -23,6 +23,10 @@ add_subdirectory(libs/miniaudioex)
 add_subdirectory(libs/freetype)
 add_subdirectory(libs/glm)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	add_definitions(-DNDEBUG)
+endif()
+
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 
 include_directories(

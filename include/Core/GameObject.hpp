@@ -27,6 +27,7 @@ namespace GFX
         Plane,
         Quad,
         ParticleSystem,
+        ProceduralSkybox,
         Skybox,
         Sphere,
         Terrain

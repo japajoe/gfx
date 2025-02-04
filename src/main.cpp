@@ -1,12 +1,12 @@
 #include "Core/Application.hpp"
 #include "Core/FirstPersonCamera.hpp"
+#include "Core/Constants.hpp"
 #include "Core/GameBehaviour.hpp"
 #include "Core/GameObject.hpp"
 #include "Core/Camera.hpp"
 #include "Core/Input.hpp"
 #include "Core/Resources.hpp"
 #include "Core/Time.hpp"
-#include "Graphics/Graphics2D.hpp"
 #include "Graphics/GUI.hpp"
 #include "Graphics/Renderers/MeshRenderer.hpp"
 #include "Graphics/Materials/DiffuseMaterial.hpp"
@@ -32,11 +32,9 @@ protected:
         camera->GetTransform()->SetPosition(Vector3(0, 2, 10));
         camera->GetGameObject()->AddComponent<FirstPersonCamera>();
         
-        font = Resources::FindFont("Default");
+        font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
 
-        auto skybox = GameObject::CreatePrimitive(PrimitiveType::Skybox);
-        auto skyboxMat = skybox->GetComponent<MeshRenderer>()->GetMaterial<SkyboxMaterial>(0);
-        skyboxMat->SetDiffuseColor(Color::SkyBlue());
+        auto skybox = GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
 
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
         cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
@@ -46,36 +44,6 @@ protected:
         auto mat = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
         mat->SetDiffuseColor(Color::Green());
 
-
-    }
-
-    Vector2 CalculateTextSize(const std::string &text, float fontSize)
-    {
-        Vector2 bounds;
-        font->CalculateBounds(text.c_str(), text.length(), fontSize, bounds.x, bounds.y);
-        return bounds;
-    }
-
-    Vector2 CalculateCenteredPosition(const Rectangle &rect, const Vector2 &size)
-    {
-        return Vector2((rect.width - size.x) * 0.5f, (rect.height - size.y) * 0.5f);
-    }
-
-    void RenderText(const Vector2 &position, const std::string &text)
-    {
-        float fontSize = 16;
-        Color bgColor(0.2f, 0.2f, 0.2f, 1.0f);
-        Color fontColor = Color::RayWhite();
-
-        Rectangle rect(position.x, position.y, 200, 32);
-        Vector2 textSize = CalculateTextSize(text, fontSize);
-        rect.width = textSize.x + 10;
-        rect.height = textSize.y + 10;
-        Vector2 size = rect.GetSizeFromRectangle();
-        Vector2 textPosition = position + CalculateCenteredPosition(rect, textSize);
-
-        Graphics2D::AddRectangleRounded(position, size, 0, 5, bgColor);
-        Graphics2D::AddText(textPosition, font, text, fontSize, fontColor, true);
     }
     
     void OnUpdate() override
@@ -92,9 +60,6 @@ protected:
 
         GUI::EndFrame();
 
-
-        //RenderText(Vector2(10, 10), "Hello world");
-
         if(Input::GetKeyDown(KeyCode::Escape))
         {
             Application::Quit();
@@ -107,11 +72,6 @@ protected:
         float z = Time::GetTime();
         auto rotation = Quaternionf::Euler(0, y, y);
         cube->GetTransform()->SetRotation(rotation);
-    }
-
-    void OnGUI() override
-    {
-
     }
 };
 
