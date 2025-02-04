@@ -33,6 +33,8 @@ namespace GFX
         VertexBufferObject *GetVBO();
         ElementBufferObject *GetEBO();
         BoundingBox GetBounds() const;
+        void SetName(const std::string &name);
+        std::string GetName() const;
         void Generate();
         void Delete();
         void RecalculateNormals();
@@ -45,6 +47,7 @@ namespace GFX
         VertexBufferObject VBO;
         ElementBufferObject EBO;
         BoundingBox bounds;
+        std::string name;
         Vector3 SurfaceNormalFromIndices(int32_t indexA, int32_t indexB, int32_t indexC);
     };
 

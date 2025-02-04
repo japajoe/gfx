@@ -13,6 +13,7 @@
 #include "../../System/Numerics/Vector4.hpp"
 #include "../../System/Numerics/Matrix3.hpp"
 #include "../../System/Numerics/Matrix4.hpp"
+#include <string>
 
 namespace GFX
 {
@@ -22,8 +23,11 @@ namespace GFX
 		Material();
 		virtual void Use(Transform *transform, Camera *camera);
 		Shader *GetShader() const;
+		void SetName(const std::string &name);
+		std::string GetName() const;
 	protected:
 		Shader *shader;
+		std::string name;
 	};
 }
 

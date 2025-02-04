@@ -33,6 +33,7 @@ namespace GFX
         VBO = other.VBO;
         EBO = other.EBO;
         bounds = other.bounds;
+        name = other.name;
     }
 
     Mesh::Mesh(Mesh &&other) noexcept
@@ -45,6 +46,7 @@ namespace GFX
         VBO = std::move(other.VBO);
         EBO = std::move(other.EBO);
         bounds = std::move(other.bounds);
+        name = std::move(other.name);
     }
 
     Mesh& Mesh::operator=(const Mesh &other)
@@ -59,6 +61,7 @@ namespace GFX
             VBO = other.VBO;
             EBO = other.EBO;
             bounds = other.bounds;
+            name = other.name;
         }
         return *this;
     }
@@ -75,6 +78,7 @@ namespace GFX
             VBO = std::move(other.VBO);
             EBO = std::move(other.EBO);
             bounds = std::move(other.bounds);
+            name = std::move(other.name);
         }
         return *this;
     }
@@ -192,6 +196,16 @@ namespace GFX
     size_t Mesh::GetIndicesCount() const
     {
         return indices.size();
+    }
+
+    void Mesh::SetName(const std::string &name)
+    {
+        this->name = name;
+    }
+
+    std::string Mesh::GetName() const
+    {
+        return name;
     }
 
     void Mesh::RecalculateNormals()
