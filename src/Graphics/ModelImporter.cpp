@@ -5,9 +5,7 @@
 #include "Materials/DiffuseMaterial.hpp"
 #include "../Core/Resources.hpp"
 #include "../Core/Debug.hpp"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "../External/assimp/assimp.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -114,11 +112,11 @@ namespace GFX
 
             if(aMesh->HasTextureCoords(0))
             {
-                for(size_t i = 0; i < aMesh->mNumVertices; i++)
+                for(size_t j = 0; j < aMesh->mNumVertices; j++)
                 {
-                    auto pos = aMesh->mVertices[i];
-                    auto nrm = aMesh->mNormals[i];
-                    auto uv = aMesh->mTextureCoords[0][i];
+                    auto pos = aMesh->mVertices[j];
+                    auto nrm = aMesh->mNormals[j];
+                    auto uv = aMesh->mTextureCoords[0][j];
 
                     if(flipYZ)
                     {
@@ -128,17 +126,17 @@ namespace GFX
                         pos.z = z;
                     }
 
-                    vertices[i].position = Vector3(pos.x, pos.y, pos.z) * scale;
-                    vertices[i].normal = Vector3(nrm.x, nrm.y, nrm.z);
-                    vertices[i].uv = Vector2(uv.x, uv.y);
+                    vertices[j].position = Vector3(pos.x, pos.y, pos.z) * scale;
+                    vertices[j].normal = Vector3(nrm.x, nrm.y, nrm.z);
+                    vertices[j].uv = Vector2(uv.x, uv.y);
                 }
             }
             else
             {
-                for(size_t i = 0; i < aMesh->mNumVertices; i++)
+                for(size_t j = 0; j < aMesh->mNumVertices; j++)
                 {
-                    auto pos = aMesh->mVertices[i];
-                    auto nrm = aMesh->mNormals[i];
+                    auto pos = aMesh->mVertices[j];
+                    auto nrm = aMesh->mNormals[j];
 
                     if(flipYZ)
                     {
@@ -148,19 +146,22 @@ namespace GFX
                         pos.z = z;
                     }
 
-                    vertices[i].position = Vector3(pos.x, pos.y, pos.z) * scale;
-                    vertices[i].normal = Vector3(nrm.x, nrm.y, nrm.z);
-                    vertices[i].uv = Vector2(0.0f, 0.0f);
+                    vertices[j].position = Vector3(pos.x, pos.y, pos.z) * scale;
+                    vertices[j].normal = Vector3(nrm.x, nrm.y, nrm.z);
+                    vertices[j].uv = Vector2(0.0f, 0.0f);
                 }
             }
 
             std::vector<GLuint> indices;
+            indices.resize(aMesh->mNumFaces * 3);
+            size_t index = 0;
 
-            for(size_t i = 0; i < aMesh->mNumFaces; i++)
+            for(size_t j = 0; j < aMesh->mNumFaces; j++)
             {
-                indices.push_back(aMesh->mFaces[i].mIndices[0]);
-                indices.push_back(aMesh->mFaces[i].mIndices[1]);
-                indices.push_back(aMesh->mFaces[i].mIndices[2]);
+                indices[index+0] = aMesh->mFaces[j].mIndices[0];
+                indices[index+1] = aMesh->mFaces[j].mIndices[1];
+                indices[index+2] = aMesh->mFaces[j].mIndices[2];
+                index += 3;
             }
 
             auto mesh = std::make_shared<Mesh>(vertices, indices, false);
@@ -241,12 +242,15 @@ namespace GFX
             }
 
             std::vector<GLuint> indices;
+            indices.resize(aMesh->mNumFaces * 3);
+            size_t index = 0;
 
             for(size_t j = 0; j < aMesh->mNumFaces; j++)
             {
-                indices.push_back(aMesh->mFaces[j].mIndices[0]);
-                indices.push_back(aMesh->mFaces[j].mIndices[1]);
-                indices.push_back(aMesh->mFaces[j].mIndices[2]);
+                indices[index+0] = aMesh->mFaces[j].mIndices[0];
+                indices[index+1] = aMesh->mFaces[j].mIndices[1];
+                indices[index+2] = aMesh->mFaces[j].mIndices[2];
+                index += 3;
             }
 
             uint32_t materialIndex = aMesh->mMaterialIndex;

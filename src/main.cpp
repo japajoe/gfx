@@ -4,8 +4,6 @@ class GameManager : public GameBehaviour
 {
 private:
     GameObject *cube = nullptr;
-    Texture2D *textureBox = nullptr;
-    Texture2D *textureGrass = nullptr;
     Font *font = nullptr;
 protected:
     void OnInitialize() override
@@ -21,8 +19,8 @@ protected:
         Image imageBox("../res/Box.jpg");
         Image imageGrass("../res/Grass.jpg");
 
-        textureBox = Resources::AddTexture2D("Box.jpg", Texture2D(&imageBox));
-        textureGrass = Resources::AddTexture2D("Grass.jpg", Texture2D(&imageGrass));
+        auto textureBox = Resources::AddTexture2D("Box.jpg", Texture2D(&imageBox));
+        auto textureGrass = Resources::AddTexture2D("Grass.jpg", Texture2D(&imageGrass));
 
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
         cube->GetTransform()->SetPosition(Vector3(0, 2, 0));

@@ -56,6 +56,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/Audio/DSP"
 	"${PROJECT_SOURCE_DIR}/include/Core"
 	"${PROJECT_SOURCE_DIR}/include/Embedded"
+	"${PROJECT_SOURCE_DIR}/include/External/assimp"
 	"${PROJECT_SOURCE_DIR}/include/External/glad"
 	"${PROJECT_SOURCE_DIR}/include/External/glfw"
 	"${PROJECT_SOURCE_DIR}/include/External/imgui"
@@ -69,6 +70,8 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/System/Collections"
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
 )
+
+add_definitions(-DNDEBUG)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
