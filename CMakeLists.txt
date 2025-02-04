@@ -11,6 +11,13 @@ set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 
 # miniaudioex settings
 set(MINIAUDIOEX_BUILD_SHARED OFF CACHE BOOL "Build miniaudioex shared library")
+if(UNIX AND NOT APPLE)
+	set(MINIAUDIOEX_BUILD_PLATFORM "linux_x86_64")
+elseif(APPLE)
+	set(MINIAUDIOEX_BUILD_PLATFORM "mac")
+elseif(WIN32)
+	set(MINIAUDIOEX_BUILD_PLATFORM "windows")
+endif()
 
 # freetype settings
 set(FT_DISABLE_ZLIB ON CACHE BOOL "Disable use of system zlib and use internal zlib library instead")

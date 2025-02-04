@@ -1,21 +1,4 @@
-#include "Core/Application.hpp"
-#include "Core/FirstPersonCamera.hpp"
-#include "Core/Constants.hpp"
-#include "Core/GameBehaviour.hpp"
-#include "Core/GameObject.hpp"
-#include "Core/Camera.hpp"
-#include "Core/Input.hpp"
-#include "Core/Resources.hpp"
-#include "Core/Time.hpp"
-#include "Graphics/Renderers/MeshRenderer.hpp"
-#include "Graphics/Materials/DiffuseMaterial.hpp"
-#include "Graphics/Materials/SkyboxMaterial.hpp"
-#include "Audio/AudioSource.hpp"
-#include "Audio/AudioClip.hpp"
-#include "External/imgui/imgui.h"
-#include "System/Numerics/Quaternion.hpp"
-
-using namespace GFX;
+#include "GFX.hpp"
 
 class GameManager : public GameBehaviour
 {
@@ -23,6 +6,7 @@ private:
     GameObject *cube = nullptr;
     Texture2D *textureBox = nullptr;
     Texture2D *textureGrass = nullptr;
+    Font *font = nullptr;
 protected:
     void OnInitialize() override
     {
@@ -51,7 +35,7 @@ protected:
         planeMaterial->SetDiffuseTexture(textureGrass);
         planeMaterial->SetUVScale(Vector2(200, 200));
         
-
+        font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
     }
     
     void OnUpdate() override
@@ -70,6 +54,10 @@ protected:
         float z = Time::GetTime();
         auto rotation = Quaternionf::Euler(0, y, y);
         cube->GetTransform()->SetRotation(rotation);
+
+        std::string fps = std::to_string(Time::GetFPS());
+
+        Graphics2D::AddText(Vector2(10, 10), font, fps, 22, Color::White(), false);
     }
 
     void OnGUI() override
