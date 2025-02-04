@@ -7,7 +7,6 @@
 #include "Core/Input.hpp"
 #include "Core/Resources.hpp"
 #include "Core/Time.hpp"
-#include "Graphics/GUI.hpp"
 #include "Graphics/Renderers/MeshRenderer.hpp"
 #include "Graphics/Materials/DiffuseMaterial.hpp"
 #include "Graphics/Materials/SkyboxMaterial.hpp"
@@ -21,8 +20,9 @@ using namespace GFX;
 class GameManager : public GameBehaviour
 {
 private:
-    Font *font;
     GameObject *cube = nullptr;
+    Texture2D *textureBox = nullptr;
+    Texture2D *textureGrass = nullptr;
 protected:
     void OnInitialize() override
     {
@@ -32,46 +32,49 @@ protected:
         camera->GetTransform()->SetPosition(Vector3(0, 2, 10));
         camera->GetGameObject()->AddComponent<FirstPersonCamera>();
         
-        font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
-
         auto skybox = GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
+
+        Image imageBox("../res/Box.jpg");
+        Image imageGrass("../res/Grass.jpg");
+
+        textureBox = Resources::AddTexture2D("Box.jpg", Texture2D(&imageBox));
+        textureGrass = Resources::AddTexture2D("Grass.jpg", Texture2D(&imageGrass));
 
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
         cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
+        auto cubeMaterial = cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
+        cubeMaterial->SetDiffuseTexture(textureBox);
 
         auto plane = GameObject::CreatePrimitive(PrimitiveType::Plane);
         plane->GetTransform()->SetScale(Vector3(1000, 1, 1000));
-        auto mat = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
-        mat->SetDiffuseColor(Color::Green());
+        auto planeMaterial = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
+        planeMaterial->SetDiffuseTexture(textureGrass);
+        planeMaterial->SetUVScale(Vector2(200, 200));
+        
 
     }
     
     void OnUpdate() override
     {
-        if(font == nullptr)
-            return;
-
-        GUI::BeginFrame();
-        
-        if(GUI::Button(Rectangle(10, 10, 100, 20), "Hello world"))
-        {
-            printf("Button clicked\n");
-        }
-
-        GUI::EndFrame();
-
         if(Input::GetKeyDown(KeyCode::Escape))
         {
             Application::Quit();
         }
 
-        if(!cube)
-            return;
+        if(Input::GetKeyDown(KeyCode::C))
+        {
+            Input::SetMouseCursor(!Input::IsCursorVisible());
+        }
 
         float y = Time::GetTime();
         float z = Time::GetTime();
         auto rotation = Quaternionf::Euler(0, y, y);
         cube->GetTransform()->SetRotation(rotation);
+    }
+
+    void OnGUI() override
+    {
+
     }
 };
 
