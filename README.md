@@ -10,8 +10,13 @@ A game development framework that aims to be cross-platform. The objective isn't
 
 # Building
 `git clone https://github.com/japajoe/gfx`
+
 `git submodule update --init --recursive`
+
 `mkdir build`
+
 `cd build`
+
 `cmake ..`
+
 `cmake --build`
