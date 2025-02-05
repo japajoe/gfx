@@ -1,4 +1,5 @@
 #include "GFX.hpp"
+#include "SnakeGame.hpp"
 
 class GameManager : public GameBehaviour
 {
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
     
     application.loaded = [] () {
         auto g = GameObject::Create();
-        g->AddComponent<GameManager>();        
+        g->AddComponent<SnakeGame>();        
     };
     
     application.Run();

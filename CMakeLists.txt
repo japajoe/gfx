@@ -77,8 +77,6 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
 )
 
-add_definitions(-DNDEBUG)
-
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw miniaudioex freetype glm assimp)
