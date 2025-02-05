@@ -16,7 +16,7 @@ namespace GFX
 	Font *GUI::font = nullptr;
 	float GUI::fontSize = 14;
 
-	static Color NormalColor(0.7f, 0.7f, 0.7f);
+	static Color NormalColor = Color::DarkGray();
 	static Color HoverColor(0.8f, 0.8f, 0.8f);
 	static Color ActiveColor(0.5f, 0.5f, 0.5f);
 	static Color FocusedColor(0.3f, 0.5f, 0.8f);

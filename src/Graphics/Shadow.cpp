@@ -21,16 +21,21 @@ namespace GFX
 
 	void Shadow::Generate()
 	{
-		depthMap = Resources::FindTexture3D(Constants::GetString(ConstantString::TextureDepth));
+        size_t cascadeCount = 4;
+        depthMap = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, cascadeCount + 1));
+        depthMap->ObjectLabel("TextureDepth");
+
 		camera = Camera::GetMain();
 		light = Light::GetMain();
 
 		float farPlane = 1000.0f;
 
-        shadowCascadeLevels = 
-        { 
-            farPlane / 50.0f, farPlane / 25.0f, farPlane / 10.0f, farPlane / 2.0f 
-        };
+        shadowCascadeLevels.resize(cascadeCount);
+        
+        shadowCascadeLevels[0] = farPlane / 50.0f;
+        shadowCascadeLevels[1] = farPlane / 25.0f;
+        shadowCascadeLevels[2] = farPlane / 10.0f;
+        shadowCascadeLevels[3] = farPlane / 2.0f;
 
 		shadowData.cascadeCount = shadowCascadeLevels.size();
 		shadowData.farPlane = farPlane;
@@ -207,11 +212,6 @@ namespace GFX
 		shadowData.shadowBias = 0.005f;
 		shadowData.cascadeCount = shadowCascadeLevels.size();
 		shadowData.enabled = enabled ? 1 : 0;
-
-        // shadowCascadeLevels[0] = farPlane / 50.0f;
-        // shadowCascadeLevels[1] = farPlane / 25.0f;
-        // shadowCascadeLevels[2] = farPlane / 10.0f;
-        // shadowCascadeLevels[3] = farPlane / 2.0f;
 
         for(size_t i = 0; i < lightMatrices.size(); i++)
         {

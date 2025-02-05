@@ -215,11 +215,11 @@ namespace GFX
 	{
 		//Create default textures
 		auto defaultTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
-		auto depthTexture = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
+		//auto depthTexture = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
 		auto defaultCubemap = Resources::AddTextureCubeMap(Constants::GetString(ConstantString::TextureDefaultCubeMap), TextureCubeMap(2, 2, Color::White()));
 
 		defaultTexture->ObjectLabel("TextureDefault");
-		depthTexture->ObjectLabel("TextureDepth");
+		//depthTexture->ObjectLabel("TextureDepth");
 		defaultCubemap->ObjectLabel("TextureDefaultCubeMap");
 	}
 

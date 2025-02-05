@@ -24,6 +24,7 @@ protected:
 
         cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
         cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
+        cube->GetTransform()->SetScale(Vector3(1, 1, 1));
         auto cubeMaterial = cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
         cubeMaterial->SetDiffuseTexture(textureBox);
 
@@ -55,7 +56,11 @@ protected:
 
         std::string fps = std::to_string(Time::GetFPS());
 
-        Graphics2D::AddText(Vector2(10, 10), font, fps, 22, Color::White(), false);
+        GUI::BeginFrame();
+        GUI::Button(Rectangle(10, 10, 100, 20), fps);
+        GUI::EndFrame();
+
+        //Graphics2D::AddText(Vector2(10, 10), font, fps, 22, Color::White(), false);
     }
 
     void OnGUI() override
