@@ -182,4 +182,14 @@ namespace GFX
 	{
 		return mouse.IsCursorVisible();
 	}
+
+	Keyboard *Input::GetKeyboard()
+	{
+		return &keyboard;
+	}
+
+	Mouse *Input::GetMouse()
+	{
+		return &mouse;
+	}
 }

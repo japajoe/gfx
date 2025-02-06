@@ -1,3 +1,6 @@
+#ifndef GFX_INPUT_HPP
+#define GFX_INPUT_HPP
+
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include "../External/glm/glm.hpp"
@@ -59,5 +62,9 @@ namespace GFX
         static Vector2 GetMouseDelta();
         static void SetMouseCursor(bool visible);
         static bool IsCursorVisible();
+        static Keyboard *GetKeyboard();
+        static Mouse *GetMouse();
     };
 }
+
+#endif

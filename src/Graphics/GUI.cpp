@@ -1,26 +1,21 @@
 #include "GUI.hpp"
-#include "Font.hpp"
-#include "../Core/Resources.hpp"
 #include "../Core/Constants.hpp"
-#include "../Core/Input.hpp"
+#include "../Core/Resources.hpp"
+#include "Graphics2D.hpp"
 
 namespace GFX
 {
-	struct InputState 
-	{
-		bool mouseDown;
-		bool mousePressed;
-		int mouseX, mouseY;
-	};
-
-	Font *GUI::font = nullptr;
-	float GUI::fontSize = 14;
-
-	static Color NormalColor = Color::DarkGray();
-	static Color HoverColor(0.8f, 0.8f, 0.8f);
-	static Color ActiveColor(0.5f, 0.5f, 0.5f);
-	static Color FocusedColor(0.3f, 0.5f, 0.8f);
-	static Vector2 TextPadding(5, 5);
+	int64_t GUI::id = 0;
+	int64_t GUI::activeId = -1;
+	int64_t GUI::hoveredId = -1;
+	int64_t GUI::lastHoveredId = -1;
+	int64_t GUI::focusedId = -1;
+	bool GUI::mousePressed = false;
+	bool GUI::mouseDown = false;
+	bool GUI::mouseUp = false;
+	Font *GUI::font;
+	GUIStyle GUI::style;
+	ItemBuffer<char> GUI::keyCommandBuffer;
 
 	static int64_t GetId(const void *data, size_t size) 
 	{
@@ -37,67 +32,98 @@ namespace GFX
 		return hash;
 	}
 
+	void GUI::Initialize()
+	{
+		if(font != nullptr)
+			return;
+
+		font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
+
+		Input::GetKeyboard()->onKeyDown += OnKeyDown;
+		Input::GetKeyboard()->onKeyRepeat += OnKeyRepeat;
+		Input::GetKeyboard()->onCharPress += OnCharPress;
+	}
+
 	void GUI::BeginFrame()
 	{
-		if(font == nullptr)
-			font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
-
-		if(font == nullptr)
-			return;
+		id = 0;
+		hoveredId = 0;
+		mousePressed = Input::GetButton(ButtonCode::Left);
+		mouseDown = Input::GetButtonDown(ButtonCode::Left);
+		mouseUp = Input::GetButtonUp(ButtonCode::Left);
 	}
 
 	void GUI::EndFrame()
 	{
-
-	}
-
-	bool GUI::Button(const Rectangle &rect, const std::string &text)
-	{
-		int64_t id = GetId(text.c_str(), text.size());
-		bool hovered = rect.Contains(GetMousePosition());
-		bool clicked = false;
-
-		if (hovered && IsMouseReleased())
+		if(!IsMousePressed())
 		{
-			clicked = true;
+			activeId = 0;
 		}
 
-		Vector2 position = GetPositionFromRectangle(rect);
-		Vector2 textSize = CalculateTextSize(text, fontSize);
-		Vector2 textPosition = position + CalculateCenteredPosition(rect, textSize);
-
-		Color bgColor = hovered ? (IsMouseDown ? ActiveColor : HoverColor) : NormalColor;
-		DrawRectangle(rect, bgColor, 4.0);
-		DrawText(textPosition, rect, Color::White(), text, fontSize);
-
-		return clicked;
+		keyCommandBuffer.reset();
 	}
 
-	void GUI::DrawRectangle(const Rectangle &rect, const Color &color, float rounding)
+	bool GUI::IsMousePressed()
 	{
-		Vector2 position = GetPositionFromRectangle(rect);
-		Vector2 size = GetSizeFromRectangle(rect);
-		if(rounding > 0)
-			Graphics2D::AddRectangleRounded(position, size, 0, rounding, color);
+		return mousePressed;
+	}
+
+	bool GUI::IsMouseDown()
+	{
+		return mouseDown;
+	}
+
+	bool GUI::IsMouseUp()
+	{
+		return mouseUp;
+	}
+
+	void GUI::SetHoveredState(int64_t currentId, bool hovered, bool isMouseDown)
+	{
+		if(focusedId > 0 && focusedId != currentId)
+			return;
+
+		if(hovered)
+		{
+			hoveredId = currentId;
+
+			if(lastHoveredId != hoveredId)
+			{
+				lastHoveredId = hoveredId;
+			}
+		}
 		else
-			Graphics2D::AddRectangle(position, size, 0, color);
+		{
+			if(lastHoveredId == currentId)
+			{
+				lastHoveredId = -1;
+			}
+		}
 	}
 
-	void GUI::DrawText(const Vector2 &position, const Rectangle &clippingRect, const Color &color, const std::string &text, float fontSize)
+	bool GUI::SetActiveState(int64_t currentId, bool hovered, bool isMouseDown)
 	{
-		Graphics2D::AddText(position, font, text, fontSize, color, false, clippingRect);
+		if(hovered)
+		{
+			if(activeId == 0 && isMouseDown)
+			{
+				activeId = currentId;
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
-	Vector2 GUI::CalculateTextSize(const std::string &text, float fontSize)
+	bool GUI::IsActive(int64_t id)
 	{
-		Vector2 bounds;
-		font->CalculateBounds(text.c_str(), text.size(), fontSize, bounds.x, bounds.y);
-		return bounds;
+		return id == activeId;
 	}
 
-	Vector2 GUI::CalculateCenteredPosition(const Rectangle &rect, Vector2 size)
+	bool GUI::IsHovered(int64_t id)
 	{
-		return Vector2((rect.width - size.x) * 0.5f, (rect.height - size.y) * 0.5f);
+		return id == hoveredId;
 	}
 
 	Vector2 GUI::GetPositionFromRectangle(const Rectangle &rect)
@@ -110,23 +136,95 @@ namespace GFX
 		return Vector2(rect.width, rect.height);
 	}
 
-	Vector2 GUI::GetMousePosition()
+	Vector2 GUI::CalculateTextSize(const std::string &text, float fontSize)
 	{
-		return Input::GetMousePosition();
+		Vector2 bounds;
+		font->CalculateBounds(text.c_str(), text.size(), fontSize, bounds.x, bounds.y);
+		return bounds;
 	}
 
-	bool GUI::IsMouseDown()
+	Vector2 GUI::CalculateCenteredPosition(const Rectangle &rect, const Vector2 &size)
 	{
-		return Input::GetButtonDown(ButtonCode::Left);
+		return Vector2((rect.width - size.x) * 0.5f, (rect.height - size.y) * 0.5f);
 	}
 
-	bool GUI::IsMouseHeld()
+	bool GUI::IsMouseHovered(const Rectangle &rect)
 	{
-		return Input::GetButton(ButtonCode::Left);
+		return rect.Contains(Input::GetMousePosition());
 	}
 
-	bool GUI::IsMouseReleased()
+	bool GUI::Button(const Rectangle &rect, const std::string &text)
 	{
-		return Input::GetButtonUp(ButtonCode::Left);
+		Initialize();
+
+		int64_t currentId = GetId(&rect, sizeof(Rectangle));
+		bool hovered = rect.Contains(Input::GetMousePosition());
+		bool mouseDown = IsMousePressed();
+		bool mouseUp = IsMouseUp();
+
+		SetHoveredState(currentId, hovered, mouseDown);
+		SetActiveState(currentId, hovered, mouseDown);
+
+		Color buttonColor = style.GetColor(GUIColor_ButtonNormal);
+
+		if(IsActive(currentId))
+		{
+			if(IsHovered(currentId) && IsActive(currentId))
+			{
+				buttonColor = style.GetColor(GUIColor_ButtonActive);
+			}
+			else if(IsActive(currentId))
+			{
+				buttonColor = style.GetColor(GUIColor_ButtonActive);
+			}
+			else if(IsHovered(currentId))
+			{
+				buttonColor = style.GetColor(GUIColor_ButtonHovered);
+			}
+			else
+			{
+				buttonColor = style.GetColor(GUIColor_ButtonNormal);
+			}
+		}
+		else
+		{
+			if(IsHovered(currentId))
+			{
+				buttonColor = style.GetColor(GUIColor_ButtonHovered);
+			}
+		}
+
+		Vector2 buttonPosition = GetPositionFromRectangle(rect);
+		Vector2 buttonSize = GetSizeFromRectangle(rect);
+		Vector2 textSize = CalculateTextSize(text, style.fontSize);
+		Vector2 textPosition = buttonPosition + CalculateCenteredPosition(rect, textSize);
+
+		if(style.buttonRounding > 0)
+			Graphics2D::AddRectangleRounded(buttonPosition, buttonSize, 0, style.buttonRounding, buttonColor);
+		else
+			Graphics2D::AddRectangle(buttonPosition, buttonSize, 0, buttonColor);
+
+		Color textColor = style.GetColor(GUIColor_Text);
+		
+		Graphics2D::AddText(textPosition, font, text, style.fontSize, textColor, false, rect);
+
+		if(hoveredId == currentId && activeId == currentId && mouseUp)
+			return true;
+		return false;
+	}
+
+	void GUI::OnCharPress(uint32_t codepoint)
+	{
+
+	}
+
+	void GUI::OnKeyDown(KeyCode keycode)
+	{
+
+	}
+
+	void GUI::OnKeyRepeat(KeyCode keycode)
+	{
+
 	}
 }

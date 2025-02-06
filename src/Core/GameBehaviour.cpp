@@ -44,6 +44,16 @@ namespace GFX
 
     }
 
+    void GameBehaviour::OnResourceLoadedAsync(const Resource &resource)
+    {
+
+    }
+
+    void GameBehaviour::OnResourceBatchLoadedAsync(const ResourceBatch &resourceBatch)
+    {
+
+    }
+
     std::vector<GameBehaviour*> GameBehaviour::behaviours;
 
     void GameBehaviour::AddBehaviour(GameBehaviour *behaviour)
@@ -88,6 +98,22 @@ namespace GFX
 	{
 		OnBehaviourEndFrame();
 	}
+
+    void GameBehaviour::OnBehaviourResourceLoadedAsync(const Resource &info)
+    {
+        for(size_t i = 0; i < behaviours.size(); i++)
+        {
+            behaviours[i]->OnResourceLoadedAsync(info);
+        }
+    }
+
+    void GameBehaviour::OnBehaviourResourceBatchLoadedAsync(const ResourceBatch &resourceBatch)
+    {
+        for(size_t i = 0; i < behaviours.size(); i++)
+        {
+            behaviours[i]->OnResourceBatchLoadedAsync(resourceBatch);
+        }
+    }
 
     void GameBehaviour::OnBehaviourApplicationQuit()
     {

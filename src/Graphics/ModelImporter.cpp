@@ -5,6 +5,7 @@
 #include "Materials/DiffuseMaterial.hpp"
 #include "../Core/Resources.hpp"
 #include "../Core/Debug.hpp"
+#include "../Core/Constants.hpp"
 #include "../External/assimp/assimp.hpp"
 #include <iostream>
 #include <filesystem>
@@ -187,7 +188,7 @@ namespace GFX
             renderer = parent->AddComponent<MeshRenderer>();
         }
 
-        auto texture = Resources::FindTexture2D("Default");
+        auto texture = Resources::FindTexture2D(Constants::GetString(ConstantString::TextureDefault));
 
         // Process all meshes in the current node
         for (size_t i = 0; i < node->mNumMeshes; i++) 
@@ -254,7 +255,7 @@ namespace GFX
             }
 
             uint32_t materialIndex = aMesh->mMaterialIndex;
-            aiMaterial* aMaterial = scene->mMaterials[materialIndex];
+            aiMaterial *aMaterial = scene->mMaterials[materialIndex];
 
             auto mesh = std::make_shared<Mesh>(vertices, indices, false);
             mesh->Generate();

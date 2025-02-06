@@ -4,6 +4,7 @@
 #include "../System/Numerics/Vector2.hpp"
 #include "../System/Numerics/Vector3.hpp"
 #include "../System/Numerics/Vector4.hpp"
+#include "Rectangle.hpp"
 
 namespace GFX
 {
@@ -14,7 +15,7 @@ namespace GFX
         float length;
         Ray();
         Ray(const Vector3 &origin, const Vector3 &direction, float length);
-        static Ray FromMousePosition(const Vector2 &mousePosition, const Vector4 &viewportRect);
+        static Ray FromMousePosition(const Vector2 &mousePosition, const Rectangle &viewportRect);
     };
 }
 

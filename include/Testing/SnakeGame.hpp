@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
-#include "GFX.hpp"
+#include "../GFX.hpp"
 
 class SnakeGame : public GameBehaviour
 {

@@ -4,6 +4,7 @@
 #include "../External/imgui/ImGuiManager.hpp"
 #include "../External/glad/glad.h"
 #include "../System/EventHandler.hpp"
+#include "Renderers/Renderer.hpp"
 #include "Shadow.hpp"
 #include "Rectangle.hpp"
 #include <cstdint>
@@ -16,13 +17,7 @@ namespace GFX
 	using WindowResizeEvent = std::function<void(uint32_t width, uint32_t height)>;
 
 	class Shader;
-	class Renderer;
 	class DepthMaterial;
-
-    struct CompareRendererOrder 
-    {
-        bool operator()(const Renderer *lhs, const Renderer *rhs) const;
-    };
 
 	class Graphics
 	{
@@ -33,7 +28,7 @@ namespace GFX
 		static Shadow shadow;
 		static std::unique_ptr<DepthMaterial> depthMaterial;
 		static std::vector<Renderer*> renderers;
-		static std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> renderQueue;
+		static std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRenderer> renderQueue;
 		static void Initialize(uint32_t width, uint32_t height);
 		static void Deinitialize();
 		static void NewFrame();
@@ -54,6 +49,7 @@ namespace GFX
 		static Rectangle GetViewport();
 		static void Add(Renderer *renderer);
 		static void Remove(Renderer *renderer);
+		static Renderer *GetRendererByIndex(size_t index);
 	};
 }
 

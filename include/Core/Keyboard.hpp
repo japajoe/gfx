@@ -1,6 +1,7 @@
 #ifndef GFX_KEYBOARD_HPP
 #define GFX_KEYBOARD_HPP
 
+#include "../System/EventHandler.hpp"
 #include <cstdint>
 #include <unordered_map>
 #include <functional>
@@ -289,11 +290,11 @@ namespace GFX
     class Keyboard 
 	{
     public:
-        KeyboardCharPressEvent onCharPress;
-        KeyboardKeyDownEvent onKeyDown;
-        KeyboardKeyUpEvent onKeyUp;
-        KeyboardKeyPressEvent onKeyPress;
-        KeyboardKeyRepeatEvent onKeyRepeat;
+        EventHandler<KeyboardCharPressEvent> onCharPress;
+        EventHandler<KeyboardKeyDownEvent> onKeyDown;
+        EventHandler<KeyboardKeyUpEvent> onKeyUp;
+        EventHandler<KeyboardKeyPressEvent> onKeyPress;
+        EventHandler<KeyboardKeyRepeatEvent> onKeyRepeat;
         Keyboard();
         Keyboard(const Keyboard &other);
         Keyboard(Keyboard &&other) noexcept;

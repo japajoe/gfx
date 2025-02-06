@@ -52,6 +52,8 @@ add_subdirectory(libs/assimp)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_definitions(-DNDEBUG)
+else()
+	add_definitions(-DGFX_DEBUG_LOGGING)
 endif()
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
@@ -72,9 +74,12 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Shaders"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Materials"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Renderers"
+	"${PROJECT_SOURCE_DIR}/include/Physics"
 	"${PROJECT_SOURCE_DIR}/include/System"
 	"${PROJECT_SOURCE_DIR}/include/System/Collections"
+	"${PROJECT_SOURCE_DIR}/include/System/IO"
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
+	"${PROJECT_SOURCE_DIR}/include/Testing"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

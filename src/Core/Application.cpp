@@ -7,6 +7,7 @@
 #include "Input.hpp"
 #include "Time.hpp"
 #include "GameBehaviour.hpp"
+#include "Resources.hpp"
 #include <iostream>
 
 namespace GFX
@@ -237,6 +238,7 @@ namespace GFX
 	{
         Time::NewFrame();
         Input::NewFrame();
+        Resources::NewFrame();
         GameBehaviour::NewFrame();
         Audio::NewFrame();
         Graphics::NewFrame();

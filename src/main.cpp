@@ -1,74 +1,7 @@
 #include "GFX.hpp"
-#include "SnakeGame.hpp"
+#include "Testing/GameManager.hpp"
 
-class GameManager : public GameBehaviour
-{
-private:
-    GameObject *cube = nullptr;
-    Font *font = nullptr;
-protected:
-    void OnInitialize() override
-    {
-        auto camera = Camera::GetMain();
-        camera->SetFarClippingPlane(10000);
-        camera->SetClearColor(Color::White());
-        camera->GetTransform()->SetPosition(Vector3(0, 2, 10));
-        camera->GetGameObject()->AddComponent<FirstPersonCamera>();
-        
-        auto skybox = GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
-
-        Image imageBox("../res/Box.jpg");
-        Image imageGrass("../res/Grass.jpg");
-
-        auto textureBox = Resources::AddTexture2D("Box.jpg", Texture2D(&imageBox));
-        auto textureGrass = Resources::AddTexture2D("Grass.jpg", Texture2D(&imageGrass));
-
-        cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
-        cube->GetTransform()->SetPosition(Vector3(0, 2, 0));
-        cube->GetTransform()->SetScale(Vector3(1, 1, 1));
-        auto cubeMaterial = cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
-        cubeMaterial->SetDiffuseTexture(textureBox);
-
-        auto plane = GameObject::CreatePrimitive(PrimitiveType::Plane);
-        plane->GetTransform()->SetScale(Vector3(1000, 1, 1000));
-        auto planeMaterial = plane->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0);
-        planeMaterial->SetDiffuseTexture(textureGrass);
-        planeMaterial->SetUVScale(Vector2(200, 200));
-        
-        font = Resources::FindFont(Constants::GetString(ConstantString::FontDefault));
-    }
-    
-    void OnUpdate() override
-    {
-        if(Input::GetKeyDown(KeyCode::Escape))
-        {
-            Application::Quit();
-        }
-
-        if(Input::GetKeyDown(KeyCode::C))
-        {
-            Input::SetMouseCursor(!Input::IsCursorVisible());
-        }
-
-        float y = Time::GetTime();
-        float z = Time::GetTime();
-        auto rotation = Quaternionf::Euler(0, y, y);
-        cube->GetTransform()->SetRotation(rotation);
-
-        std::string fps = std::to_string(Time::GetFPS());
-
-        GUI::BeginFrame();
-        GUI::Button(Rectangle(10, 10, 100, 20), fps);
-        GUI::EndFrame();
-
-        //Graphics2D::AddText(Vector2(10, 10), font, fps, 22, Color::White(), false);
-    }
-
-    void OnGUI() override
-    {
-
-    }
-};
+void CreateAssetPack();
 
 int main(int argc, char **argv) 
 {
@@ -76,9 +9,45 @@ int main(int argc, char **argv)
     
     application.loaded = [] () {
         auto g = GameObject::Create();
-        g->AddComponent<SnakeGame>();        
+        g->AddComponent<GameManager>();        
     };
     
     application.Run();
     return 0;
+}
+
+void CreateAssetPack()
+{
+    AssetPack assetPack;
+    assetPack.AddFile("Resources/Audio/unhappy-drone-67284.wav");
+    assetPack.AddFile("Resources/Audio/click1.mp3");
+    assetPack.AddFile("Resources/Audio/click2.mp3");
+    assetPack.AddFile("Resources/Audio/Fire.wav");
+    assetPack.AddFile("Resources/Fonts/SF Sports Night.ttf");
+    assetPack.AddFile("Resources/Shaders/BasicV.glsl");
+    assetPack.AddFile("Resources/Shaders/FireF.glsl");
+    assetPack.AddFile("Resources/Textures/Box.jpg");
+    assetPack.AddFile("Resources/Textures/Grass.jpg");
+    assetPack.AddFile("Resources/Textures/billboardgrass0002.png");
+    assetPack.AddFile("Resources/Textures/RedFlower.png");
+    assetPack.AddFile("Resources/Textures/YellowFlower.png");
+    assetPack.AddFile("Resources/Textures/coast_sand_rocks_02_diff_1k.jpg");
+    assetPack.AddFile("Resources/Textures/forrest_ground_01_diff_1k.jpg");
+    assetPack.AddFile("Resources/Textures/Mud.png");
+    assetPack.AddFile("Resources/Textures/Splatmap.jpg");
+    assetPack.AddFile("Resources/Textures/logo.png");
+    assetPack.AddFile("Resources/Textures/smoke_04.png");
+    assetPack.AddFile("Resources/Textures/Water.jpg");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/right.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/left.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/bottom.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/top.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/front.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/back.png");
+    assetPack.AddFile("Resources/Textures/Skyboxes/Sahara/back.png");
+
+    if(assetPack.Save("../res/assets.dat", "assets.dat"))
+    {
+        printf("Asset pack saved\n");
+    }
 }

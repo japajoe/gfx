@@ -43,6 +43,14 @@ namespace GFX
         void SetRenderOrder(uint32_t order);
         uint32_t GetRenderOrder() const;
     };
+
+    struct CompareRenderer 
+    {
+        bool operator()(const Renderer *a, const Renderer *b) const 
+        {
+            return a->GetRenderOrder() > b->GetRenderOrder(); // Lower queuePosition has higher priority
+        }
+    };
 }
 
 #endif

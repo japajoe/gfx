@@ -18,24 +18,24 @@ namespace GFX
         this->length = length;
     }
 
-    Ray Ray::FromMousePosition(const Vector2 &mousePosition, const Vector4 &viewportRect)
+    Ray Ray::FromMousePosition(const Vector2 &mousePosition, const Rectangle &viewportRect)
     {
         Vector2 viewportPosition(viewportRect.x, viewportRect.y);
         Vector2 relativeMousePosition = mousePosition - viewportPosition;
 
         float mouseX = relativeMousePosition.x;
-        float mouseY = viewportRect.w - relativeMousePosition.y;
+        float mouseY = viewportRect.height - relativeMousePosition.y;
 
         Vector4 rayStartNDC(
-            (mouseX / viewportRect.z - 0.5f) * 2.0f,  // [0,1024] -> [-1,1]
-            (mouseY / viewportRect.w - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
+            (mouseX / viewportRect.width - 0.5f) * 2.0f,  // [0,1024] -> [-1,1]
+            (mouseY / viewportRect.height - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
             -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
             1.0f
         );
 
         Vector4 rayEndNDC(
-            (mouseX /  viewportRect.z - 0.5f) * 2.0f,
-            (mouseY /  viewportRect.w - 0.5f) * 2.0f,
+            (mouseX /  viewportRect.width - 0.5f) * 2.0f,
+            (mouseY /  viewportRect.height - 0.5f) * 2.0f,
             0.0,
             1.0f
         );

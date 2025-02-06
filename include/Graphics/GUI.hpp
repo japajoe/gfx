@@ -1,34 +1,143 @@
 #ifndef GFX_GUI_HPP
 #define GFX_GUI_HPP
 
-#include <cstdint>
+#include "Font.hpp"
 #include "Rectangle.hpp"
-#include "Graphics2D.hpp"
+#include "Color.hpp"
+#include "../System/Numerics/Vector2.hpp"
+#include "../Core/Input.hpp"
+#include <cstdint>
 #include <string>
 
 namespace GFX
 {
-	class Font;
+    enum GUIColor
+    {
+        GUIColor_ButtonNormal,
+        GUIColor_ButtonHovered,
+        GUIColor_ButtonActive,
+        GUIColor_FrameNormal,
+        GUIColor_FrameHovered,
+        GUIColor_FrameActive,
+        GUIColor_DragNormal,
+        GUIColor_DragHovered,
+        GUIColor_DragActive,
+        GUIColor_Text,
+        GUIColor_Count
+    };
+
+	template<typename T>
+	class ItemBuffer
+	{
+	private:
+		std::vector<T> items;
+		size_t itemCount;
+	public:
+		size_t count() const
+		{
+			return itemCount;
+		}
+
+		ItemBuffer()
+		{
+			items.resize(16);
+			itemCount = 0;
+		}
+
+		void reset()
+		{
+			itemCount = 0;
+		}
+
+		void add(const T &item)
+		{
+			if(itemCount >= items.size())
+			{
+				size_t newCapacity = items.size() * 2;
+				items.resize(newCapacity);
+			}
+
+			items[itemCount++] = item;
+		}
+
+		bool get(size_t index, T &item)
+		{
+			if(index < items.size())
+			{
+				item = items[index];
+				return true;
+			}
+			return false;
+		}
+	};
+
+    struct GUIStyle
+    {
+        Color colors[GUIColor_Count];
+        float buttonRounding;
+        float frameRounding;
+        float dragRounding;
+        float fontSize;
+
+        GUIStyle()
+        {
+            colors[GUIColor_ButtonNormal] = Color(0.20f, 0.20f, 0.20f, 1.00f);
+            colors[GUIColor_ButtonHovered] = Color(0.24f, 0.24f, 0.24f, 1.00f);
+            colors[GUIColor_ButtonActive] = Color(0.28f, 0.28f, 0.28f, 1.00f);
+            colors[GUIColor_FrameNormal] = Color(0.20f, 0.20f, 0.20f, 1.00f);
+            colors[GUIColor_FrameHovered] = Color(0.24f, 0.24f, 0.24f, 1.00f);
+            colors[GUIColor_FrameActive] = Color(0.28f, 0.28f, 0.28f, 1.00f);
+            colors[GUIColor_DragNormal] = Color(0.48f, 0.48f, 0.48f, 1.00f);
+            colors[GUIColor_DragHovered] = Color::SkyBlue();
+            colors[GUIColor_DragActive] = Color::SkyBlue();
+            colors[GUIColor_Text] = Color::White();
+
+            buttonRounding = 3.0f;
+            frameRounding = 3.0f;
+            fontSize = 12.0f;
+            dragRounding = 3.0f;
+        }
+
+        Color GetColor(GUIColor color) const
+        {
+            return colors[color];
+        }
+    };
 
 	class GUI
 	{
+	private:
+        static int64_t id;
+        static int64_t activeId;
+        static int64_t hoveredId;
+        static int64_t lastHoveredId;
+        static int64_t focusedId;
+        static bool mousePressed;
+        static bool mouseDown;
+        static bool mouseUp;
+        static Font *font;
+		static GUIStyle style;
+		static ItemBuffer<char> keyCommandBuffer;
+		static void Initialize();
+		static void SetHoveredState(int64_t currentId, bool hovered, bool isMouseDown);
+		static bool SetActiveState(int64_t currentId, bool hovered, bool isMouseDown);
+		static bool IsActive(int64_t id);
+		static bool IsHovered(int64_t id);
+		static Vector2 GetPositionFromRectangle(const Rectangle &rect);
+		static Vector2 GetSizeFromRectangle(const Rectangle &rect);
+		static Vector2 CalculateTextSize(const std::string &text, float fontSize);
+		static Vector2 CalculateCenteredPosition(const Rectangle &rect, const Vector2 &size);
+		static bool IsMouseHovered(const Rectangle &rect);
+		static void OnCharPress(uint32_t codepoint);
+		static void OnKeyDown(KeyCode keycode);
+		static void OnKeyRepeat(KeyCode keycode);
 	public:
 		static void BeginFrame();
 		static void EndFrame();
-		static bool Button(const Rectangle &rect, const std::string &text);
-	private:
-		static Font *font;
-		static float fontSize;
-		static void DrawRectangle(const Rectangle &rect, const Color &color, float rounding);
-		static void DrawText(const Vector2 &position, const Rectangle &clippingRect, const Color &color, const std::string &text, float fontSize);
-		static Vector2 CalculateTextSize(const std::string &text, float fontSize);
-        static Vector2 CalculateCenteredPosition(const Rectangle &rect, Vector2 size);
-        static Vector2 GetPositionFromRectangle(const Rectangle &rect);
-        static Vector2 GetSizeFromRectangle(const Rectangle &rect);
-		static Vector2 GetMousePosition();
+		static bool IsMousePressed();
 		static bool IsMouseDown();
-		static bool IsMouseHeld();
-		static bool IsMouseReleased();
+		static bool IsMouseUp();
+		static bool Button(const Rectangle &rect, const std::string &text);
 	};
 }
 

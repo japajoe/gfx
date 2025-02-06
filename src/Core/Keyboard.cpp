@@ -202,8 +202,7 @@ namespace GFX
                     states[key].pressed = 0;
                     states[key].lastRepeatTime = glfwGetTime();
                     states[key].repeat = false;
-                    if(onKeyDown)
-                        onKeyDown(key);
+                    onKeyDown(key);
                 } 
 				else 
 				{
@@ -217,8 +216,7 @@ namespace GFX
 					{
                         if (elapsed >= repeatDelay) 
 						{
-                            if(onKeyRepeat)
-                                onKeyRepeat(key);
+                            onKeyRepeat(key);
                             states[key].repeat = true;
                             states[key].lastRepeatTime = currentTime;
                         }
@@ -227,14 +225,12 @@ namespace GFX
 					{
                         if (elapsed >= repeatInterval) 
 						{
-                            if(onKeyRepeat)
-                                onKeyRepeat(key);
+                            onKeyRepeat(key);
                             states[key].lastRepeatTime = currentTime;
                         }
                     }
                     
-                    if(onKeyPress)
-                        onKeyPress(key);
+                    onKeyPress(key);
                 }
 
                 states[key].up = 0;
@@ -246,8 +242,7 @@ namespace GFX
                     states[key].down = 0;
                     states[key].pressed = 0;
                     states[key].up = 1;
-                    if(onKeyUp)
-                        onKeyUp(key);
+                    onKeyUp(key);
                 } 
 				else 
 				{
@@ -267,8 +262,7 @@ namespace GFX
     void Keyboard::AddInputCharacter(uint32_t codepoint) 
 	{
         if(codepoint > 0) {
-            if(onCharPress)
-                onCharPress(codepoint);
+            onCharPress(codepoint);
         }
     }
 

@@ -902,6 +902,55 @@ namespace GFX
         return mesh;
     }
 
+    Mesh MeshGenerator::CreateTerrain2(uint32_t width, uint32_t height, const Vector3 &scale)
+    {
+        std::vector<Vertex> vertices;
+        std::vector<GLuint> indices;
+
+        // Step 1: Generate vertices (grid of height values)
+        for (int z = 0; z < height; ++z) 
+        {
+            for (int x = 0; x < width; ++x) 
+            {
+                Vector3 position(x, 0, z);
+
+                // UVs are just the normalized position
+                Vector2 uv(float(x) / (width - 1), float(z) / (height - 1));
+
+                // Create vertex
+                vertices.push_back({ position, Vector3(0, 1, 0), uv });
+            }
+        }
+
+        // Step 2: Generate indices (make triangles)
+        for (int z = 0; z < height - 1; ++z) 
+        {
+            for (int x = 0; x < width - 1; ++x) 
+            {
+                // Create two triangles for each quad
+                uint32_t topLeft = z * width + x;
+                uint32_t topRight = z * width + (x + 1);
+                uint32_t bottomLeft = (z + 1) * width + x;
+                uint32_t bottomRight = (z + 1) * width + (x + 1);
+
+                // First triangle (top-left, top-right, bottom-left)
+                indices.push_back(topLeft);
+                indices.push_back(bottomLeft);
+                indices.push_back(topRight);
+
+                // Second triangle (top-right, bottom-left, bottom-right)
+                indices.push_back(topRight);
+                indices.push_back(bottomLeft);
+                indices.push_back(bottomRight);
+            }
+        }
+
+        SetScale(vertices, scale);
+        Mesh mesh(vertices, indices, true);
+        mesh.Generate();
+        return mesh;
+    }
+
     Mesh MeshGenerator::CreateIcosahedron(const Vector3 &scale)
     {
         std::vector<Vertex> vertices;

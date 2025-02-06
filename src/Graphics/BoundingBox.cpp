@@ -86,14 +86,20 @@ namespace GFX
         return hasPoint;
     }
 
+    static constexpr float ZeroTolerance = 1e-6f;
+    static constexpr float FloatMaxValue = 3.4028235E38F;
+
+    static bool IsZero(float value)
+    {
+        return glm::abs(value) < ZeroTolerance;
+    }
+
     bool BoundingBox::Intersects(const Ray &ray, float &distance) const
     {
         distance = 0.0f;
-        float tmax = FLT_MAX;
+        float tmax = FloatMaxValue;
 
-		constexpr float ZeroTolerance = 1e-6f;
-
-        if (glm::abs(ray.direction.x) > ZeroTolerance)
+        if (IsZero(ray.direction.x))
         {
             if (ray.origin.x < min.x || ray.origin.x > max.x)
             {
@@ -124,7 +130,7 @@ namespace GFX
             }
         }
 
-        if (glm::abs(ray.direction.y) > ZeroTolerance)
+        if (IsZero(ray.direction.y))
         {
             if (ray.origin.y < min.y || ray.origin.y > max.y)
             {
@@ -155,7 +161,7 @@ namespace GFX
             }
         }
 
-        if (glm::abs(ray.direction.z) > ZeroTolerance)
+        if (IsZero(ray.direction.z))
         {
             if (ray.origin.z < min.z || ray.origin.z > max.z)
             {

@@ -7,6 +7,7 @@
 #include "../Graphics/Materials/SkyboxMaterial.hpp"
 #include "../Graphics/Materials/ProceduralSkyboxMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
+#include "../Graphics/Renderers/Terrain.hpp"
 
 namespace GFX
 {
@@ -97,47 +98,48 @@ namespace GFX
     GameObject *GameObject::CreatePrimitive(PrimitiveType type)
     {
         GameObject *g = Create();
-        Mesh *mesh = nullptr;
-        MeshRenderer *renderer = g->AddComponent<MeshRenderer>();
-        renderer->SetCastShadows(true);
-        renderer->SetReceiveShadows(true);
 
         switch(type)
         {
             case PrimitiveType::Capsule:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCapsule));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCapsule));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
             case PrimitiveType::Cube:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCube));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCube));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
             case PrimitiveType::Hemisphere:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
             case PrimitiveType::Plane:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshPlane));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshPlane));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
             case PrimitiveType::Quad:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshQuad));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshQuad));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
             case PrimitiveType::ProceduralSkybox:
             {
-                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<ProceduralSkyboxMaterial>());
                 renderer->SetCastShadows(false);
                 renderer->SetReceiveShadows(false);
@@ -145,12 +147,14 @@ namespace GFX
                 auto settings = renderer->GetSettings(0);
                 settings->cullFace = false;
                 settings->depthTest = false;
+                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
                 break;
             }
             case PrimitiveType::Skybox:
             {
                 g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSkybox));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSkybox));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<SkyboxMaterial>());
                 renderer->SetCastShadows(false);
                 renderer->SetReceiveShadows(false);
@@ -162,8 +166,16 @@ namespace GFX
             }
             case PrimitiveType::Sphere:
             {
-                mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
+                auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::Terrain:
+            {
+                auto renderer = g->AddComponent<Terrain>();
+                renderer->SetCastShadows(false);
+                renderer->SetReceiveShadows(true);
                 break;
             }
             default:

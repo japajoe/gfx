@@ -10,6 +10,7 @@
 #include "Shaders/DepthShader.hpp"
 #include "Shaders/SkyboxShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
+#include "Shaders/TerrainShader.hpp"
 #include "../External/glad/glad.h"
 #include "../Core/Application.hpp"
 #include "../Core/Constants.hpp"
@@ -31,13 +32,7 @@ namespace GFX
 	Shadow Graphics::shadow;
 	std::unique_ptr<DepthMaterial> Graphics::depthMaterial = nullptr;
 	std::vector<Renderer*> Graphics::renderers;
-	std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> Graphics::renderQueue;
-
-    bool CompareRendererOrder::operator()(const Renderer *lhs, const Renderer *rhs) const 
-    {
-        // Lower rendering order gets priority
-        return lhs->GetRenderOrder() > rhs->GetRenderOrder();
-    }
+	std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRenderer> Graphics::renderQueue;
 
 	void Graphics::Initialize(uint32_t width, uint32_t height)
 	{
@@ -93,9 +88,9 @@ namespace GFX
 
 		auto camera = Camera::GetMain();
 
-        if(renderQueue.size() > 0 && camera != nullptr)
+        if(renderers.size() > 0 && camera != nullptr)
         {
-            std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> queue = renderQueue;
+			auto queue = renderQueue;
 
 			shadow.Bind();
 
@@ -113,20 +108,20 @@ namespace GFX
         }
 	}
 
-	void Graphics::Render3DPass()
+void Graphics::Render3DPass()
+{
+	if(renderers.size() > 0 && Camera::GetMain() != nullptr)
 	{
-        if(renderQueue.size() > 0 && Camera::GetMain() != nullptr)
-        {
-            std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRendererOrder> queue = renderQueue;
+		auto queue = renderQueue;
 
-            while (!queue.empty()) 
-            {
-                Renderer* currentRenderer = queue.top();
-                currentRenderer->OnRender();
-                queue.pop();
-            }
-        }
+		while (!queue.empty()) 
+		{
+			Renderer* currentRenderer = queue.top();
+			currentRenderer->OnRender();
+			queue.pop();
+		}
 	}
+}
 
 	void Graphics::Render2DPass()
 	{
@@ -200,11 +195,13 @@ namespace GFX
 		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
+		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
 		BindShaderToUniformBuffers(skyboxShader);
 		BindShaderToUniformBuffers(proceduralSkyboxShader);
+		BindShaderToUniformBuffers(terrainShader);
 
 		depthMaterial = std::make_unique<DepthMaterial>();
 
@@ -326,4 +323,11 @@ namespace GFX
             }
         }
 	}
+
+    Renderer *Graphics::GetRendererByIndex(size_t index)
+    {
+        if(index >= renderers.size())
+            return nullptr;
+        return renderers[index];
+    }
 }

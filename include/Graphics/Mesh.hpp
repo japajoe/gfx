@@ -63,6 +63,7 @@ namespace GFX
         static Mesh CreateSphere(const Vector3 &scale);
         static Mesh CreateHemisphere(const Vector3 &scale);
         static Mesh CreateTerrain(uint32_t width, uint32_t height, const Vector3 &scale);
+        static Mesh CreateTerrain2(uint32_t width, uint32_t height, const Vector3 &scale);
         static Mesh CreateIcosahedron(const Vector3 &scale);
     private:
         static void SetScale(std::vector<Vertex> &vertices, const Vector3 &scale);

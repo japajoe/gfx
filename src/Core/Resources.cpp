@@ -1,8 +1,14 @@
 #include "Resources.hpp"
-#include "../Core/Debug.hpp"
+#include "Debug.hpp"
+#include "AssetPack.hpp"
+#include "GameBehaviour.hpp"
+#include "../System/IO/File.hpp"
+#include <future>
 
 namespace GFX
 {
+	ConcurrentQueue<Resource> Resources::resourceQueue;
+	ConcurrentQueue<ResourceBatch> Resources::resourceBatchQueue;
 	std::unordered_map<std::string,UniformBufferObject> Resources::uniformBuffers;
 	std::unordered_map<std::string,Font> Resources::fonts;
 	std::unordered_map<std::string,Shader> Resources::shaders;
@@ -153,4 +159,165 @@ namespace GFX
 			return nullptr;
 		return &meshes[name];
 	}
+
+	void Resources::LoadAsyncFromFile(ResourceType type, const std::string &resource)
+	{
+		auto result = std::async(std::launch::async, &GetFromFileAsync, type, resource);
+	}
+
+	void Resources::LoadAsyncBatchFromFile(ResourceType type, const std::vector<std::string> &resources)
+	{
+		auto result = std::async(std::launch::async, &GetBatchFromFileAsync, type, resources);
+	}
+
+	void Resources::LoadAsyncFromAssetPack(ResourceType type, const std::string &resource, const std::string &pathToAssetPack, const std::string &assetPackKey)
+	{
+		auto result = std::async(std::launch::async, &GetFromPackAsync, type, resource, pathToAssetPack, assetPackKey);
+	}
+
+	void Resources::LoadAsyncBatchFromAssetPack(ResourceType type, const std::vector<std::string> &resources, const std::string &pathToAssetPack, const std::string &assetPackKey)
+	{
+		auto result = std::async(std::launch::async, &GetBatchFromPackAsync, type, resources, pathToAssetPack, assetPackKey);
+	}
+
+	void Resources::GetFromFileAsync(ResourceType type, const std::string &resource)
+	{
+		Resource info;
+		info.type = type;
+		info.name = resource;
+		
+		if(File::Exists(resource))
+		{
+			info.data = File::ReadAllBytes(resource);
+			info.result = ResourceLoadResult::Ok;
+		}
+		else
+		{
+			info.result = ResourceLoadResult::Error;
+		}
+
+		resourceQueue.Enqueue(info);
+	}
+
+	void Resources::GetBatchFromFileAsync(ResourceType type, const std::vector<std::string> &resources)
+	{
+		ResourceBatch batch;
+		batch.type = type;
+
+		for(size_t i = 0; i < resources.size(); i++)
+		{
+			Resource info;
+			info.type = type;
+			info.name = resources[i];
+			
+			if(File::Exists(resources[i]))
+			{
+				info.data = File::ReadAllBytes(resources[i]);
+				info.result = ResourceLoadResult::Ok;
+			}
+			else
+			{
+				info.result = ResourceLoadResult::Error;
+			}
+
+			batch.resources.push_back(info);
+		}
+		
+		resourceBatchQueue.Enqueue(batch);
+	}
+
+	void Resources::GetFromPackAsync(ResourceType type, const std::string &resource, const std::string &pathToAssetPack, const std::string &assetPackKey)
+	{
+		if(!File::Exists(pathToAssetPack))
+		{
+			Debug::WriteLog("The file does not exist: " + pathToAssetPack);
+			return;
+		}
+
+        AssetPack pack;
+
+		if(pack.Load(pathToAssetPack, assetPackKey))
+		{
+			Resource info;
+			info.type = type;
+			info.name = resource;
+			
+			if(pack.FileExists(resource))
+			{
+				info.data = pack.GetFileData(resource);
+				info.result = ResourceLoadResult::Ok;
+			}
+			else
+			{
+				info.result = ResourceLoadResult::Error;
+			}
+
+			resourceQueue.Enqueue(info);
+		}
+	}
+
+    void Resources::GetBatchFromPackAsync(ResourceType type, const std::vector<std::string> &resources, const std::string &pathToAssetPack, const std::string &assetPackKey)
+    {
+		if(!File::Exists(pathToAssetPack))
+		{
+			Debug::WriteLog("The file does not exist: " + pathToAssetPack);
+			return;
+		}
+
+        AssetPack pack;
+
+		if(pack.Load(pathToAssetPack, assetPackKey))
+		{
+			ResourceBatch batch;
+			batch.type = type;
+
+			for(size_t i = 0; i < resources.size(); i++)
+			{
+                Resource info;
+                info.type = type;
+                info.name = resources[i];
+				
+				if(pack.FileExists(resources[i]))
+				{
+                	info.data = pack.GetFileData(resources[i]);
+					info.result = ResourceLoadResult::Ok;
+				}
+				else
+				{
+					info.result = ResourceLoadResult::Error;
+				}
+				
+				batch.resources.push_back(info);
+			}
+			
+			resourceBatchQueue.Enqueue(batch);
+		}
+		else
+		{
+			Debug::WriteLog("Failed to load asset pack: " + pathToAssetPack);
+		}
+    }
+
+    void Resources::NewFrame()
+    {
+        if(resourceQueue.GetCount() > 0)
+        {
+            Resource resource;
+            //Do only 1 asset per frame or this might block the main thread for a while
+            if(resourceQueue.TryDequeue(resource))
+            {
+                GameBehaviour::OnBehaviourResourceLoadedAsync(resource);
+            }
+        }
+
+        if(resourceBatchQueue.GetCount() > 0)
+        {
+            ResourceBatch batch;
+            //Do only 1 batch per frame or this might block the main thread for a while
+            if(resourceBatchQueue.TryDequeue(batch))
+            {
+                GameBehaviour::OnBehaviourResourceBatchLoadedAsync(batch);
+            }
+        }
+    }
 }
