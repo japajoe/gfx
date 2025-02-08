@@ -23,6 +23,7 @@ namespace GFX
 
     MeshRenderer::MeshRenderer() : Renderer()
     {
+        type = RendererType::Mesh;
         SetName("MeshRenderer");
     }
 

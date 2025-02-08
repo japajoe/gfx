@@ -10,10 +10,211 @@
 #include "../Graphics/Mesh.hpp"
 #include "../Graphics/Renderers/Renderer.hpp"
 #include "../External/glm/glm.hpp"
+#include "Rigidbody.hpp"
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Physics/Body/BodyActivationListener.h>
+
 #include <cstdint>
+#include <thread>
 
 namespace GFX
 {
+    namespace Layers
+    {
+        static constexpr JPH::ObjectLayer NON_MOVING = 0;
+        static constexpr JPH::ObjectLayer MOVING = 1;
+        static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+    };
+
+    namespace BroadPhaseLayers
+    {
+        static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
+        static constexpr JPH::BroadPhaseLayer MOVING(1);
+        static constexpr uint NUM_LAYERS(2);
+    };
+
+    /// Class that determines if two object layers can collide
+    class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
+    {
+    public:
+        virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
+        {
+            switch (inObject1)
+            {
+            case Layers::NON_MOVING:
+                return inObject2 == Layers::MOVING; // Non moving only collides with moving
+            case Layers::MOVING:
+                return true; // Moving collides with everything
+            default:
+                JPH_ASSERT(false);
+                return false;
+            }
+        }
+    };
+
+    // This defines a mapping between object and broadphase layers.
+    class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
+    {
+    public:
+        BPLayerInterfaceImpl()
+        {
+            // Create a mapping table from object to broad phase layer
+            mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
+            mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
+        }
+
+        virtual uint GetNumBroadPhaseLayers() const override
+        {
+            return BroadPhaseLayers::NUM_LAYERS;
+        }
+
+        virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
+        {
+            JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
+            return mObjectToBroadPhase[inLayer];
+        }
+
+    #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
+        virtual const char * GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override
+        {
+            switch ((BroadPhaseLayer::Type)inLayer)
+            {
+            case (BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:	return "NON_MOVING";
+            case (BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:		return "MOVING";
+            default:													JPH_ASSERT(false); return "INVALID";
+            }
+        }
+    #endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
+
+    private:
+        JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
+    };
+
+    /// Class that determines if an object layer can collide with a broadphase layer
+    class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
+    {
+    public:
+        virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
+        {
+            switch (inLayer1)
+            {
+            case Layers::NON_MOVING:
+                return inLayer2 == BroadPhaseLayers::MOVING;
+            case Layers::MOVING:
+                return true;
+            default:
+                JPH_ASSERT(false);
+                return false;
+            }
+        }
+    };
+
+    // An example contact listener
+    class MyContactListener : public JPH::ContactListener
+    {
+    public:
+        // See: ContactListener
+        virtual JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
+        {
+            std::cout << "Contact validate callback" << std::endl;
+
+            // Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
+            return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
+        }
+
+        virtual void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
+        {
+            std::cout << "A contact was added" << std::endl;
+        }
+
+        virtual void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
+        {
+            std::cout << "A contact was persisted" << std::endl;
+        }
+
+        virtual void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
+        {
+            std::cout << "A contact was removed" << std::endl;
+        }
+    };
+
+    // An example activation listener
+    class MyBodyActivationListener : public JPH::BodyActivationListener
+    {
+    public:
+        virtual void		OnBodyActivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+        {
+            std::cout << "A body got activated" << std::endl;
+        }
+
+        virtual void		OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+        {
+            std::cout << "A body went to sleep" << std::endl;
+        }
+    };
+
+    struct PhysicsManager
+    {
+        std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
+        JPH::PhysicsSystem physicsSystem;
+        BPLayerInterfaceImpl broadphaseLayer;
+        ObjectVsBroadPhaseLayerFilterImpl objectBroadphaseFilter;
+        ObjectLayerPairFilterImpl objectLayerFilter;
+        MyBodyActivationListener bodyActivationListener;
+        MyContactListener contactListener;
+    };
+
+    std::unique_ptr<PhysicsManager> Physics::physicsManager = nullptr;
+
+    JPH::BodyInterface *Physics::GetBodyInterface()
+	{
+        auto &interface = physicsManager->physicsSystem.GetBodyInterface();
+        return &interface;
+	}
+
+    void Physics::Initialize()
+    {
+        const JPH::uint maxBodies = 1024;
+        const JPH::uint numBodyMutexes = 0;
+        const JPH::uint maxBodyPairs = 1024;
+        const JPH::uint maxContactConstraints = 1024;
+
+        physicsManager = std::make_unique<PhysicsManager>();
+
+        physicsManager->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+
+	    physicsManager->physicsSystem.Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstraints, physicsManager->broadphaseLayer, physicsManager->objectBroadphaseFilter, physicsManager->objectLayerFilter);
+
+        physicsManager->physicsSystem.SetBodyActivationListener(&physicsManager->bodyActivationListener);
+
+	    physicsManager->physicsSystem.SetContactListener(&physicsManager->contactListener);
+    }
+
+    void Physics::Deinitialize()
+    {
+
+    }
+
+    void Physics::NewFrame()
+    {
+        
+    }
+
+    void Physics::Add(Rigidbody *rb)
+    {
+        auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
+        auto body = rb->GetBody();
+    }
+
+    void Physics::Remove(Rigidbody *rb)
+    {
+        auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
+        auto body = rb->GetBody();
+    }
+
 	static constexpr float FloatMinValue = -3.4028235E38F;
 	static constexpr float FloatMaxValue = 3.4028235E38F;
 
@@ -33,107 +234,7 @@ namespace GFX
         return Raycast(ray.origin, ray.direction, ray.length, hit, layerMask);
     }
 
-	bool Physics::Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask)
-	{
-		if(BoxTest(origin, direction, maxDistance, hit, layerMask))
-		{
-			Renderer *renderer = reinterpret_cast<Renderer*>(hit.userData);
-			
-			if(renderer == nullptr)
-				return false;
-
-			if(!renderer->GetGameObject()->GetIsActive())
-				return false;
-			
-			TriangleIntersection intersection;
-			intersection.transform = nullptr;
-			intersection.triangleIndex1 = -1;
-			intersection.lastPos = std::numeric_limits<float>::max();
-			float lastPos = std::numeric_limits<float>::max();
-			uint32_t ignoreRaycast = static_cast<uint32_t>(Layer_IgnoreRaycast);
-
-            uint32_t layer = static_cast<uint32_t>(renderer->GetGameObject()->GetLayer());
-
-            if(layer > 0)
-            {
-                if(layer & layerMask || layer & ignoreRaycast)
-                    return false;
-            }
-
-            Transform *transform = renderer->GetTransform();
-            Matrix4 transformation = transform->GetModelMatrix();
-            Ray ray(transform->WorldToLocal(origin), transform->WorldToLocalVector(direction), FloatMaxValue);
-			Mesh *mesh = nullptr;
-			size_t meshIndex = 0;
-
-			while((mesh = renderer->GetMesh(meshIndex++)) != nullptr)
-            {
-                auto &indices = mesh->GetIndices();
-                
-                if(indices.size() == 0)
-                    continue;
-
-                auto bounds = mesh->GetBounds();
-
-                float distance = 0;
-                
-                if(!bounds.Intersects(ray, distance))
-                    continue;
-                
-                auto &vertices = mesh->GetVertices();
-
-                for(size_t j = 0; j < indices.size() / 3; j++)
-                {
-                    float currIntersectionPos = 0.0f;
-
-                    Vector3 v1 = vertices[indices[j * 3]].position;
-                    Vector3 v2 = vertices[indices[j * 3 + 1]].position;
-                    Vector3 v3 = vertices[indices[j * 3 + 2]].position;
-
-                    Vector4 v1t = transformation * Vector4(v1.x, v1.y, v1.z, 1.0f);
-                    Vector4 v2t = transformation * Vector4(v2.x, v2.y, v2.z, 1.0f);
-                    Vector4 v3t = transformation * Vector4(v3.x, v3.y, v3.z, 1.0f);
-
-                    v1 = Vector3(v1t.x, v1t.y, v1t.z);
-                    v2 = Vector3(v2t.x, v2t.y, v2t.z);
-                    v3 = Vector3(v3t.x, v3t.y, v3t.z);
-
-                    if (RayIntersectsTriangle(origin, direction, v1, v2, v3, currIntersectionPos))
-                    {
-                        if (currIntersectionPos < intersection.lastPos)
-                        {
-                            intersection.lastPos = currIntersectionPos;
-                            intersection.triangleIndex1 = indices[j*3];
-                            intersection.triangleIndex2 = indices[j*3+1];
-                            intersection.triangleIndex3 = indices[j*3+2];
-                            intersection.transform = renderer->GetTransform();
-                            hit.normal = SurfaceNormalFromIndices(v1, v2, v3);
-                        }
-                    }
-                }
-            }
-
-			if(intersection.triangleIndex1 >= 0)
-			{
-				float totalDistance = Vector3f::Distance(origin, origin + (direction * intersection.lastPos));
-
-				if(totalDistance <= maxDistance)
-				{
-					hit.point = origin + (direction * intersection.lastPos);
-					hit.distance = Vector3f::Distance(origin, hit.point);
-					hit.triangleIndex1 = intersection.triangleIndex1;
-					hit.triangleIndex2 = intersection.triangleIndex2;
-					hit.triangleIndex3 = intersection.triangleIndex3;
-					hit.transform = intersection.transform;
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-    bool Physics::Raycast2(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask)
+    bool Physics::Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask)
     {
         TriangleIntersection intersection;
         intersection.transform = nullptr;

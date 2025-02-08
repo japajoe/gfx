@@ -1,5 +1,7 @@
 #include "GFX.hpp"
 #include "Testing/GameManager.hpp"
+#include "../libs/JoltPhysics/Jolt/Jolt.h"
+#include "../libs/JoltPhysics/Jolt/Physics/PhysicsSystem.h"
 
 void CreateAssetPack();
 

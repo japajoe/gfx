@@ -22,6 +22,13 @@ namespace GFX
         RenderSettings();
     };
 
+    enum class RendererType
+    {
+        Batch,
+        Mesh,
+        Terrain
+    };
+
     class Mesh;
 
     class Renderer : public Component
@@ -30,6 +37,7 @@ namespace GFX
         bool castShadows;
         bool receiveShadows;
         uint32_t renderOrder;
+        RendererType type;
         void OnDestroy() override;
     public:
         Renderer();
@@ -42,6 +50,7 @@ namespace GFX
         bool GetReceiveShadows() const;
         void SetRenderOrder(uint32_t order);
         uint32_t GetRenderOrder() const;
+        RendererType GetType() const;
     };
 
     struct CompareRenderer 

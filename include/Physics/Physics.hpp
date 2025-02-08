@@ -4,20 +4,35 @@
 #include "../Graphics/Ray.hpp"
 #include "../Core/GameObject.hpp"
 #include "RaycastHit.hpp"
+#include <memory>
+
+namespace JPH
+{
+    class BodyInterface;
+};
 
 namespace GFX
 {
+    struct PhysicsManager;
+    class Rigidbody;
+
     class Physics
     {
     public:
+        static JPH::BodyInterface *GetBodyInterface();
         static bool Raycast(const Ray &ray, RaycastHit &hit, Layer layerMask = Layer_None);
 		static bool Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
-        static bool Raycast2(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
         static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
     private:
+        static std::unique_ptr<PhysicsManager> physicsManager;
         static bool LineIntersects(const Vector3 &l1p1, const Vector3 &l1p2, const Vector3 &l2p1, const Vector3 &l2p2, Vector3 &hitpoint);
         static bool RayIntersectsTriangle(const Vector3 &origin, const Vector3 &dir, const Vector3 &v0, const Vector3 &v1, const Vector3 &v2, float &intersection);
         static Vector3 SurfaceNormalFromIndices(const Vector3 &pA, const Vector3 &pB, const Vector3 &pC);
+        static void Initialize();
+        static void Deinitialize();
+        static void NewFrame();
+        static void Add(Rigidbody *rb);
+        static void Remove(Rigidbody *rb);
     };
 }
 

@@ -150,18 +150,20 @@ namespace GFX
 		static void ParseColorsFromText(std::string &text, std::vector<TextColorInfo> &colors, size_t &count);
 	public:
 		static UniformUpdateCallback onUniformUpdate;
-		static void AddRectangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddRectangleRounded(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddRectangleRoundedEx(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, float topLeftRadius, float topRightRadius, float bottomLeftRadius, float bottomRightRadius, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddCircle(const Vector2 &position, float radius, int segments, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddTriangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddBorder(const Vector2 &position, const Vector2 &size, float thickness, BorderOptions borderOptions, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddLine(const Vector2 &p1, Vector2 p2, float thickness, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddLines(const Vector2 *segments, int count, float thickness, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddPlotLines(const Vector2 &position, const Vector2 &size, const float *data, int valuesCount, float thickness, const Color &color, float scaleMin = 3.402823466e+38F, float scaleMax = 3.402823466e+38F, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
-		static void AddImage(const Vector2 &position, const Vector2 &size, float rotationDegrees, int textureId, const Color &color, Vector2 uv0 = Vector2(0, 0), Vector2 uv1 = Vector2(0, 0), const Rectangle clippingRect = Rectangle(0, 0, 0, 0), int shaderId = 0, void *userData = nullptr);
+		static void AddRectangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddRectangleRounded(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddRectangleRoundedEx(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, float topLeftRadius, float topRightRadius, float bottomLeftRadius, float bottomRightRadius, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddCircle(const Vector2 &position, float radius, int segments, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddTriangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddBorder(const Vector2 &position, const Vector2 &size, float thickness, BorderOptions borderOptions, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddLine(const Vector2 &p1, Vector2 p2, float thickness, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddLines(const Vector2 *segments, int count, float thickness, const Color &color, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddPlotLines(const Vector2 &position, const Vector2 &size, const float *data, int valuesCount, float thickness, const Color &color, float scaleMin = 3.402823466e+38F, float scaleMax = 3.402823466e+38F, const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
+		static void AddImage(const Vector2 &position, const Vector2 &size, float rotationDegrees, uint32_t textureId, const Color &color, Vector2 uv0 = Vector2(0, 0), Vector2 uv1 = Vector2(0, 0), const Rectangle clippingRect = Rectangle(0, 0, 0, 0), uint32_t shaderId = 0, void *userData = nullptr);
 		static void AddText(const Vector2 &position, Font *font, const std::string &text, float fontSize, const Color &color, bool richText, const Rectangle clippingRect = Rectangle(0, 0, 0, 0));
 		static void AddText(const Vector2 &position, Font *font, const char *text, size_t textLength, float fontSize, const Color &color, bool richText, const Rectangle clippingRect = Rectangle(0, 0, 0, 0));
+        static std::string GetVertexSource();
+        static std::string GetFragmentSource();
 	};
 }
 

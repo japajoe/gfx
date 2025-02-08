@@ -60,4 +60,9 @@ namespace GFX
     {
         return renderOrder;
     }
+
+    RendererType Renderer::GetType() const
+    {
+        return type;
+    }
 }

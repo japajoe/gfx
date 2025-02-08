@@ -1,5 +1,6 @@
 #include "Terrain.hpp"
 #include "../../Core/GameObject.hpp"
+#include "../../Core/Constants.hpp"
 #include "../../Core/Input.hpp"
 #include "../../Core/Time.hpp"
 #include "../../Core/Resources.hpp"
@@ -17,13 +18,14 @@ namespace GFX
         scale = 10.0f;
         maxHeight = 128.0f;
         pMesh = &mesh;
+        type = RendererType::Terrain;
         SetName("Terrain");
     }
 
     void Terrain::OnInitialize()
     {
         material = std::make_unique<TerrainMaterial>();
-        auto texture = Resources::FindTexture2D("Default");
+        auto texture = Resources::FindTexture2D(Constants::GetString(ConstantString::TextureDefault));
 
         material->SetSplatMap(texture);
         material->SetTexture1(texture);

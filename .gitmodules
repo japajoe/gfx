@@ -13,3 +13,6 @@
 [submodule "libs/assimp"]
 	path = libs/assimp
 	url = https://github.com/assimp/assimp
+[submodule "libs/JoltPhysics"]
+	path = libs/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics

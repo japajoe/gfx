@@ -44,11 +44,17 @@ set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "Install MSVC debug files")
 set(USE_STATIC_CRT ON CACHE BOOL "Link against the static MSVC runtime libraries")
 set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "Build Assimp view tool (requires DirectX)")
 
+# JoltPhysics settings
+set(JPH_SHARED_LIBRARY OFF CACHE BOOL "Use the Jolt library as a shared library. Use JPH_BUILD_SHARED_LIBRARY to build Jolt as a shared library.")
+set(JPH_DOUBLE_PRECISION ON CACHE BOOL "Compiles the library so that all positions are stored in doubles instead of floats. This makes larger worlds possible.")
+set(JPH_USE_STD_VECTOR ON CACHE BOOL "Use std::vector instead of Jolt's own Array class.")
+
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/miniaudioex)
 add_subdirectory(libs/freetype)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/assimp)
+add_subdirectory(libs/JoltPhysics/Build)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_definitions(-DNDEBUG)
@@ -84,4 +90,5 @@ include_directories(
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw miniaudioex freetype glm assimp)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw miniaudioex freetype glm assimp Jolt)
+target_include_directories(${PROJECT_NAME} PRIVATE libs/JoltPhysics/Jolt)

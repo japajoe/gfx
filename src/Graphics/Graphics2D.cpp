@@ -204,7 +204,7 @@ namespace GFX
 		indiceCount = 0;
 	}
 
-	void Graphics2D::AddRectangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddRectangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         Vertex2D vertices[4] = {
             { Vector2(position.x, position.y), Vector2(0, 1), color }, // top left
@@ -236,12 +236,12 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddRectangleRounded(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddRectangleRounded(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
 		AddRectangleRoundedEx(position, size, rotationDegrees, radius, 0.0f, 0.0f, 0.0f, 0.0f, color, clippingRect, shaderId, userData);
 	}
 
-	void Graphics2D::AddRectangleRoundedEx(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, float topLeftRadius, float topRightRadius, float bottomLeftRadius, float bottomRightRadius, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddRectangleRoundedEx(const Vector2 &position, const Vector2 &size, float rotationDegrees, float radius, float topLeftRadius, float topRightRadius, float bottomLeftRadius, float bottomRightRadius, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
 		//Source https://github.com/bburrough/RoundedQuadMesh
 		float roundEdges = 1.0f * radius;
@@ -392,7 +392,7 @@ namespace GFX
 		AddVertices(&command);
 	}
 
-	void Graphics2D::AddCircle(const Vector2 &position, float radius, int segments, float rotationDegrees, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddCircle(const Vector2 &position, float radius, int segments, float rotationDegrees, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         if(segments < 3)
             segments = 3;
@@ -438,7 +438,7 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddTriangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddTriangle(const Vector2 &position, const Vector2 &size, float rotationDegrees, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         float halfWidth = 1.0f * 0.5f;
         float halfHeight = 1.0f * 0.5f;
@@ -481,7 +481,7 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddBorder(const Vector2 &position, const Vector2 &size, float thickness, BorderOptions borderOptions, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddBorder(const Vector2 &position, const Vector2 &size, float thickness, BorderOptions borderOptions, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         Rectangle outerRect(position.x, position.y, size.x, size.y);
         float innerOffset = 0.0f;
@@ -520,7 +520,7 @@ namespace GFX
         AddLines(lines, lineCount / 2, thickness, color, clippingRect);
 	}
 
-	void Graphics2D::AddLine(const Vector2 &p1, Vector2 p2, float thickness, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddLine(const Vector2 &p1, Vector2 p2, float thickness, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         Vector2 direction(p2.x - p1.x, p2.y - p1.y);
         float length = glm::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -562,7 +562,7 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddLines(const Vector2 *segments, int count, float thickness, const Color &color, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddLines(const Vector2 *segments, int count, float thickness, const Color &color, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         if (count == 0) 
             return;
@@ -629,7 +629,7 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddPlotLines(const Vector2 &position, const Vector2 &size, const float *data, int valuesCount, float thickness, const Color &color, float scaleMin, float scaleMax, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddPlotLines(const Vector2 &position, const Vector2 &size, const float *data, int valuesCount, float thickness, const Color &color, float scaleMin, float scaleMax, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         if (valuesCount < 2) 
             return;
@@ -732,7 +732,7 @@ namespace GFX
         AddVertices(&command);
 	}
 
-	void Graphics2D::AddImage(const Vector2 &position, const Vector2 &size, float rotationDegrees, int textureId, const Color &color, Vector2 uv0, Vector2 uv1, const Rectangle clippingRect, int shaderId, void *userData)
+	void Graphics2D::AddImage(const Vector2 &position, const Vector2 &size, float rotationDegrees, uint32_t textureId, const Color &color, Vector2 uv0, Vector2 uv1, const Rectangle clippingRect, uint32_t shaderId, void *userData)
 	{
         Vector2 uvTopLeft = Vector2(uv0.x, uv0.y);
         Vector2 uvBottomLeft = Vector2(uv0.x, uv1.y);
@@ -1197,52 +1197,8 @@ namespace GFX
 
     void Graphics2D::CreateShader()
 	{
-        std::string vertexSource = R"(#version 330 core
-            layout(location = 0) in vec2 aPosition;
-            layout(location = 1) in vec2 aTexCoord;
-            layout(location = 2) in vec4 aColor;
-
-            uniform mat4 uProjection;
-            out vec2 oTexCoord;
-            out vec4 oColor;
-
-            void main() {
-                gl_Position = uProjection * vec4(aPosition.x, aPosition.y, 0.0, 1.0);
-                oTexCoord = aTexCoord;
-                oColor = aColor;
-            })";
-
-        std::string fragmentSource = R"(#version 330 core
-            uniform sampler2D uTexture;
-            uniform float uTime;
-            uniform vec2 uResolution;
-            uniform int uIsFont;
-            uniform int uFontHasSDF;
-
-            in vec2 oTexCoord;
-            in vec4 oColor;
-            out vec4 FragColor;
-
-            void main() {
-                if(uIsFont > 0) {
-                    if(uFontHasSDF > 0) {
-                        vec4 sample = texture(uTexture, oTexCoord);
-                        float d = sample.r;
-                        float aaf = fwidth(d);
-                        float alpha = smoothstep(0.5 - aaf, 0.5 + aaf, d);
-                        FragColor = vec4(oColor.rgb, alpha) * oColor;
-                    } else {
-                        vec4 sample = texture(uTexture, oTexCoord);
-
-                        if(sample.r == 0.0)
-                            discard;
-
-                        FragColor = vec4(oColor.rgb, 1.0) * sample.r;
-                    }
-                } else {
-                    FragColor = texture(uTexture, oTexCoord) * oColor;
-                }
-            })";
+        std::string vertexSource = GetVertexSource();
+        std::string fragmentSource = GetFragmentSource();
 
         const GLchar* vertex_shader[1] = {
             vertexSource.c_str()
@@ -1295,5 +1251,60 @@ namespace GFX
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+    }
+
+    std::string Graphics2D::GetVertexSource()
+    {
+        std::string vertexSource = R"(#version 330 core
+layout(location = 0) in vec2 aPosition;
+layout(location = 1) in vec2 aTexCoord;
+layout(location = 2) in vec4 aColor;
+
+uniform mat4 uProjection;
+out vec2 oTexCoord;
+out vec4 oColor;
+
+void main() {
+    gl_Position = uProjection * vec4(aPosition.x, aPosition.y, 0.0, 1.0);
+    oTexCoord = aTexCoord;
+    oColor = aColor;
+})";
+        return vertexSource;
+    }
+
+    std::string Graphics2D::GetFragmentSource()
+    {
+        std::string fragmentSource = R"(#version 330 core
+uniform sampler2D uTexture;
+uniform float uTime;
+uniform vec2 uResolution;
+uniform int uIsFont;
+uniform int uFontHasSDF;
+
+in vec2 oTexCoord;
+in vec4 oColor;
+out vec4 FragColor;
+
+void main() {
+    if(uIsFont > 0) {
+        if(uFontHasSDF > 0) {
+            vec4 sample = texture(uTexture, oTexCoord);
+            float d = sample.r;
+            float aaf = fwidth(d);
+            float alpha = smoothstep(0.5 - aaf, 0.5 + aaf, d);
+            FragColor = vec4(oColor.rgb, alpha) * oColor;
+        } else {
+            vec4 sample = texture(uTexture, oTexCoord);
+
+            if(sample.r == 0.0)
+                discard;
+
+            FragColor = vec4(oColor.rgb, 1.0) * sample.r;
+        }
+    } else {
+        FragColor = texture(uTexture, oTexCoord) * oColor;
+    }
+})";
+        return fragmentSource;
     }
 }
