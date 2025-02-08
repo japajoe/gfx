@@ -23,8 +23,6 @@ void GameManager::OnUpdate()
 	{
 		Input::SetMouseCursor(!Input::IsCursorVisible());
 	}
-
-	
 }
 
 void GameManager::OnGUI()

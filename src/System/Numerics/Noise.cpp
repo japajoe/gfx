@@ -10,7 +10,7 @@ namespace GFX
             return;
         noise = std::make_unique<FastNoiseLite>();
         noise->SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Perlin);            
-        noise->SetFrequency(0.03f);
+        noise->SetFrequency(0.003f);
         noise->SetFractalType(FastNoiseLite::FractalType_Ridged);
     }
 
@@ -30,6 +30,12 @@ namespace GFX
     {
         Initialize();
         noise->SetFrequency(frequency);
+    }
+
+    void Noise::SetLacunarity(float lacunarity)
+    {
+        Initialize();
+        noise->SetFractalLacunarity(lacunarity);
     }
 
     float Noise::GetSample(float x, float y)

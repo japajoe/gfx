@@ -13,6 +13,7 @@ namespace GFX
 	public:
 		Texture();
 		uint32_t GetId() const;
+		void *GetHandle() const;
 		virtual void Bind(uint32_t unit) = 0;
 		virtual void Unbind() = 0;
 		virtual void Delete() = 0;

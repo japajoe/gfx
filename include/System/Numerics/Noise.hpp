@@ -44,7 +44,7 @@
 //       ....',;:codxkO000OOxdoc:;,''',,,;;;;,''.......',,;:clodkO00000Okxolc::;,,''..',;:ldxOKXNWWWNNK0OkkkkkkkkkkkxxddooooodxxkOOOOO000
 //       ....',;;clodxkkOOOkkdolc:;,,,,,,,,'..........,;:clodxkO0KKXKK0Okxdolcc::;;,,,;;:codkO0XXNNNNXKK0OOOOOkkkkxxdoollloodxkO0KKKXXXXX
 //
-// VERSION: 1.1.0
+// VERSION: 1.1.1
 // https://github.com/Auburn/FastNoiseLite
 
 #ifndef GFX_NOISE_HPP
@@ -2595,6 +2595,7 @@ namespace GFX
         static void SetType(FastNoiseLite::NoiseType type);
         static void SetFractalType(FastNoiseLite::FractalType type);
         static void SetFrequency(float frequency);
+        static void SetLacunarity(float lacunarity);
         static float GetSample(float x, float y);
         static float GetSample(float x, float y, float z);
     };

@@ -13,6 +13,11 @@ namespace GFX
 		return id; 
 	}
 
+	void *Texture::GetHandle() const
+	{
+		return reinterpret_cast<void*>(id);
+	}
+
 	void Texture::ObjectLabel(const std::string &label)
 	{
 		glObjectLabel(GL_TEXTURE, id, -1, label.c_str());

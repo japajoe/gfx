@@ -9,6 +9,7 @@ protected:
     void OnInitialize() override;
     void OnUpdate() override;
     void OnGUI() override;
+    void UpdateTexture();
 };
 
 #endif
