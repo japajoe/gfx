@@ -12,6 +12,8 @@
 #include "../External/glm/glm.hpp"
 #include "Rigidbody.hpp"
 #include <Jolt/Jolt.h>
+#include <Jolt/RegisterTypes.h>
+#include <Jolt/Core/Factory.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
@@ -19,6 +21,7 @@
 
 #include <cstdint>
 #include <thread>
+#include <vector>
 
 namespace GFX
 {
@@ -40,7 +43,7 @@ namespace GFX
     class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
     {
     public:
-        virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
+        bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
         {
             switch (inObject1)
             {
@@ -66,24 +69,24 @@ namespace GFX
             mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
         }
 
-        virtual uint GetNumBroadPhaseLayers() const override
+        uint GetNumBroadPhaseLayers() const override
         {
             return BroadPhaseLayers::NUM_LAYERS;
         }
 
-        virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
+        JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
         {
             JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
             return mObjectToBroadPhase[inLayer];
         }
 
     #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-        virtual const char * GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override
+        const char * GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
         {
-            switch ((BroadPhaseLayer::Type)inLayer)
+            switch ((JPH::BroadPhaseLayer::Type)inLayer)
             {
-            case (BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:	return "NON_MOVING";
-            case (BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:		return "MOVING";
+            case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:	return "NON_MOVING";
+            case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:		return "MOVING";
             default:													JPH_ASSERT(false); return "INVALID";
             }
         }
@@ -97,7 +100,7 @@ namespace GFX
     class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
     {
     public:
-        virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
+        bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
         {
             switch (inLayer1)
             {
@@ -117,7 +120,7 @@ namespace GFX
     {
     public:
         // See: ContactListener
-        virtual JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
+        JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
         {
             std::cout << "Contact validate callback" << std::endl;
 
@@ -125,17 +128,17 @@ namespace GFX
             return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
         }
 
-        virtual void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
+        void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
         {
             std::cout << "A contact was added" << std::endl;
         }
 
-        virtual void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
+        void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
         {
             std::cout << "A contact was persisted" << std::endl;
         }
 
-        virtual void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
+        void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
         {
             std::cout << "A contact was removed" << std::endl;
         }
@@ -145,12 +148,12 @@ namespace GFX
     class MyBodyActivationListener : public JPH::BodyActivationListener
     {
     public:
-        virtual void		OnBodyActivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+        void OnBodyActivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
         {
             std::cout << "A body got activated" << std::endl;
         }
 
-        virtual void		OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
+        void OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
         {
             std::cout << "A body went to sleep" << std::endl;
         }
@@ -160,11 +163,13 @@ namespace GFX
     {
         std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
         JPH::PhysicsSystem physicsSystem;
+        JPH::TempAllocatorMalloc allocator;
         BPLayerInterfaceImpl broadphaseLayer;
         ObjectVsBroadPhaseLayerFilterImpl objectBroadphaseFilter;
         ObjectLayerPairFilterImpl objectLayerFilter;
         MyBodyActivationListener bodyActivationListener;
         MyContactListener contactListener;
+        std::vector<Rigidbody*> bodies;
     };
 
     std::unique_ptr<PhysicsManager> Physics::physicsManager = nullptr;
@@ -177,6 +182,14 @@ namespace GFX
 
     void Physics::Initialize()
     {
+        JPH::RegisterDefaultAllocator();
+
+        // Create a factory, this class is responsible for creating instances of classes based on their name or hash and is mainly used for deserialization of saved data.
+        // It is not directly used in this example but still required.
+        JPH::Factory::sInstance = new JPH::Factory();
+
+        JPH::RegisterTypes();
+
         const JPH::uint maxBodies = 1024;
         const JPH::uint numBodyMutexes = 0;
         const JPH::uint maxBodyPairs = 1024;
@@ -195,24 +208,70 @@ namespace GFX
 
     void Physics::Deinitialize()
     {
-
+        JPH::UnregisterTypes();
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
     }
 
     void Physics::NewFrame()
     {
-        
+        const float cDeltaTime = 1.0f / 60.0f;
+        const int cCollisionSteps = 1;
+
+        physicsManager->physicsSystem.Update(cDeltaTime, cCollisionSteps, &physicsManager->allocator, physicsManager->jobSystem.get());
+
+        auto interface = GetBodyInterface();
+
+        for(size_t i = 0; i < physicsManager->bodies.size(); i++)
+        {
+            auto b = physicsManager->bodies[i]->GetBody();
+            
+            if(b == nullptr)
+                continue;
+            
+            auto id = b->GetID();
+
+            if(!interface->IsActive(id))
+                continue;
+            
+            auto pos = interface->GetPosition(id);
+            auto rot = interface->GetRotation(id);
+            Vector3 position(pos.GetX(), pos.GetY(), pos.GetZ());
+            Quaternion rotation(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
+            physicsManager->bodies[i]->GetTransform()->SetPosition(position);
+            physicsManager->bodies[i]->GetTransform()->SetRotation(rotation);
+        }
     }
 
     void Physics::Add(Rigidbody *rb)
     {
-        auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
-        auto body = rb->GetBody();
+        for(size_t i = 0; i < physicsManager->bodies.size(); i++)
+        {
+            if(physicsManager->bodies[i] == rb)
+                return;
+        }
+        
+        physicsManager->bodies.push_back(rb);
+
+        printf("Added a rigidbody\n");
     }
 
     void Physics::Remove(Rigidbody *rb)
     {
-        auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
-        auto body = rb->GetBody();
+        size_t index = 0;
+        bool found = false;
+        for(size_t i = 0; i < physicsManager->bodies.size(); i++)
+        {
+            if(physicsManager->bodies[i] == rb)
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        if(found)
+            physicsManager->bodies.erase(physicsManager->bodies.begin() + index);
     }
 
 	static constexpr float FloatMinValue = -3.4028235E38F;

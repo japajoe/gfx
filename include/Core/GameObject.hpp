@@ -76,9 +76,9 @@ namespace GFX
         }
 
         template <typename T>
-        std::vector<T*> GetComponents() const
+        std::vector<T*> GetComponentsOfType() const
         {
-            static_assert(std::is_base_of<Component, T>::value, "GetComponents parameter must derive from Component");
+            static_assert(std::is_base_of<Component, T>::value, "GetComponentsOfType parameter must derive from Component");
 
             std::vector<T*> targets;
 

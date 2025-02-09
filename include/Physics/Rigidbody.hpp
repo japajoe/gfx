@@ -17,14 +17,21 @@ namespace GFX
 	{
 	friend class Physics;
 	private:
-		std::unique_ptr<PhysicsBody> body;
+		PhysicsBody *body;
+		float mass;
+		bool CreateShape();
+		bool Initialize();
     protected:
         void OnInitialize() override;
         void OnDestroy() override;
         void OnActivate() override;
         void OnDeactivate() override;
-	public:
 		JPH::Body *GetBody();
+	public:
+		Rigidbody();
+		Rigidbody(float mass);
+		float GetMass() const;
+		void SetMass(float value);
 	};
 }
 

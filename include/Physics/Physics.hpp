@@ -16,13 +16,23 @@ namespace GFX
     struct PhysicsManager;
     class Rigidbody;
 
+    enum class PhysicsLayer
+    {
+        NonMoving = 0,
+        Moving = 1,
+        Count = 2
+    };
+
     class Physics
     {
+    friend class Application;
     public:
         static JPH::BodyInterface *GetBodyInterface();
         static bool Raycast(const Ray &ray, RaycastHit &hit, Layer layerMask = Layer_None);
 		static bool Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
         static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
+        static void Add(Rigidbody *rb);
+        static void Remove(Rigidbody *rb);
     private:
         static std::unique_ptr<PhysicsManager> physicsManager;
         static bool LineIntersects(const Vector3 &l1p1, const Vector3 &l1p2, const Vector3 &l2p1, const Vector3 &l2p2, Vector3 &hitpoint);
@@ -31,8 +41,6 @@ namespace GFX
         static void Initialize();
         static void Deinitialize();
         static void NewFrame();
-        static void Add(Rigidbody *rb);
-        static void Remove(Rigidbody *rb);
     };
 }
 

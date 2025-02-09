@@ -4,6 +4,7 @@
 #include "../Graphics/Graphics.hpp"
 #include "../Graphics/Image.hpp"
 #include "../Audio/Audio.hpp"
+#include "../Physics/Physics.hpp"
 #include "Input.hpp"
 #include "Time.hpp"
 #include "GameBehaviour.hpp"
@@ -225,12 +226,14 @@ namespace GFX
 		Graphics::Initialize(config.width, config.height);
         Audio::Initialize(44100, 2);
         Input::Initialize();
+        Physics::Initialize();
     }
 
 	void Application::Deinitialize()
 	{
         GameBehaviour::OnBehaviourApplicationQuit();
 		Graphics::Deinitialize();
+        Physics::Initialize();
         Audio::Deinitialize();
 	}
 
@@ -240,6 +243,7 @@ namespace GFX
         Input::NewFrame();
         Resources::NewFrame();
         GameBehaviour::NewFrame();
+        Physics::NewFrame();
         Audio::NewFrame();
         Graphics::NewFrame();
 	}
