@@ -92,6 +92,7 @@
 #include "Core/Component.hpp"
 #include "Core/AssetPack.hpp"
 #include "Core/Keyboard.hpp"
+#include "Core/MouseOrbit.hpp"
 #include "Core/Resources.hpp"
 #include "Core/Time.hpp"
 #include "Core/Application.hpp"

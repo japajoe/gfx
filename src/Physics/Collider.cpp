@@ -5,6 +5,7 @@ namespace GFX
 	Collider::Collider() : Component()
 	{
 		type = ColliderType::Box;
+		center = Vector3(0, 0, 0);
 	}
 	
 	Collider::~Collider()
@@ -16,4 +17,14 @@ namespace GFX
 	{
 		return type;
 	}
+
+    void Collider::SetCenter(const Vector3 &center)
+    {
+        this->center = center;
+    }
+
+    Vector3 Collider::GetCenter() const
+    {
+        return center;
+    }
 }

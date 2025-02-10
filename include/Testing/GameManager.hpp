@@ -5,11 +5,15 @@
 
 class GameManager : public GameBehaviour
 {
+private:
+    Rigidbody *rb = nullptr;
+    void CreateTerrain();
+    Texture2D *LoadTexture(const std::string &filepath);
 protected:
     void OnInitialize() override;
     void OnUpdate() override;
+    void OnFixedUpdate() override;
     void OnGUI() override;
-    void UpdateTexture();
 };
 
 #endif

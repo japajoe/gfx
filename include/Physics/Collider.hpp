@@ -2,6 +2,7 @@
 #define GFX_COLLIDER_HPP
 
 #include "../Core/Component.hpp"
+#include "../System/Numerics/Vector3.hpp"
 
 namespace GFX
 {
@@ -19,10 +20,13 @@ namespace GFX
 	{
 	protected:
 		ColliderType type;
+        Vector3 center;
 	public:
         Collider();
         virtual ~Collider();
 		ColliderType GetType() const;
+	    void SetCenter(const Vector3 &center);
+	    Vector3 GetCenter() const;
 	};
 }
 

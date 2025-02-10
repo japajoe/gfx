@@ -42,6 +42,7 @@ namespace GFX
         static void WriteLog(const std::string &text);
         static void WriteError(const std::string &text);
         static void SetCallback(const DebugLogCallback &callback);
+        static void DrawLine(const Vector3 &p1, const Vector3 &p2, const Color &color);
 
         template<typename... Args>
         static void Write(const std::string &format, Args... args) 

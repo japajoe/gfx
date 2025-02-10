@@ -26,6 +26,7 @@ namespace GFX
 		ShaderDepth,
 		ShaderDiffuse,
 		ShaderDiffuseInstanced,
+		ShaderLine,
 		ShaderParticle,
 		ShaderProceduralSkybox,
 		ShaderSkybox,

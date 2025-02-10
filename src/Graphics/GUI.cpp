@@ -792,6 +792,7 @@ namespace GFX
 
 	Vector2 GUI::CalculateTextSize(const std::string &text)
 	{
+		Initialize();
 		float w, h;
 		font->CalculateBounds(text.c_str(), text.size(), style.fontSize, w, h);
 		return Vector2(w, h);

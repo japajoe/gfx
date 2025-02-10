@@ -59,6 +59,7 @@ namespace GFX
         uint32_t GetDepth() const;
         void SetScale(float scale);
         float GetScale() const;
+        Vector2 GetSize() const;
         void SetMaxHeight(float height);
         float GetMaxHeight() const;
         TerrainMaterial *GetMaterial() const;

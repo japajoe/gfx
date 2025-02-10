@@ -408,6 +408,11 @@ namespace GFX
         return depth;
     }
 
+    Vector2 Terrain::GetSize() const
+    {
+        return Vector2(width * scale, depth * scale);
+    }
+
     void Terrain::SetScale(float scale)
     {
         auto &vertices = mesh.GetVertices();

@@ -1,4 +1,5 @@
 #include "Debug.hpp"
+#include "../Graphics/Renderers/LineRenderer.hpp"
 #include <map>
 #include <cstdlib> // for system()
 
@@ -66,5 +67,10 @@ namespace GFX
     void Debug::SetCallback(const DebugLogCallback &callback)
     {
         Debug::callback = callback;
+    }
+
+    void Debug::DrawLine(const Vector3 &p1, const Vector3 &p2, const Color &color)
+    {
+        LineRenderer::DrawLine(p1, p2, color);
     }
 }

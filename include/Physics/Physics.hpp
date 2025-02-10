@@ -31,6 +31,7 @@ namespace GFX
         static bool Raycast(const Ray &ray, RaycastHit &hit, Layer layerMask = Layer_None);
 		static bool Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
         static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
+        static bool RayTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit);
         static void Add(Rigidbody *rb);
         static void Remove(Rigidbody *rb);
     private:

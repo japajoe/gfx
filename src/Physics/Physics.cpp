@@ -16,6 +16,8 @@
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
@@ -463,6 +465,44 @@ namespace GFX
                 hit.transform = intersection.transform;
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    bool Physics::RayTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit)
+    {
+        if(!physicsManager)
+            return false;
+
+        auto &narrowPhase = physicsManager->physicsSystem.GetNarrowPhaseQuery();
+        
+        JPH::Vec3 from(origin.x, origin.y, origin.z);
+        JPH::Vec3 to = from + (JPH::Vec3(direction.x, direction.y, direction.z) * maxDistance);
+        
+        JPH::RRayCast ray(from, (to - from));
+        JPH::RayCastResult result;
+
+        if(narrowPhase.CastRay(ray, result))
+        {
+            JPH::Vec3 point = from + (JPH::Vec3(direction.x, direction.y, direction.z) * result.mFraction);
+            hit.point = Vector3(point.GetX(), point.GetY(), point.GetZ());
+            hit.distance = Vector3f::Distance(origin, hit.point);
+
+            auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
+            JPH::uint64 userData = bodyInterface.GetUserData(result.mBodyID);
+            Rigidbody *rb = reinterpret_cast<Rigidbody*>(userData);
+
+            if(rb != nullptr)
+            {
+                hit.transform = rb->GetTransform();
+            }
+            else
+            {
+                hit.transform = nullptr;
+            }
+
+            return true;
         }
 
         return false;

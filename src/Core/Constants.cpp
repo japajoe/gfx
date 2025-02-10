@@ -34,6 +34,8 @@ namespace GFX
 				return "Diffuse";
 			case ConstantString::ShaderDiffuseInstanced:
 				return "DiffuseInstanced";
+			case ConstantString::ShaderLine:
+				return "Line";
 			case ConstantString::ShaderParticle:
 				return "Particle";
 			case ConstantString::ShaderProceduralSkybox:

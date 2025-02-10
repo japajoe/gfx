@@ -8,6 +8,7 @@
 #include "Buffers/UniformBufferObject.hpp"
 #include "Shaders/DiffuseShader.hpp"
 #include "Shaders/DepthShader.hpp"
+#include "Shaders/LineShader.hpp"
 #include "Shaders/SkyboxShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
 #include "Shaders/TerrainShader.hpp"
@@ -23,6 +24,7 @@
 #include "../Embedded/RobotoMonoRegular.hpp"
 #include "Graphics2D.hpp"
 #include "Renderers/Renderer.hpp"
+#include "Renderers/LineRenderer.hpp"
 #include "Materials/DepthMaterial.hpp"
 
 namespace GFX
@@ -38,8 +40,8 @@ namespace GFX
 	{
 		SetViewport(0, 0, width, height);
 
-		imgui.Initialize(Application::GetNativeWindow());
-		Graphics2D::Initialize();
+
+		
 
 		auto camObject = GameObject::Create();
 		camObject->AddComponent<Camera>();
@@ -56,12 +58,17 @@ namespace GFX
 		CreateUniformBuffers();
 		CreateShaders();
 		CreateMeshes();
+
+		imgui.Initialize(Application::GetNativeWindow());
+		Graphics2D::Initialize();
+		LineRenderer::Initialize();
 	}
 
 	void Graphics::Deinitialize()
 	{
 		imgui.Deinitialize();
 		Graphics2D::Deinitialize();
+		LineRenderer::Deinitialize();
 	}
 
 	void Graphics::NewFrame()
@@ -121,6 +128,8 @@ void Graphics::Render3DPass()
 			queue.pop();
 		}
 	}
+
+	LineRenderer::NewFrame();
 }
 
 	void Graphics::Render2DPass()
@@ -162,8 +171,6 @@ void Graphics::Render3DPass()
 		return viewport;
 	}
 
-
-
 	void Graphics::CreateUniformBuffers()
 	{
 		auto sCamera = Constants::GetString(ConstantString::UniformBufferCamera);
@@ -193,12 +200,14 @@ void Graphics::Render3DPass()
 		//Create shaders
 		auto diffuseShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDiffuse), DiffuseShader::Create());
 		auto depthShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderDepth), DepthShader::Create());
+		auto lineShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderLine), LineShader::Create());
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
 		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
+		BindShaderToUniformBuffers(lineShader);
 		BindShaderToUniformBuffers(skyboxShader);
 		BindShaderToUniformBuffers(proceduralSkyboxShader);
 		BindShaderToUniformBuffers(terrainShader);
