@@ -1,4 +1,4 @@
-#include "Ray.hpp"
+#include "RaycastHit.hpp"
 #include "../System/Numerics/Matrix4.hpp"
 #include "../Core/Camera.hpp"
 

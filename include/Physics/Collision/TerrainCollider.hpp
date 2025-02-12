@@ -2,7 +2,7 @@
 #define GFX_TERRAINCOLLIDER_HPP
 
 #include "Collider.hpp"
-#include "../System/Numerics/Vector2.hpp"
+#include "../../System/Numerics/Vector2.hpp"
 
 namespace GFX
 {

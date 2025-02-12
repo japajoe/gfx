@@ -1,12 +1,12 @@
 #include "Rigidbody.hpp"
 #include "Physics.hpp"
-#include "Collider.hpp"
-#include "BoxCollider.hpp"
-#include "CapsuleCollider.hpp"
-#include "CylinderCollider.hpp"
-#include "TerrainCollider.hpp"
-#include "MeshCollider.hpp"
-#include "SphereCollider.hpp"
+#include "Collision/Collider.hpp"
+#include "Collision/BoxCollider.hpp"
+#include "Collision/CapsuleCollider.hpp"
+#include "Collision/CylinderCollider.hpp"
+#include "Collision/TerrainCollider.hpp"
+#include "Collision/MeshCollider.hpp"
+#include "Collision/SphereCollider.hpp"
 #include "../Core/GameObject.hpp"
 #include "../Graphics/Renderers/Terrain.hpp"
 #include <Jolt/Jolt.h>
@@ -20,8 +20,9 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <Jolt/Physics/Constraints/Constraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 #include <vector>
-
 
 #include "../Core/Debug.hpp"
 
@@ -43,19 +44,22 @@ namespace GFX
 
 	Rigidbody::Rigidbody()
 	{
-		body = new PhysicsBody();
+		body = std::make_unique<PhysicsBody>();
 		body->handle = nullptr;
 		body->interface = Physics::GetBodyInterface();
 		mass = 1.0f;
+		isActive = true;
 	}
 
 	Rigidbody::Rigidbody(float mass)
 	{
-		body = new PhysicsBody();
+		body = std::make_unique<PhysicsBody>();
 		body->handle = nullptr;
 		body->interface = Physics::GetBodyInterface();
 		this->mass = mass;
 	}
+
+	Rigidbody::~Rigidbody() = default;
 
 	void Rigidbody::OnInitialize()
 	{
@@ -76,7 +80,6 @@ namespace GFX
 			Physics::Remove(this);
 		}
 
-		delete body;
 		body = nullptr;
 	}
 
@@ -105,6 +108,10 @@ namespace GFX
 		msp.ScaleToMass(mass); //actual mass in kg
 		settings.mMassPropertiesOverride = msp;
 		settings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
+		settings.mLinearDamping = 0.1f;
+		settings.mAngularDamping = 0.1f;
+		settings.mRestitution = 0.35f;
+		settings.mAllowSleeping = true;
 
 		body->handle = body->interface->CreateBody(settings);
 
@@ -128,17 +135,247 @@ namespace GFX
 
 	void Rigidbody::OnActivate()
 	{
+		isActive = true;
 
+		if(!body->handle)
+			return;
+		body->interface->ActivateBody(body->id);
 	}
 
 	void Rigidbody::OnDeactivate()
 	{
+		isActive = false;
 
+		if(!body->handle)
+			return;
+		body->interface->DeactivateBody(body->id);
 	}
 
 	JPH::Body *Rigidbody::GetBody()
 	{
 		return body->handle;
+	}
+
+	float Rigidbody::GetMass() const
+	{
+		return mass;
+	}
+
+	void Rigidbody::SetMass(float value)
+	{
+		mass = value;
+	}
+
+	void Rigidbody::AddForce(const Vector3 &force, ForceMode mode)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(force))
+			return;
+
+		JPH::Vec3 f(force.x, force.y, force.z);
+		if(mode == ForceMode::Force)
+			body->interface->AddForce(body->id, f);
+		else
+			body->interface->AddImpulse(body->id, f);
+	}
+
+	void Rigidbody::AddForceAtPoint(const Vector3 &force, const Vector3 &point, ForceMode mode)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(force))
+			return;
+
+		JPH::Vec3 f(force.x, force.y, force.z);
+		JPH::Vec3 p(point.x, point.y, point.z);
+		if(mode == ForceMode::Force)
+			body->interface->AddForce(body->id, f, p);
+		else
+			body->interface->AddImpulse(body->id, f, p);
+	}
+
+	void Rigidbody::AddRelativeForce(const Vector3 &force, ForceMode mode)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(force))
+			return;
+
+		float length = force.length();
+		Vector3 v = GetTransform()->InverseTransformDirection(force) * length;
+		JPH::Vec3 f(v.x, v.y, v.z);
+		if(mode == ForceMode::Force)
+			body->interface->AddForce(body->id, f);
+		else
+			body->interface->AddImpulse(body->id, f);
+	}
+
+	void Rigidbody::AddTorque(const Vector3 &torque)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(torque))
+			return;
+
+		JPH::Vec3 t(torque.x, torque.y, torque.z);
+		body->interface->AddTorque(body->id, t);
+	}
+
+	void Rigidbody::AddRelativeTorque(const Vector3 &torque)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(torque))
+			return;
+
+		float length = torque.length();
+		Vector3 v = GetTransform()->InverseTransformDirection(torque) * length;
+		JPH::Vec3 t(v.x, v.y, v.z);
+		body->interface->AddTorque(body->id, t);
+	}
+
+	void Rigidbody::SetLinearVelocity(const Vector3 &velocity)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(velocity))
+			return;
+
+		JPH::Vec3 v(velocity.x, velocity.y, velocity.z);
+		body->interface->SetLinearVelocity(body->id, v);
+	}
+
+	Vector3 Rigidbody::GetLinearVelocity() const
+	{
+		auto v = body->interface->GetLinearVelocity(body->id);
+		return Vector3(v.GetX(), v.GetY(), v.GetZ());
+	}
+
+	void Rigidbody::SetAngularVelocity(const Vector3 &velocity)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(velocity))
+			return;
+
+		JPH::Vec3 v(velocity.x, velocity.y, velocity.z);
+		body->interface->SetAngularVelocity(body->id, v);
+	}
+
+	void Rigidbody::MovePosition(const Vector3 &position)
+	{
+		if(!isActive)
+			return;
+
+		if(Vector3f::IsNan(position))
+			return;
+
+		JPH::Vec3 p(position.x, position.y, position.z);
+		body->interface->SetPosition(body->id, p, JPH::EActivation::Activate);
+	}
+
+	void Rigidbody::MoveRotation(const Quaternion &rotation)
+	{
+		if(!isActive)
+			return;
+
+		if(Quaternionf::IsNan(rotation))
+			return;
+
+		JPH::Quat r(rotation.x, rotation.y, rotation.z, rotation.w);
+		body->interface->SetRotation(body->id, r, JPH::EActivation::Activate);
+	}
+
+	Vector3 Rigidbody::GetPointVelocity(const Vector3 &relativePosition)
+	{
+		if(Vector3f::IsNan(relativePosition))
+			return Vector3(0, 0, 0);
+		
+		JPH::RVec3 com = body->interface->GetCenterOfMassPosition(body->id);
+        JPH::RVec3 relPos(relativePosition.x - com.GetX(), relativePosition.y - com.GetY(), relativePosition.z - com.GetZ());
+
+		auto getPushVelocityInLocalPoint = [&] (const JPH::Vec3& rel_pos) -> JPH::Vec3 	{
+			JPH::RVec3 linearVelocity = body->interface->GetLinearVelocity(body->id);
+			JPH::RVec3 angularVelocity = body->interface->GetAngularVelocity(body->id);
+			// Compute the velocity at the given local position
+			return linearVelocity + angularVelocity.Cross(rel_pos);
+		};
+
+        JPH::RVec3 result = getPushVelocityInLocalPoint(relPos);
+        return Vector3(result.GetX(), result.GetY(), result.GetZ());
+	}
+
+	Vector3 Rigidbody::GetCenterOfMass()
+	{
+		JPH::RVec3 com = body->interface->GetCenterOfMassPosition(body->id);
+		return Vector3(com.GetX(), com.GetY(), com.GetZ());
+	}
+
+	void Rigidbody::SetBounciness(float bounciness)
+	{
+		if(!body->handle)
+			return;
+		body->handle->SetRestitution(bounciness);
+	}
+
+	float Rigidbody::GetBounciness() const
+	{
+		return body->interface->GetRestitution(body->id);
+	}
+
+	void Rigidbody::SetLinearDrag(float drag)
+	{
+
+	}
+
+	float Rigidbody::GetLinearDrag() const
+	{
+		return 0;
+	}
+
+	void Rigidbody::SetAngularDrag(float drag)
+	{
+
+	}
+
+	float Rigidbody::GetAngularDrag() const
+	{
+		return 0;
+	}
+
+	void Rigidbody::SetCollisionDetectionMode(CollisionDetectionMode mode)
+	{
+		body->interface->SetMotionQuality(body->id, static_cast<JPH::EMotionQuality>(mode));
+	}
+
+	CollisionDetectionMode Rigidbody::GetCollisionDetectionMode() const
+	{
+		auto quality = body->interface->GetMotionQuality(body->id);
+		return static_cast<CollisionDetectionMode>(quality);
+	}
+
+	
+	void Rigidbody::SetGravityFactor(float factor)
+	{
+		body->interface->SetGravityFactor(body->id, factor);
+	}
+
+	float Rigidbody::GetGravityFactor() const
+	{
+		return body->interface->GetGravityFactor(body->id);
+	}
+
+	bool Rigidbody::IsSleeping() const
+	{
+		return body->interface->IsActive(body->id) == false;
 	}
 
 	bool Rigidbody::CreateShape()
@@ -213,19 +450,21 @@ namespace GFX
 					if(!mesh)
 						return false;
 					
-					JPH::VertexList vertices;
-					vertices.resize(mesh->GetVerticesCount());
 					auto &mVertices = mesh->GetVertices();
+					JPH::VertexList vertices;
+					vertices.resize(mVertices.size());
+
 					for(size_t i = 0; i < mVertices.size(); i++)
 					{
 						auto pos = mVertices[i].position;
 						vertices[i] = JPH::Float3(pos.x, pos.y, pos.z);
 					}
 
-					JPH::IndexedTriangleList indices;
-					indices.resize(mesh->GetIndicesCount());
 					auto &mIndices = mesh->GetIndices();
+					JPH::IndexedTriangleList indices;
+					indices.resize(mIndices.size() / 3);
 					size_t index = 0;
+
 					for(size_t i = 0; i < mIndices.size(); i+=3)
 					{
 						uint32_t i1 = mIndices[i+0];
@@ -234,7 +473,7 @@ namespace GFX
 						indices[index++] = JPH::IndexedTriangle(i1, i2, i3);
 					}
 
-					JPH::MeshShapeSettings settings(vertices, indices);
+					JPH::MeshShapeSettings settings(std::move(vertices), std::move(indices));
 					JPH::ShapeSettings::ShapeResult result = settings.Create();
 
 					if(result.IsValid())
@@ -292,6 +531,7 @@ namespace GFX
 					}
 
 					JPH::Vec3 offset(0, 0, -1.0f * depth * s);
+
 					JPH::Vec3 scale(s, 1.0f, s);
 
 					JPH::HeightFieldShapeSettings settings(heightData.data(), offset, scale, width);
@@ -319,111 +559,6 @@ namespace GFX
 		}
 
 		return false;
-	}
-
-	float Rigidbody::GetMass() const
-	{
-		return mass;
-	}
-
-	void Rigidbody::SetMass(float value)
-	{
-		mass = value;
-	}
-
-	void Rigidbody::AddForce(const Vector3 &force, ForceMode mode)
-	{
-		if(Vector3f::IsNan(force))
-			return;
-
-		JPH::Vec3 f(force.x, force.y, force.z);
-		if(mode == ForceMode::Force)
-			body->interface->AddForce(body->id, f);
-		else
-			body->interface->AddImpulse(body->id, f);
-	}
-
-	void Rigidbody::AddForceAtPoint(const Vector3 &force, const Vector3 &point, ForceMode mode)
-	{
-		if(Vector3f::IsNan(force))
-			return;
-
-		JPH::Vec3 f(force.x, force.y, force.z);
-		JPH::Vec3 p(point.x, point.y, point.z);
-		if(mode == ForceMode::Force)
-			body->interface->AddForce(body->id, f, p);
-		else
-			body->interface->AddImpulse(body->id, f, p);
-	}
-
-	void Rigidbody::AddRelativeForce(const Vector3 &force, ForceMode mode)
-	{
-		if(Vector3f::IsNan(force))
-			return;
-
-		float length = force.length();
-		Vector3 v = GetTransform()->InverseTransformDirection(force) * length;
-		JPH::Vec3 f(v.x, v.y, v.z);
-		if(mode == ForceMode::Force)
-			body->interface->AddForce(body->id, f);
-		else
-			body->interface->AddImpulse(body->id, f);
-	}
-
-	void Rigidbody::AddTorque(const Vector3 &torque)
-	{
-		if(Vector3f::IsNan(torque))
-			return;
-
-		JPH::Vec3 t(torque.x, torque.y, torque.z);
-		body->interface->AddTorque(body->id, t);
-	}
-
-	void Rigidbody::AddRelativeTorque(const Vector3 &torque)
-	{
-		if(Vector3f::IsNan(torque))
-			return;
-
-		float length = torque.length();
-		Vector3 v = GetTransform()->InverseTransformDirection(torque) * length;
-		JPH::Vec3 t(v.x, v.y, v.z);
-		body->interface->AddTorque(body->id, t);
-	}
-
-	void Rigidbody::SetLinearVelocity(const Vector3 &velocity)
-	{
-		if(Vector3f::IsNan(velocity))
-			return;
-
-		JPH::Vec3 v(velocity.x, velocity.y, velocity.z);
-		body->interface->SetLinearVelocity(body->id, v);
-	}
-
-	void Rigidbody::SetAngularVelocity(const Vector3 &velocity)
-	{
-		if(Vector3f::IsNan(velocity))
-			return;
-
-		JPH::Vec3 v(velocity.x, velocity.y, velocity.z);
-		body->interface->SetAngularVelocity(body->id, v);
-	}
-
-	void Rigidbody::MovePosition(const Vector3 &position)
-	{
-		if(Vector3f::IsNan(position))
-			return;
-
-		JPH::Vec3 p(position.x, position.y, position.z);
-		body->interface->SetPosition(body->id, p, JPH::EActivation::Activate);
-	}
-
-	void Rigidbody::MoveRotation(const Quaternion &rotation)
-	{
-		if(Quaternionf::IsNan(rotation))
-			return;
-
-		JPH::Quat r(rotation.x, rotation.y, rotation.z, rotation.w);
-		body->interface->SetRotation(body->id, r, JPH::EActivation::Activate);
 	}
 
 	JPH::Shape *ShapeHelper::Create(Collider *collider)

@@ -54,6 +54,7 @@ namespace GFX
         Color GetClearColor() const;
         Frustum *GetFrustum();
         Vector3 WorldToScreenPoint(const Vector3 &worldPoint);
+        bool WorldToScreenPoint(const Vector3 &worldPoint, Vector3 &screenPoint);
         Vector3 ScreenToWorldPoint(const Vector2 &screenPoint);
         static Camera *GetMain();        
     };

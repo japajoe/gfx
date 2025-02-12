@@ -190,6 +190,11 @@ namespace GFX
         return { 0, 0, 0, 0 };
     }
 
+    Color Color::Cyan()
+    {
+        return { 0, 255, 255, 255 };
+    }
+
     Color Color::Magenta()
     {
         return { 255, 0, 255, 255 };

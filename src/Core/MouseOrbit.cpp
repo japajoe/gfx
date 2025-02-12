@@ -4,6 +4,7 @@
 #include "Transform.hpp"
 #include "Time.hpp"
 #include "Input.hpp"
+#include "../Physics/Physics.hpp"
 #include "../External/glm/glm.hpp"
 
 namespace GFX

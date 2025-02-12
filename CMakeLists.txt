@@ -48,6 +48,8 @@ set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "Build Assimp view tool (requires Di
 set(JPH_SHARED_LIBRARY OFF CACHE BOOL "Use the Jolt library as a shared library. Use JPH_BUILD_SHARED_LIBRARY to build Jolt as a shared library.")
 set(JPH_DOUBLE_PRECISION ON CACHE BOOL "Compiles the library so that all positions are stored in doubles instead of floats. This makes larger worlds possible.")
 set(JPH_USE_STD_VECTOR ON CACHE BOOL "Use std::vector instead of Jolt's own Array class.")
+set(JPH_PROFILE_ENABLED ON CACHE BOOL "Turns on the internal profiler.")
+set(JPH_ENABLE_ASSERTS ON CACHE BOOL "Compiles the library so that it rises an assert in case of failures. The library ignores these failures otherwise.")
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/miniaudioex)
@@ -81,6 +83,8 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Materials"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Renderers"
 	"${PROJECT_SOURCE_DIR}/include/Physics"
+	"${PROJECT_SOURCE_DIR}/include/Physics/Collision"
+	"${PROJECT_SOURCE_DIR}/include/Physics/Joints"
 	"${PROJECT_SOURCE_DIR}/include/System"
 	"${PROJECT_SOURCE_DIR}/include/System/Collections"
 	"${PROJECT_SOURCE_DIR}/include/System/IO"

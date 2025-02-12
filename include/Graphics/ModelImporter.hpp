@@ -33,6 +33,7 @@ namespace GFX
         ModelFlags_ImproveCacheLocality = 0x800,
         ModelFlags_RemoveRedundantMaterials = 0x1000,
         ModelFlags_FixInfacingNormals = 0x2000,
+        ModelFlags_PopulateArmatureData = 0x4000,
         ModelFlags_SortByPType = 0x8000,
         ModelFlags_FindDegenerates = 0x10000,
         ModelFlags_FindInvalidData = 0x20000,
@@ -57,9 +58,9 @@ namespace GFX
     private:
         static void ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ);        
     public:
-        static GameObject *LoadFromFile(const std::string &filepath, unsigned int modelFlags, const Vector3 &scale, bool flipYZ = false);
-        static GameObject *LoadFromMemory(const void *memory, size_t size, unsigned int modelFlags, const Vector3 &scale, bool flipYZ = false);
-        static std::vector<std::shared_ptr<Mesh>> LoadMeshesFromFile(const std::string &filepath, unsigned int modelFlags, const Vector3 &scale, bool flipYZ = false);
+        static GameObject *LoadFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);
+        static GameObject *LoadFromMemory(const void *memory, size_t size, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);
+        static std::vector<std::shared_ptr<Mesh>> LoadMeshesFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);
     };
 }
 

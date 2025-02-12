@@ -38,7 +38,7 @@ namespace GFX
         return mat;
     }
 
-    GameObject *ModelImporter::LoadFromFile(const std::string &filepath, unsigned int modelFlags, const Vector3 &scale, bool flipYZ)
+    GameObject *ModelImporter::LoadFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ)
     {
 		if(!std::filesystem::exists(filepath))
         {
@@ -62,7 +62,7 @@ namespace GFX
         return model;
     }
 
-    GameObject *ModelImporter::LoadFromMemory(const void *memory, size_t size, unsigned int modelFlags, const Vector3 &scale, bool flipYZ)
+    GameObject *ModelImporter::LoadFromMemory(const void *memory, size_t size, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ)
     {
         if(size == 0)
         {
@@ -86,7 +86,7 @@ namespace GFX
         return model;
     }
 
-    std::vector<std::shared_ptr<Mesh>> ModelImporter::LoadMeshesFromFile(const std::string &filepath, unsigned int modelFlags, const Vector3 &scale, bool flipYZ)
+    std::vector<std::shared_ptr<Mesh>> ModelImporter::LoadMeshesFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ)
     {
         std::vector<std::shared_ptr<Mesh>> meshes;
 

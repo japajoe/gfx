@@ -120,6 +120,36 @@ namespace GFX
         return Vector3(screenX, screenY, glm::abs(Vector3f::Distance(worldPoint, GetGameObject()->GetTransform()->GetPosition())));
     }
 
+    bool Camera::WorldToScreenPoint(const Vector3 &worldPoint, Vector3 &screenPoint)
+    {
+        Vector4 v(worldPoint.x, worldPoint.y, worldPoint.z, 1);
+        Vector4 pointInNdc = GetProjectionMatrix() * GetViewMatrix() * v;
+
+        // Check if the point is behind the camera (negative w means behind)
+        if (pointInNdc.w <= 0.0f)
+        {
+            return false;
+        }
+
+        pointInNdc /= pointInNdc.w; // Perspective divide (convert to NDC)
+
+        // Check if the point is within the normalized device coordinates (-1 to 1)
+        if (pointInNdc.x < -1.0f || pointInNdc.x > 1.0f ||
+            pointInNdc.y < -1.0f || pointInNdc.y > 1.0f ||
+            pointInNdc.z < 0.0f || pointInNdc.z > 1.0f) // z should be between 0 and 1 in NDC
+        {
+            return false;
+        }
+
+        auto viewportRect = Graphics::GetViewport();
+        float screenX = (pointInNdc.x + 1.0f) / 2.0f * viewportRect.width;
+        float screenY = (1 - pointInNdc.y) / 2.0f * viewportRect.height;
+        float screenZ = glm::abs(Vector3f::Distance(worldPoint, GetGameObject()->GetTransform()->GetPosition()));
+
+        screenPoint = Vector3(screenX, screenY, screenZ);
+        return true;
+    }
+
     Vector3 Camera::ScreenToWorldPoint(const Vector2 &screenPoint)
     {
         auto viewportRect = Graphics::GetViewport();

@@ -1,8 +1,8 @@
 #ifndef GFX_COLLIDER_HPP
 #define GFX_COLLIDER_HPP
 
-#include "../Core/Component.hpp"
-#include "../System/Numerics/Vector3.hpp"
+#include "../../Core/Component.hpp"
+#include "../../System/Numerics/Vector3.hpp"
 
 namespace GFX
 {

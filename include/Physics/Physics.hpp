@@ -1,7 +1,6 @@
 #ifndef GFX_PHYSICS_HPP
 #define GFX_PHYSICS_HPP
 
-#include "../Graphics/Ray.hpp"
 #include "../Core/GameObject.hpp"
 #include "RaycastHit.hpp"
 #include <memory>
@@ -26,14 +25,6 @@ namespace GFX
     class Physics
     {
     friend class Application;
-    public:
-        static JPH::BodyInterface *GetBodyInterface();
-        static bool Raycast(const Ray &ray, RaycastHit &hit, Layer layerMask = Layer_None);
-		static bool Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
-        static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
-        static bool RayTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit);
-        static void Add(Rigidbody *rb);
-        static void Remove(Rigidbody *rb);
     private:
         static std::unique_ptr<PhysicsManager> physicsManager;
         static bool LineIntersects(const Vector3 &l1p1, const Vector3 &l1p2, const Vector3 &l2p1, const Vector3 &l2p2, Vector3 &hitpoint);
@@ -42,6 +33,14 @@ namespace GFX
         static void Initialize();
         static void Deinitialize();
         static void NewFrame();
+    public:
+        static JPH::BodyInterface *GetBodyInterface();
+        static bool Raycast(const Ray &ray, RaycastHit &hit, Layer layerMask = Layer_None);
+		static bool Raycast(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
+        static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
+        static bool RayTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit);
+        static void Add(Rigidbody *rb);
+        static void Remove(Rigidbody *rb);
     };
 }
 

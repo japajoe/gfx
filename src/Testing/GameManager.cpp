@@ -7,19 +7,14 @@ void GameManager::OnInitialize()
 	camera->SetClearColor(Color::White());
 	camera->GetTransform()->SetPosition(Vector3(0, 2, 10));
 	//camera->GetGameObject()->AddComponent<FirstPersonCamera>();
-	auto orbit = camera->GetGameObject()->AddComponent<MouseOrbit>();
-	
+
 	GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
-	auto cube = GameObject::CreatePrimitive(PrimitiveType::Sphere);
-	cube->GetTransform()->SetPosition(Vector3(20, 30, -20));
-	cube->GetTransform()->SetRotation(Quaternionf::Euler(100, 30, 20));
-	cube->AddComponent<SphereCollider>();
-	rb = cube->AddComponent<Rigidbody>(100.0f);
-	cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
-	orbit->SetTarget(cube->GetTransform());
 
-
+	CreateBall();
+	//CreateCube();
 	CreateTerrain();
+
+	//auto rustler = ModelImporter::LoadFromFile("../res/Models/Rustler/Rustler.fbx", ModelFlags_FlipUVs, Vector3(1, 1, 1));
 	
 }
 
@@ -38,25 +33,22 @@ void GameManager::OnUpdate()
 
 	if(rb != nullptr)
 	{
+		if(Input::GetKeyDown(KeyCode::R))
+		{
+			rb->SetLinearVelocity(Vector3f::Zero());
+			rb->SetAngularVelocity(Vector3f::Zero());
+			rb->MoveRotation(Quaternionf::Identity());
+		}
+
+		if(Input::GetKeyDown(KeyCode::P))
+		{
+			rb->GetGameObject()->SetIsActive(!rb->GetGameObject()->GetIsActive());
+		}
+
 		auto pos = rb->GetTransform()->GetPosition();
 		auto str = Vector3f::ToString(pos);
 		GUI::BeginFrame();
 		GUI::Button(Rectangle(10, 10, 300, 20), str);
-
-		Vector3 from = rb->GetTransform()->GetPosition() + Vector3(2, 0, 0);
-		Vector3 to = from + (Vector3(0, -1, 0) * 10.0f);
-
-		Debug::DrawLine(from, to, Color::Red());
-
-		RaycastHit hit;
-		if(Physics::RayTest(from, Vector3(0, -1, 0), 10.0f, hit))
-		{
-			GUI::Button(Rectangle(10, 40, 300, 20), "Hit");
-			// auto pos =  rb->GetTransform()->GetPosition();
-			// pos.y = hit.point.y;
-			// rb->MovePosition(pos);
-		}
-		
 		GUI::EndFrame();
 	}
 }
@@ -91,8 +83,6 @@ void GameManager::OnFixedUpdate()
 		rb->AddForce(cameraRelativeMovement * 5000.0f);
 	}
 
-
-
 }
 
 void GameManager::OnGUI()
@@ -100,12 +90,57 @@ void GameManager::OnGUI()
 
 }
 
+void GameManager::CreateBall()
+{
+	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
+	auto sphere = GameObject::CreatePrimitive(PrimitiveType::Sphere);
+	sphere->GetTransform()->SetPosition(Vector3(20, 30, -20));
+	sphere->AddComponent<SphereCollider>();
+	rb = sphere->AddComponent<Rigidbody>(100.0f);
+	rb->SetBounciness(0.35f);
+	sphere->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
+	orbit->SetTarget(sphere->GetTransform());
+}
+
+void GameManager::CreateCube()
+{
+	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
+	auto cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
+	cube->GetTransform()->SetPosition(Vector3(20, 30, -20));
+	Vector3 size(1.8f, 1.6f, 4.2f);
+	cube->GetTransform()->SetScale(size);
+	auto collider = cube->AddComponent<BoxCollider>();
+	collider->SetSize(size);
+	rb = cube->AddComponent<Rigidbody>(100.0f);
+	rb->SetBounciness(0);
+	cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
+	orbit->SetTarget(cube->GetTransform());
+
+	auto wheelFronLeft = cube->AddComponent<Wheel>();
+	auto wheelFrontRight = cube->AddComponent<Wheel>();
+	auto wheelRearLeft = cube->AddComponent<Wheel>();
+	auto wheelRearRight = cube->AddComponent<Wheel>();
+
+	wheelFronLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
+	wheelFrontRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
+
+	wheelRearLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
+	wheelRearRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
+}
+
 void GameManager::CreateTerrain()
 {
 	auto terrainObject = GameObject::CreatePrimitive(PrimitiveType::Terrain);
-	auto terrain = terrainObject->GetComponent<Terrain>();
+	auto terrain = terrainObject->GetComponent<Terrain>();	
 	auto material = terrain->GetMaterial();
+
+    float posX = -(terrain->GetWidth() * terrain->GetScale() * 0.5);
+    float posZ = (terrain->GetDepth() * terrain->GetScale() * 0.5);
+    terrainObject->GetTransform()->SetPosition(Vector3(posX, 0, posZ));
+	//terrainObject->GetTransform()->SetPosition(Vector3(0, 0, posZ));
 	
+	Noise::SetFrequency(0.015);
+
 	for(uint32_t y = 0; y < terrain->GetDepth() + 1; y++)
 	{
 		for(uint32_t x = 0; x < terrain->GetWidth() + 1; x++)
@@ -133,7 +168,10 @@ void GameManager::CreateTerrain()
 	material->SetUvScale4(Vector2(uvScaleX / 5.0f, uvScaleY / 5.0f));
 
 	terrainObject->AddComponent<TerrainCollider>();
+	//auto collider = terrainObject->AddComponent<MeshCollider>();
+	//collider->SetMesh(terrain->GetMesh(0));
 	auto rb = terrainObject->AddComponent<Rigidbody>(0.0f);
+	rb->MovePosition(Vector3(posX, 0, posZ));
 }
 
 Texture2D *GameManager::LoadTexture(const std::string &filepath)

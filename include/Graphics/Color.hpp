@@ -41,6 +41,7 @@ namespace GFX
         static Color White();
         static Color Black();
         static Color Blank();
+        static Color Cyan();
         static Color Magenta();
         static Color RayWhite();
 	};

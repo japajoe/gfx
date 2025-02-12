@@ -14,6 +14,7 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
+#include <Jolt/Core/IssueReporting.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/RayCast.h>
@@ -124,7 +125,7 @@ namespace GFX
         // See: ContactListener
         JPH::ValidateResult	OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override
         {
-            std::cout << "Contact validate callback" << std::endl;
+            //std::cout << "Contact validate callback" << std::endl;
 
             // Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
             return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
@@ -132,17 +133,17 @@ namespace GFX
 
         void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
         {
-            std::cout << "A contact was added" << std::endl;
+            //std::cout << "A contact was added" << std::endl;
         }
 
         void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
         {
-            std::cout << "A contact was persisted" << std::endl;
+            //std::cout << "A contact was persisted" << std::endl;
         }
 
         void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
         {
-            std::cout << "A contact was removed" << std::endl;
+            //std::cout << "A contact was removed" << std::endl;
         }
     };
 
@@ -152,18 +153,18 @@ namespace GFX
     public:
         void OnBodyActivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
         {
-            std::cout << "A body got activated" << std::endl;
+            //std::cout << "A body got activated " << reinterpret_cast<uint64_t>(&inBodyID) << std::endl;
         }
 
         void OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override
         {
-            std::cout << "A body went to sleep" << std::endl;
+            //std::cout << "A body went to sleep " << reinterpret_cast<uint64_t>(&inBodyID) << std::endl;
         }
     };
 
     struct PhysicsManager
     {
-        std::unique_ptr<JPH::JobSystemThreadPool> jobSystem;
+        JPH::JobSystemThreadPool jobSystem = JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
         JPH::PhysicsSystem physicsSystem;
         JPH::TempAllocatorMalloc allocator;
         BPLayerInterfaceImpl broadphaseLayer;
@@ -173,6 +174,12 @@ namespace GFX
         MyContactListener contactListener;
         std::vector<Rigidbody*> bodies;
     };
+
+    static bool JoltAssertFailed(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
+    {
+        printf("%s:%u | %s | %s \n", inFile, inLine, inExpression, inMessage);
+        return true; //Trigger breakpoint
+    }
 
     std::unique_ptr<PhysicsManager> Physics::physicsManager = nullptr;
 
@@ -198,14 +205,13 @@ namespace GFX
         const JPH::uint maxContactConstraints = 1024;
 
         physicsManager = std::make_unique<PhysicsManager>();
-
-        physicsManager->jobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
-
 	    physicsManager->physicsSystem.Init(maxBodies, numBodyMutexes, maxBodyPairs, maxContactConstraints, physicsManager->broadphaseLayer, physicsManager->objectBroadphaseFilter, physicsManager->objectLayerFilter);
-
         physicsManager->physicsSystem.SetBodyActivationListener(&physicsManager->bodyActivationListener);
-
 	    physicsManager->physicsSystem.SetContactListener(&physicsManager->contactListener);
+
+    #ifdef JPH_ENABLE_ASSERTS
+        JPH::AssertFailed = JoltAssertFailed;
+    #endif
     }
 
     void Physics::Deinitialize()
@@ -220,7 +226,7 @@ namespace GFX
         const float cDeltaTime = 1.0f / 60.0f;
         const int cCollisionSteps = 1;
 
-        physicsManager->physicsSystem.Update(cDeltaTime, cCollisionSteps, &physicsManager->allocator, physicsManager->jobSystem.get());
+        physicsManager->physicsSystem.Update(cDeltaTime, cCollisionSteps, &physicsManager->allocator, &physicsManager->jobSystem);
 
         auto interface = GetBodyInterface();
 

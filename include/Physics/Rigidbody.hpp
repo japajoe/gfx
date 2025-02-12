@@ -19,14 +19,21 @@ namespace GFX
 		Impulse
 	};
 
+	enum class CollisionDetectionMode : uint8_t
+	{
+		Discrete,
+		Linear,
+	};
+
 	struct PhysicsBody;
 
 	class Rigidbody : public Component
 	{
 	friend class Physics;
 	private:
-		PhysicsBody *body;
+		std::unique_ptr<PhysicsBody> body;
 		float mass;
+		bool isActive;
 		bool CreateShape();
 		bool Initialize();
     protected:
@@ -38,6 +45,7 @@ namespace GFX
 	public:
 		Rigidbody();
 		Rigidbody(float mass);
+		~Rigidbody();
 		float GetMass() const;
 		void SetMass(float value);
 		void AddForce(const Vector3 &force, ForceMode mode = ForceMode::Force);
@@ -46,9 +54,23 @@ namespace GFX
 		void AddTorque(const Vector3 &torque);
 		void AddRelativeTorque(const Vector3 &torque);
 		void SetLinearVelocity(const Vector3 &velocity);
+		Vector3 GetLinearVelocity() const;
 		void SetAngularVelocity(const Vector3 &velocity);
 		void MovePosition(const Vector3 &position);
 		void MoveRotation(const Quaternion &rotation);
+		Vector3 GetPointVelocity(const Vector3 &relativePosition);
+		Vector3 GetCenterOfMass();
+		void SetBounciness(float bounciness);
+		float GetBounciness() const;
+		void SetLinearDrag(float drag);
+		float GetLinearDrag() const;
+		void SetAngularDrag(float drag);
+		float GetAngularDrag() const;
+		void SetCollisionDetectionMode(CollisionDetectionMode mode);
+		CollisionDetectionMode GetCollisionDetectionMode() const;
+		void SetGravityFactor(float factor);
+		float GetGravityFactor() const;
+		bool IsSleeping() const;
 	};
 }
 

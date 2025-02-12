@@ -2,7 +2,7 @@
 #define GFX_MESHCOLLIDER_HPP
 
 #include "Collider.hpp"
-#include "../Graphics/Mesh.hpp"
+#include "../../Graphics/Mesh.hpp"
 
 namespace GFX
 {

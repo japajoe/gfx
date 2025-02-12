@@ -8,6 +8,8 @@ class GameManager : public GameBehaviour
 private:
     Rigidbody *rb = nullptr;
     void CreateTerrain();
+    void CreateBall();
+    void CreateCube();
     Texture2D *LoadTexture(const std::string &filepath);
 protected:
     void OnInitialize() override;

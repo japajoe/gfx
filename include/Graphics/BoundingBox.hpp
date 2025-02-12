@@ -2,8 +2,8 @@
 #define GFX_BOUNDINGBOX_HPP
 
 #include "../System/Numerics/Vector3.hpp"
-#include "../Ray.hpp"
 #include "../System/Numerics/Matrix4.hpp"
+#include "../Physics/RaycastHit.hpp"
 
 namespace GFX
 {

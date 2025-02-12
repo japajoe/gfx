@@ -2,7 +2,7 @@
 #define GFX_BOXCOLLIDER_HPP
 
 #include "Collider.hpp"
-#include "../System/Numerics/Vector3.hpp"
+#include "../../System/Numerics/Vector3.hpp"
 
 namespace GFX
 {

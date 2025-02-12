@@ -91,8 +91,8 @@ namespace GFX
 	void GameBehaviour::NewFrame()
 	{
 		OnBehaviourUpdate();
-		OnBehaviourLateUpdate();
         OnBehaviourFixedUpdate();
+		OnBehaviourLateUpdate();
 	}
 
 	void GameBehaviour::EndFrame()
