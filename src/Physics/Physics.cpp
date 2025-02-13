@@ -2,7 +2,6 @@
 #include "../Core/Debug.hpp"
 #include "../Core/GameObject.hpp"
 #include "../Core/Transform.hpp"
-#include "../Core/GameBehaviour.hpp"
 #include "../Core/Time.hpp"
 #include "../System/Numerics/Vector3.hpp"
 #include "../System/Numerics/Matrix4.hpp"
@@ -11,6 +10,7 @@
 #include "../Graphics/Renderers/Renderer.hpp"
 #include "../External/glm/glm.hpp"
 #include "Rigidbody.hpp"
+
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>

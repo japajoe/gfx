@@ -12,6 +12,7 @@ namespace GFX
         static double GetNextDouble();
         static uint8_t GetNextByte();
         static double Range(double min, double max);
+        static int Range(int min, int max);
         static void InsideUnitSphere(float &x, float &y, float &z);
     };
 }

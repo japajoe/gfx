@@ -10,6 +10,9 @@
 #include "Shaders/DepthShader.hpp"
 #include "Shaders/LineShader.hpp"
 #include "Shaders/SkyboxShader.hpp"
+#include "Shaders/PostProcessingShader.hpp"
+#include "Shaders/PostProcessing/BlurShader.hpp"
+#include "Shaders/PostProcessing/GrayscaleShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
 #include "Shaders/TerrainShader.hpp"
 #include "../External/glad/glad.h"
@@ -25,23 +28,26 @@
 #include "Graphics2D.hpp"
 #include "Renderers/Renderer.hpp"
 #include "Renderers/LineRenderer.hpp"
+#include "Renderers/PostProcessingRenderer.hpp"
 #include "Materials/DepthMaterial.hpp"
 
 namespace GFX
 {
 	Rectangle Graphics::viewport;
+	Vector2 Graphics::resolution;
 	ImGuiManager Graphics::imgui;
 	Shadow Graphics::shadow;
 	std::unique_ptr<DepthMaterial> Graphics::depthMaterial = nullptr;
 	std::vector<Renderer*> Graphics::renderers;
 	std::priority_queue<Renderer*, std::vector<Renderer*>, CompareRenderer> Graphics::renderQueue;
+	std::vector<FrameBufferObject> Graphics::framebuffers;
+	std::vector<Shader*> Graphics::postProcessingShaders;
+	PostProcessingRenderer Graphics::postProcessingRenderer;
 
-	void Graphics::Initialize(uint32_t width, uint32_t height)
+	void Graphics::Initialize(uint32_t width, uint32_t height, uint32_t displayWidth, uint32_t displayHeight)
 	{
 		SetViewport(0, 0, width, height);
-
-
-		
+		resolution = Vector2(displayWidth, displayHeight);
 
 		auto camObject = GameObject::Create();
 		camObject->AddComponent<Camera>();
@@ -62,6 +68,15 @@ namespace GFX
 		imgui.Initialize(Application::GetNativeWindow());
 		Graphics2D::Initialize();
 		LineRenderer::Initialize();
+
+		framebuffers.push_back(FrameBufferObject(width, height));
+		framebuffers.push_back(FrameBufferObject(width, height));
+		framebuffers.push_back(FrameBufferObject(width, height));
+
+		for(size_t i = 0; i < framebuffers.size(); i++)
+			framebuffers[i].Generate();
+
+		postProcessingRenderer.Generate();
 	}
 
 	void Graphics::Deinitialize()
@@ -73,10 +88,10 @@ namespace GFX
 
 	void Graphics::NewFrame()
 	{
-		Clear();
 		UpdateUniformBuffers();
 		RenderShadowPass();
 		Render3DPass();
+		RenderPostProcessingPass();
 		Render2DPass();
 	}
 
@@ -115,22 +130,69 @@ namespace GFX
         }
 	}
 
-void Graphics::Render3DPass()
-{
-	if(renderers.size() > 0 && Camera::GetMain() != nullptr)
+	void Graphics::Render3DPass()
 	{
-		auto queue = renderQueue;
+		framebuffers[0].Bind();
+		Clear();
 
-		while (!queue.empty()) 
+		if(renderers.size() > 0 && Camera::GetMain() != nullptr)
 		{
-			Renderer* currentRenderer = queue.top();
-			currentRenderer->OnRender();
-			queue.pop();
+			auto queue = renderQueue;
+
+			while (!queue.empty()) 
+			{
+				Renderer* currentRenderer = queue.top();
+				currentRenderer->OnRender();
+				queue.pop();
+			}
 		}
+
+		LineRenderer::NewFrame();
+
+		framebuffers[0].Unbind();
 	}
 
-	LineRenderer::NewFrame();
-}
+	void Graphics::RenderPostProcessingPass()
+	{
+		static Shader *shader = nullptr;
+
+		if(shader == nullptr)
+			shader = Resources::FindShader(Constants::GetString(ConstantString::ShaderPostProcessing));
+
+		uint32_t fbo = framebuffers[1].GetId();
+		uint32_t texture = framebuffers[0].GetTextureId();
+
+		if(postProcessingShaders.size() > 0)
+		{
+			uint32_t fbo1 = framebuffers[2].GetId();
+			uint32_t texture1 = framebuffers[1].GetTextureId();
+			
+			uint32_t fbo2 = framebuffers[1].GetId();
+			uint32_t texture2 = framebuffers[2].GetTextureId();
+
+			for(size_t i = 0; i < postProcessingShaders.size(); i++)
+			{
+				postProcessingRenderer.Render(fbo, postProcessingShaders[i]->GetId(), texture);
+				
+				if(i % 2 == 1)
+				{
+					fbo = fbo2;
+					texture = texture2;
+				}
+				else
+				{
+					fbo = fbo1;
+					texture = texture1;
+				}
+			}
+		}
+
+		postProcessingRenderer.Render(0, shader->GetId(), texture);
+
+		//postProcessingRenderer.Render(framebuffers[1].GetId(), grayscaleShader->GetId(), framebuffers[0].GetTextureId());
+		//postProcessingRenderer.Render(framebuffers[2].GetId(), blurShader->GetId(), framebuffers[1].GetTextureId());
+		//postProcessingRenderer.Render(0, shader->GetId(), framebuffers[2].GetTextureId());
+	}
 
 	void Graphics::Render2DPass()
 	{
@@ -162,6 +224,9 @@ void Graphics::Render3DPass()
 		viewport.y = x;
 		viewport.width = width;
 		viewport.height = height;
+
+		for(size_t i = 0; i < framebuffers.size(); i++)
+			framebuffers[i].Resize(width, height);
 
 		windowResize(width, height);
 	}
@@ -204,6 +269,11 @@ void Graphics::Render3DPass()
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
 		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
+		auto postProcessingShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderPostProcessing), PostProcessingShader::Create());
+
+		auto blurShader = Resources::AddShader("Blur", BlurShader::Create());
+		auto grayscaleShader = Resources::AddShader("Grayscale", GrayscaleShader::Create());
+
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
@@ -211,10 +281,17 @@ void Graphics::Render3DPass()
 		BindShaderToUniformBuffers(skyboxShader);
 		BindShaderToUniformBuffers(proceduralSkyboxShader);
 		BindShaderToUniformBuffers(terrainShader);
+		BindShaderToUniformBuffers(postProcessingShader);
+		BindShaderToUniformBuffers(blurShader);
+		BindShaderToUniformBuffers(grayscaleShader);
 
 		depthMaterial = std::make_unique<DepthMaterial>();
 
 		shadow.Generate();
+
+		//AddPostProcessingShader(blurShader, 0);
+		//AddPostProcessingShader(blurShader, 2);
+		//AddPostProcessingShader(grayscaleShader, 3);
 	}
 
 	void Graphics::CreateTextures()
@@ -333,10 +410,44 @@ void Graphics::Render3DPass()
         }
 	}
 
+	void Graphics::AddPostProcessingShader(Shader *shader, int order)
+	{
+        if(!shader)
+            return;
+
+        postProcessingShaders.push_back(shader);
+	}
+
+	void Graphics::RemovePostProcessingShader(Shader *shader)
+	{
+        if(!shader)
+            return;
+
+        size_t index = 0;
+        bool found = false;
+
+        for(size_t i = postProcessingShaders.size() -1; i >= 0; i--)
+        {
+            if(postProcessingShaders[i] == shader)
+            {
+                index = i;
+                found = true;
+                break;
+            }
+        }
+
+        if(found)
+        {
+            postProcessingShaders.erase(postProcessingShaders.begin() + index);
+        }
+	}
+
     Renderer *Graphics::GetRendererByIndex(size_t index)
     {
         if(index >= renderers.size())
             return nullptr;
         return renderers[index];
     }
+
+
 }

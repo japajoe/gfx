@@ -184,12 +184,15 @@ namespace GFX
 
         camera->frustum.Initialize(camera->GetProjectionMatrix() * camera->GetViewMatrix());
 
+        auto viewport = Graphics::GetViewport();
+
         UniformCameraInfo info;
         info.view = camera->GetViewMatrix();
         info.projection = camera->GetProjectionMatrix();
         info.viewProjection = info.projection * info.view;
         info.position = Vector4(camera->GetTransform()->GetPosition(), 1.0f);
         info.direction = Vector4(camera->GetTransform()->GetForward(), 1.0f);
+        info.resolution = Vector4(viewport.width, viewport.height, 0, 0);
 
         ubo->Bind();
         ubo->BufferSubData(0, sizeof(UniformCameraInfo), &info);

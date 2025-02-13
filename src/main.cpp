@@ -7,7 +7,7 @@ void CreateAssetPack();
 
 int main(int argc, char **argv) 
 {
-    Application application("Test", 512, 512, WindowFlags_VSync);
+    Application application("GFX", 512, 512, WindowFlags_VSync);
     
     application.loaded = [] () {
         auto g = GameObject::Create();

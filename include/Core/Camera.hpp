@@ -20,6 +20,7 @@ namespace GFX
         Matrix4 viewProjection;
         Vector4 position;
         Vector4 direction;
+        Vector4 resolution;
     };
 
     class Camera : public Component

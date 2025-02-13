@@ -104,10 +104,11 @@ namespace GFX
         if(config.flags & WindowFlags_Maximize)
             glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
 
+        GLFWmonitor* monitor =  glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
         if(config.flags & WindowFlags_Fullscreen)
         {
-            GLFWmonitor* monitor =  glfwGetPrimaryMonitor();
-            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
             pWindow = glfwCreateWindow(mode->width, mode->height, config.title.c_str(), monitor, nullptr);
         }   
         else
@@ -223,7 +224,10 @@ namespace GFX
 
     void Application::Initialize()
     {
-		Graphics::Initialize(config.width, config.height);
+        GLFWmonitor* monitor =  glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+		Graphics::Initialize(config.width, config.height, mode->width, mode->height);
         Audio::Initialize(44100, 2);
         Input::Initialize();
         Physics::Initialize();

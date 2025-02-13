@@ -46,9 +46,11 @@ void GameManager::OnUpdate()
 		}
 
 		auto pos = rb->GetTransform()->GetPosition();
-		auto str = Vector3f::ToString(pos);
+		auto strPos = Vector3f::ToString(pos);
+		auto strFPS = std::to_string(Time::GetFPS());
 		GUI::BeginFrame();
-		GUI::Button(Rectangle(10, 10, 300, 20), str);
+		GUI::Button(Rectangle(10, 10, 300, 20), strPos);
+		GUI::Button(Rectangle(10, 40, 300, 20), strFPS);
 		GUI::EndFrame();
 	}
 }

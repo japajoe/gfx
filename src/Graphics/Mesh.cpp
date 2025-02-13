@@ -149,10 +149,12 @@ namespace GFX
         {
             VBO.Bind();
 
-            if(sizeOfVertices == vertices.size())
-                VBO.BufferSubData(0, vertices.size() * sizeof(Vertex), vertices.data());
-            else
-                VBO.BufferData(vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+            VBO.BufferData(vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+            // if(sizeOfVertices == vertices.size())
+            //     VBO.BufferSubData(0, vertices.size() * sizeof(Vertex), vertices.data());
+            // else
+            //     VBO.BufferData(vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
             sizeOfVertices = vertices.size();
 
@@ -160,10 +162,12 @@ namespace GFX
             {
                 EBO.Bind();
 
-                if(sizeOfIndices == indices.size())
-                    EBO.BufferSubData(0, indices.size() * sizeof(GLuint), indices.data());
-                else
-                    EBO.BufferData(indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+                // if(sizeOfIndices == indices.size())
+                //     EBO.BufferSubData(0, indices.size() * sizeof(GLuint), indices.data());
+                // else
+                //     EBO.BufferData(indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+                EBO.BufferData(indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
                 sizeOfIndices = indices.size();
 

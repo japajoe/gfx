@@ -80,6 +80,7 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/Graphics"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Buffers"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Shaders"
+	"${PROJECT_SOURCE_DIR}/include/Graphics/Shaders/PostProcessing"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Materials"
 	"${PROJECT_SOURCE_DIR}/include/Graphics/Renderers"
 	"${PROJECT_SOURCE_DIR}/include/Physics"

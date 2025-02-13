@@ -1,6 +1,7 @@
 #include "GameBehaviour.hpp"
 #include "GameObject.hpp"
 #include "Application.hpp"
+#include "Time.hpp"
 
 namespace GFX
 {
@@ -147,12 +148,21 @@ namespace GFX
         }
     }
 
+    static float accumulator = 0.0f;
+    static constexpr float fixedTimeStep = 1.0f / 60;
+
     void GameBehaviour::OnBehaviourFixedUpdate()
     {
-        for(auto behaviour : behaviours)
+        accumulator += Time::GetDeltaTime();
+
+        while(accumulator >= fixedTimeStep)
         {
-            if(behaviour->GetGameObject()->GetIsActive())
-                behaviour->OnFixedUpdate();
+            for(auto behaviour : behaviours)
+            {
+                if(behaviour->GetGameObject()->GetIsActive())
+                    behaviour->OnFixedUpdate();
+            }
+            accumulator -= fixedTimeStep;
         }
     }
 

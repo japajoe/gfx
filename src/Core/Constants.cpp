@@ -38,6 +38,8 @@ namespace GFX
 				return "Line";
 			case ConstantString::ShaderParticle:
 				return "Particle";
+			case ConstantString::ShaderPostProcessing:
+				return "PostProcessing";
 			case ConstantString::ShaderProceduralSkybox:
 				return "ProceduralSkybox";
 			case ConstantString::ShaderSkybox:

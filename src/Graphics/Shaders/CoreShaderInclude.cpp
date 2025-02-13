@@ -34,6 +34,7 @@ layout(std140) uniform Camera {
     mat4 viewProjection;
     vec4 position;
     vec4 direction;
+    vec4 resolution;
 } uCamera;
 
 layout(std140) uniform World {

@@ -30,6 +30,12 @@ namespace GFX
         return min + x;
     }
 
+    int Random::Range(int min, int max)
+    {
+        double scaled = dist_double(rgen) * (max - min + 1);  // +1 to make the max inclusive
+        return static_cast<int>(min + scaled);
+    }
+
     void Random::InsideUnitSphere(float &x, float &y, float &z)
     {
         float theta = static_cast<float>(2 * glm::pi<float>() * GetNextDouble());

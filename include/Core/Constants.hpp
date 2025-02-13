@@ -28,6 +28,7 @@ namespace GFX
 		ShaderDiffuseInstanced,
 		ShaderLine,
 		ShaderParticle,
+		ShaderPostProcessing,
 		ShaderProceduralSkybox,
 		ShaderSkybox,
 		ShaderTerrain,

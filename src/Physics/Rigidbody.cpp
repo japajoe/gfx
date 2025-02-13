@@ -57,6 +57,7 @@ namespace GFX
 		body->handle = nullptr;
 		body->interface = Physics::GetBodyInterface();
 		this->mass = mass;
+		isActive = true;
 	}
 
 	Rigidbody::~Rigidbody() = default;
@@ -376,6 +377,16 @@ namespace GFX
 	bool Rigidbody::IsSleeping() const
 	{
 		return body->interface->IsActive(body->id) == false;
+	}
+
+	void Rigidbody::SetConstraints(RigidbodyConstraints constraints)
+	{
+
+	}
+
+	RigidbodyConstraints Rigidbody::GetConstraints() const
+	{
+		return static_cast<RigidbodyConstraints>(body->handle->GetMotionProperties()->GetAllowedDOFs());
 	}
 
 	bool Rigidbody::CreateShape()
