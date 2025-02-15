@@ -10,12 +10,12 @@ void GameManager::OnInitialize()
 
 	GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
 
-	CreateBall();
-	//CreateCube();
+	//CreateBall();
+	CreateCube();
 	CreateTerrain();
 
 	//auto rustler = ModelImporter::LoadFromFile("../res/Models/Rustler/Rustler.fbx", ModelFlags_FlipUVs, Vector3(1, 1, 1));
-	
+
 }
 
 void GameManager::OnUpdate()
@@ -92,6 +92,11 @@ void GameManager::OnGUI()
 
 }
 
+void GameManager::OnPostProcess(uint32_t shaderId)
+{
+
+}
+
 void GameManager::CreateBall()
 {
 	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
@@ -107,27 +112,63 @@ void GameManager::CreateBall()
 void GameManager::CreateCube()
 {
 	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
-	auto cube = GameObject::CreatePrimitive(PrimitiveType::Cube);
-	cube->GetTransform()->SetPosition(Vector3(20, 30, -20));
-	Vector3 size(1.8f, 1.6f, 4.2f);
-	cube->GetTransform()->SetScale(size);
+	auto cube = GameObject::Create();
+	
+	auto cubeObj = GameObject::CreatePrimitive(PrimitiveType::Cube);
+	cubeObj->GetTransform()->SetParent(cube->GetTransform());
+	Vector3 size(2.2f, 1.6f, 4.2f);
+	cubeObj->GetTransform()->SetScale(size);
+	
 	auto collider = cube->AddComponent<BoxCollider>();
 	collider->SetSize(size);
-	rb = cube->AddComponent<Rigidbody>(100.0f);
-	rb->SetBounciness(0);
-	cube->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
-	orbit->SetTarget(cube->GetTransform());
 
-	auto wheelFronLeft = cube->AddComponent<Wheel>();
-	auto wheelFrontRight = cube->AddComponent<Wheel>();
-	auto wheelRearLeft = cube->AddComponent<Wheel>();
-	auto wheelRearRight = cube->AddComponent<Wheel>();
+	auto wheelFronLeft = cube->AddComponent<SphereCollider>();
+	auto wheelFrontRight = cube->AddComponent<SphereCollider>();
+	auto wheelRearLeft = cube->AddComponent<SphereCollider>();
+	auto wheelRearRight = cube->AddComponent<SphereCollider>();
 
 	wheelFronLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
 	wheelFrontRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
-
 	wheelRearLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
 	wheelRearRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
+
+	{
+		auto objWheelFronLeft = GameObject::CreatePrimitive(PrimitiveType::Sphere);
+		auto objWheelFrontRight = GameObject::CreatePrimitive(PrimitiveType::Sphere);
+		auto objWheelRearLeft = GameObject::CreatePrimitive(PrimitiveType::Sphere);
+		auto objWheelRearRight = GameObject::CreatePrimitive(PrimitiveType::Sphere);
+
+		objWheelFronLeft->GetTransform()->SetParent(cube->GetTransform());
+		objWheelFrontRight->GetTransform()->SetParent(cube->GetTransform());
+		objWheelRearLeft->GetTransform()->SetParent(cube->GetTransform());
+		objWheelRearRight->GetTransform()->SetParent(cube->GetTransform());
+
+		objWheelFronLeft->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
+		objWheelFrontRight->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
+		objWheelRearLeft->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
+		objWheelRearRight->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
+
+
+	}
+
+
+	rb = cube->AddComponent<Rigidbody>(100.0f);
+	rb->SetBounciness(0);
+	cubeObj->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
+	orbit->SetTarget(cube->GetTransform());
+
+	cube->GetTransform()->SetPosition(Vector3(20, 30, -20));
+
+	// auto wheelFronLeft = cube->AddComponent<WheelCollider>();
+	// auto wheelFrontRight = cube->AddComponent<WheelCollider>();
+	// auto wheelRearLeft = cube->AddComponent<Wheel>();
+	// auto wheelRearRight = cube->AddComponent<Wheel>();
+
+	// wheelFronLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
+	// wheelFrontRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
+
+	// wheelRearLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
+	// wheelRearRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
 }
 
 void GameManager::CreateTerrain()

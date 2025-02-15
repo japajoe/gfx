@@ -3,6 +3,7 @@
 #include "AssetPack.hpp"
 #include "GameBehaviour.hpp"
 #include "../System/IO/File.hpp"
+#include "../Graphics/Image.hpp"
 #include <future>
 
 namespace GFX
@@ -167,7 +168,10 @@ namespace GFX
 
 	void Resources::LoadAsyncBatchFromFile(ResourceType type, const std::vector<std::string> &resources)
 	{
-		auto result = std::async(std::launch::async, &GetBatchFromFileAsync, type, resources);
+		//auto result = std::async(std::launch::async, &GetBatchFromFileAsync, type, resources);
+		std::thread([=]() {
+			GetBatchFromFileAsync(type, resources);
+		}).detach();
 	}
 
 	void Resources::LoadAsyncFromAssetPack(ResourceType type, const std::string &resource, const std::string &pathToAssetPack, const std::string &assetPackKey)
@@ -212,8 +216,29 @@ namespace GFX
 			
 			if(File::Exists(resources[i]))
 			{
-				info.data = File::ReadAllBytes(resources[i]);
-				info.result = ResourceLoadResult::Ok;
+				if(type == ResourceType::Texture2D)
+				{
+					auto bytes = File::ReadAllBytes(resources[i]);
+					Image image(bytes.data(), bytes.size());
+					if(image.IsLoaded())
+					{
+						info.data.resize(image.GetDataSize());
+						std::memcpy(info.data.data(), image.GetData(), image.GetDataSize());
+						info.width = image.GetWidth();
+						info.height = image.GetHeight();
+						info.channels = image.GetChannels();
+						info.result = ResourceLoadResult::Ok;
+					}
+					else
+					{
+						info.result = ResourceLoadResult::Error;
+					}
+				}
+				else
+				{
+					info.data = File::ReadAllBytes(resources[i]);
+					info.result = ResourceLoadResult::Ok;
+				}
 			}
 			else
 			{

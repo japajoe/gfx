@@ -1,5 +1,6 @@
 #include "PostProcessingRenderer.hpp"
 #include "../../External/glad/glad.h"
+#include "../../Core/GameBehaviour.hpp"
 
 namespace GFX
 {
@@ -49,6 +50,8 @@ namespace GFX
 		glUseProgram(shaderId);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
+
+		GameBehaviour::OnBehaviourPostProcess(shaderId);
 
 		vao.Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 6);

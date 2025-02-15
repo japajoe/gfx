@@ -1,12 +1,12 @@
-#ifndef GFX_BLURSHADER_HPP
-#define GFX_BLURSHADER_HPP
+#ifndef GFX_HORIZONTALBLURSHADER_HPP
+#define GFX_HORIZONTALBLURSHADER_HPP
 
 #include "../../Shader.hpp"
 #include <string>
 
 namespace GFX
 {
-	class BlurShader
+	class HorizontalBlurShader
 	{
 	public:
 		static Shader Create();

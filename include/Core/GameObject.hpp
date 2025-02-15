@@ -30,7 +30,8 @@ namespace GFX
         ProceduralSkybox,
         Skybox,
         Sphere,
-        Terrain
+        Terrain,
+        Water
     };
 
     class GameObject : public Object

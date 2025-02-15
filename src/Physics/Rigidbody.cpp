@@ -39,7 +39,7 @@ namespace GFX
 	class ShapeHelper
 	{
 	public:
-		static JPH::Shape *Create(Collider *collider);
+		static bool Create(Collider *c, JPH::RefConst<JPH::Shape> &outShape);
 	};
 
 	Rigidbody::Rigidbody()
@@ -402,254 +402,126 @@ namespace GFX
 		{
 			Collider *c = colliders[0];
 
-			switch(c->GetType())
-			{
-				case ColliderType::Box:
-				{
-					BoxCollider *collider = static_cast<BoxCollider*>(c);
-					Vector3 h = collider->GetSize() * 0.5f;
-					JPH::Vec3 halfExtent(h.x, h.y, h.z);
-					JPH::BoxShapeSettings settings(halfExtent);
-					JPH::ShapeSettings::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-				case ColliderType::Capsule:
-				{
-					CylinderCollider *collider = static_cast<CylinderCollider*>(c);
-					float halfHeight = collider->GetHeight() * 0.5f;
-					float radius = collider->GetRadius();
-					JPH::CapsuleShapeSettings settings(halfHeight, radius);
-					JPH::ShapeSettings::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-				case ColliderType::Cylinder:
-				{
-					CylinderCollider *collider = static_cast<CylinderCollider*>(c);
-					float halfHeight = collider->GetHeight() * 0.5f;
-					float radius = collider->GetRadius();
-					JPH::CylinderShapeSettings settings(halfHeight, radius);
-					JPH::ShapeSettings::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-				case ColliderType::Mesh:
-				{
-					MeshCollider *collider = static_cast<MeshCollider*>(c);
-
-					Mesh *mesh = collider->GetMesh();
-
-					if(!mesh)
-						return false;
-					
-					auto &mVertices = mesh->GetVertices();
-					JPH::VertexList vertices;
-					vertices.resize(mVertices.size());
-
-					for(size_t i = 0; i < mVertices.size(); i++)
-					{
-						auto pos = mVertices[i].position;
-						vertices[i] = JPH::Float3(pos.x, pos.y, pos.z);
-					}
-
-					auto &mIndices = mesh->GetIndices();
-					JPH::IndexedTriangleList indices;
-					indices.resize(mIndices.size() / 3);
-					size_t index = 0;
-
-					for(size_t i = 0; i < mIndices.size(); i+=3)
-					{
-						uint32_t i1 = mIndices[i+0];
-						uint32_t i2 = mIndices[i+1];
-						uint32_t i3 = mIndices[i+2];
-						indices[index++] = JPH::IndexedTriangle(i1, i2, i3);
-					}
-
-					JPH::MeshShapeSettings settings(std::move(vertices), std::move(indices));
-					JPH::ShapeSettings::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-				case ColliderType::Sphere:
-				{
-					SphereCollider *collider = static_cast<SphereCollider*>(c);
-					JPH::SphereShapeSettings settings(collider->GetRadius());
-					JPH::ShapeSettings::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-				case ColliderType::Terrain:
-				{
-					Terrain *terrain = GetGameObject()->GetComponent<Terrain>();
-					if(!terrain)
-					{
-						return false;
-					}
-					
-					auto mesh = terrain->GetMesh(0);
-
-					// Get terrain dimensions
-					uint32_t width = terrain->GetWidth() + 1;
-					uint32_t depth = terrain->GetDepth() + 1;
-					float s = terrain->GetScale();
-
-					// Create a grid of height values
-					std::vector<float> heightData;
-					heightData.resize(width * depth);
-
-					uint32_t index = 0;
-
-					for (uint32_t y = 0; y < depth; y++)
-					{
-						for (uint32_t x = 0; x < width; x++)
-						{
-							// Get the height at this point
-							float height = terrain->GetHeightAtPoint(x, depth - y);
-							index = y * width + x;
-							heightData[index] = height;
-						}
-					}
-
-					JPH::Vec3 offset(0, 0, -1.0f * depth * s);
-
-					JPH::Vec3 scale(s, 1.0f, s);
-
-					JPH::HeightFieldShapeSettings settings(heightData.data(), offset, scale, width);
-					//JPH::uint32 sBlockSizeShift = 2;
-					//settings.mBlockSize = 1 << sBlockSizeShift;
-					//settings.mBitsPerSample = 8;
-
-					JPH::Shape::ShapeResult result = settings.Create();
-
-					if(result.IsValid())
-					{
-						body->shape = result.Get();
-						return true;
-					}
-
-					break;
-				}
-			}
+			if(!ShapeHelper::Create(c, body->shape))
+				return false;
+			
+			return true;
 		}
 		else
 		{
 			//Compound shape
 			JPH::StaticCompoundShapeSettings settings;
-			//settings.AddShape()
+
+			for(size_t i = 0; i < colliders.size(); i++)
+			{
+				Collider *c = colliders[i];
+
+				JPH::RefConst<JPH::Shape> shape;
+
+				if(!ShapeHelper::Create(c, shape))
+				{
+					return false;
+				}
+				
+				Vector3 position = c->GetCenter();
+				Quaternion rotation = Quaternionf::Identity();
+				settings.AddShape(JPH::Vec3(position.x, position.y, position.z), 
+									JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w),
+									shape, 0);
+
+				printf("Shape added\n");
+			}
+
+			JPH::Shape::ShapeResult result = settings.Create();
+
+			if(result.IsValid())
+			{
+				body->shape = result.Get();
+				return true;
+			}
+
+			return false;
 		}
 
 		return false;
 	}
 
-	JPH::Shape *ShapeHelper::Create(Collider *collider)
+	bool ShapeHelper::Create(Collider *c, JPH::RefConst<JPH::Shape> &outShape)
 	{
-		switch(collider->GetType())
+		switch(c->GetType())
 		{
 			case ColliderType::Box:
 			{
-				BoxCollider *collider = static_cast<BoxCollider*>(collider);
+				BoxCollider *collider = static_cast<BoxCollider*>(c);
 				Vector3 h = collider->GetSize() * 0.5f;
 				JPH::Vec3 halfExtent(h.x, h.y, h.z);
 				JPH::BoxShapeSettings settings(halfExtent);
-				JPH::ShapeSettings::ShapeResult result;
+				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
-				auto shape = new JPH::BoxShape(settings, result);
-
-				if(!result.IsValid())
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
 			case ColliderType::Capsule:
 			{
-				CylinderCollider *collider = static_cast<CylinderCollider*>(collider);
+				CylinderCollider *collider = static_cast<CylinderCollider*>(c);
 				float halfHeight = collider->GetHeight() * 0.5f;
 				float radius = collider->GetRadius();
 				JPH::CapsuleShapeSettings settings(halfHeight, radius);
-				JPH::ShapeSettings::ShapeResult result;
-				auto shape = new JPH::CapsuleShape(settings, result);
+				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
-				if(!result.IsValid())
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
 			case ColliderType::Cylinder:
 			{
-				CylinderCollider *collider = static_cast<CylinderCollider*>(collider);
+				CylinderCollider *collider = static_cast<CylinderCollider*>(c);
 				float halfHeight = collider->GetHeight() * 0.5f;
 				float radius = collider->GetRadius();
 				JPH::CylinderShapeSettings settings(halfHeight, radius);
-				JPH::ShapeSettings::ShapeResult result;
-				auto shape = new JPH::CylinderShape(settings, result);
+				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
-				if(!result.IsValid())
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
 			case ColliderType::Mesh:
 			{
-				MeshCollider *collider = static_cast<MeshCollider*>(collider);
+				MeshCollider *collider = static_cast<MeshCollider*>(c);
 
 				Mesh *mesh = collider->GetMesh();
 
 				if(!mesh)
-					return nullptr;
+					return false;
 				
-				JPH::VertexList vertices;
-				vertices.resize(mesh->GetVerticesCount());
 				auto &mVertices = mesh->GetVertices();
+				JPH::VertexList vertices;
+				vertices.resize(mVertices.size());
+
 				for(size_t i = 0; i < mVertices.size(); i++)
 				{
 					auto pos = mVertices[i].position;
 					vertices[i] = JPH::Float3(pos.x, pos.y, pos.z);
 				}
 
-				JPH::IndexedTriangleList indices;
-				indices.resize(mesh->GetIndicesCount());
 				auto &mIndices = mesh->GetIndices();
+				JPH::IndexedTriangleList indices;
+				indices.resize(mIndices.size() / 3);
 				size_t index = 0;
+
 				for(size_t i = 0; i < mIndices.size(); i+=3)
 				{
 					uint32_t i1 = mIndices[i+0];
@@ -658,78 +530,84 @@ namespace GFX
 					indices[index++] = JPH::IndexedTriangle(i1, i2, i3);
 				}
 
-				JPH::MeshShapeSettings settings(vertices, indices);
-				JPH::ShapeSettings::ShapeResult result;
-				auto shape = new JPH::MeshShape(settings, result);
+				JPH::MeshShapeSettings settings(std::move(vertices), std::move(indices));
+				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
-				if(!result.IsValid())
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
 			case ColliderType::Sphere:
 			{
-				SphereCollider *collider = static_cast<SphereCollider*>(collider);
+				SphereCollider *collider = static_cast<SphereCollider*>(c);
 				JPH::SphereShapeSettings settings(collider->GetRadius());
-				JPH::ShapeSettings::ShapeResult result;
-				auto shape = new JPH::SphereShape(settings, result);
+				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
-				if(!result.IsValid())
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
 			case ColliderType::Terrain:
 			{
-				Terrain *terrain = collider->GetGameObject()->GetComponent<Terrain>();
+				Terrain *terrain = c->GetGameObject()->GetComponent<Terrain>();
 				if(!terrain)
 				{
-					return nullptr;
+					return false;
 				}
+				
+				auto mesh = terrain->GetMesh(0);
 
 				// Get terrain dimensions
-				uint32_t width = terrain->GetWidth();
-				uint32_t depth = terrain->GetDepth();
+				uint32_t width = terrain->GetWidth() + 1;
+				uint32_t depth = terrain->GetDepth() + 1;
 				float s = terrain->GetScale();
 
 				// Create a grid of height values
 				std::vector<float> heightData;
 				heightData.resize(width * depth);
 
-				for (uint32_t y = 0; y < depth; ++y)
+				uint32_t index = 0;
+
+				for (uint32_t y = 0; y < depth; y++)
 				{
-					for (uint32_t x = 0; x < width; ++x)
+					for (uint32_t x = 0; x < width; x++)
 					{
 						// Get the height at this point
-						float height = terrain->GetHeightAtPoint(x, y);
-						uint32_t index = y * width + x;
+						float height = terrain->GetHeightAtPoint(x, depth - y);
+						index = y * width + x;
 						heightData[index] = height;
 					}
 				}
 
-				JPH::Vec3 offset(0, 0, 0);
-				JPH::Vec3 scale(s, s, -s);
+				JPH::Vec3 offset(0, 0, -1.0f * depth * s);
+
+				JPH::Vec3 scale(s, 1.0f, s);
 
 				JPH::HeightFieldShapeSettings settings(heightData.data(), offset, scale, width);
-				JPH::Shape::ShapeResult result;
-				auto shape = new JPH::HeightFieldShape(settings, result);
+				//JPH::uint32 sBlockSizeShift = 2;
+				//settings.mBlockSize = 1 << sBlockSizeShift;
+				//settings.mBitsPerSample = 8;
 
-				if(!result.IsValid())
+				JPH::Shape::ShapeResult result = settings.Create();
+
+				if(result.IsValid())
 				{
-					delete shape;
-					return nullptr;
+					outShape = result.Get();
+					return true;
 				}
 
-				return shape;
+				break;
 			}
-			default:
-				return nullptr;
 		}
+
+		return false;
 	}
 }

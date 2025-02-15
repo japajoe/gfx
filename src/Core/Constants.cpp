@@ -28,12 +28,18 @@ namespace GFX
 				return "Sphere";
 			case ConstantString::MeshSkybox:
 				return "Skybox";
+			case ConstantString::ShaderHorizontalBlur:
+				return "HorizontalBlur";
+			case ConstantString::ShaderVerticalBlur:
+				return "VerticalBlur";
 			case ConstantString::ShaderDepth:
 				return "Depth";
 			case ConstantString::ShaderDiffuse:
 				return "Diffuse";
 			case ConstantString::ShaderDiffuseInstanced:
 				return "DiffuseInstanced";
+			case ConstantString::ShaderGrayscale:
+				return "Grayscale";
 			case ConstantString::ShaderLine:
 				return "Line";
 			case ConstantString::ShaderParticle:

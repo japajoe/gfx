@@ -5,6 +5,7 @@
 #include "../../System/Numerics/Vector2.hpp"
 #include "../../System/Numerics/Vector3.hpp"
 #include "../../System/Numerics/Quaternion.hpp"
+#include "../../Physics/RaycastHit.hpp"
 
 namespace GFX
 {
@@ -24,7 +25,8 @@ namespace GFX
 		float minLength;
 		float maxLength;
 		float radius;
-		void ApplySpringForce(float rayDistance);
+		void ApplySpringForce(float rayDistance, float unused);
+		void ApplySpringForce(RaycastHit hit);
 		Vector3 GetWheelOffset() const;
 		void SetMinMaxLength();
 	protected:

@@ -15,16 +15,16 @@ namespace GFX
         radius = 0.5f;
         restLength = 0.5f;
         springTravel = 0.2f;
-        springStiffness = 0.010f;
-        damperStiffness = 0.015f;
+        springStiffness = 10.0f;
+        damperStiffness = 15.0f;
 
         minLength = 0.0f;
         maxLength = 0.0f;
         lastLength = 0.0f;
         springLength = 0.5f;
         springVelocity = 0.0f;
-        springForce = 100.0f;
-        damperForce = 10.0f;
+        springForce = 10.0f;
+        damperForce = 100.0f;
 
         center = Vector3(0.0f, 0.0f, 0.0f);
         suspensionForce = Vector3(0.0f, 0.0f, 0.0f);
@@ -81,7 +81,7 @@ namespace GFX
 
                 Vector3 localPosition = (hit.point - rigidBody->GetCenterOfMass());
 
-                rigidBody->AddForceAtPoint(force, localPosition, ForceMode::Impulse);
+                rigidBody->AddForceAtPoint(force, localPosition, ForceMode::Force);
             }
             else
             {

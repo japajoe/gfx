@@ -40,6 +40,11 @@ namespace GFX
 
     }
 
+    void GameBehaviour::OnPostProcess(uint32_t shaderId)
+    {
+
+    }
+
     void GameBehaviour::OnEndFrame()
     {
 
@@ -148,21 +153,27 @@ namespace GFX
         }
     }
 
-    static float accumulator = 0.0f;
-    static constexpr float fixedTimeStep = 1.0f / 60;
+    // static float accumulator = 0.0f;
+    // static constexpr float fixedTimeStep = 1.0f / 60;
 
     void GameBehaviour::OnBehaviourFixedUpdate()
     {
-        accumulator += Time::GetDeltaTime();
+        // accumulator += Time::GetDeltaTime();
 
-        while(accumulator >= fixedTimeStep)
+        // while(accumulator >= fixedTimeStep)
+        // {
+        //     for(auto behaviour : behaviours)
+        //     {
+        //         if(behaviour->GetGameObject()->GetIsActive())
+        //             behaviour->OnFixedUpdate();
+        //     }
+        //     accumulator -= fixedTimeStep;
+        // }
+
+        for(auto behaviour : behaviours)
         {
-            for(auto behaviour : behaviours)
-            {
-                if(behaviour->GetGameObject()->GetIsActive())
-                    behaviour->OnFixedUpdate();
-            }
-            accumulator -= fixedTimeStep;
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnFixedUpdate();
         }
     }
 
@@ -172,6 +183,15 @@ namespace GFX
         {
             if(behaviour->GetGameObject()->GetIsActive())
                 behaviour->OnGUI();
+        }
+    }
+
+    void GameBehaviour::OnBehaviourPostProcess(uint32_t shaderId)
+    {
+        for(auto behaviour : behaviours)
+        {
+            if(behaviour->GetGameObject()->GetIsActive())
+                behaviour->OnPostProcess(shaderId);
         }
     }
 

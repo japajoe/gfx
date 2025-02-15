@@ -56,9 +56,10 @@ namespace GFX
 		static Rectangle GetViewport();
 		static void Add(Renderer *renderer);
 		static void Remove(Renderer *renderer);
-		static void AddPostProcessingShader(Shader *shader, int order);
+		static void AddPostProcessingShader(Shader *shader);
 		static void RemovePostProcessingShader(Shader *shader);
 		static Renderer *GetRendererByIndex(size_t index);
+		static FrameBufferObject *GetFrameBufferByIndex(size_t index);
 	};
 }
 

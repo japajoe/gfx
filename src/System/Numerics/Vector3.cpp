@@ -155,6 +155,21 @@ namespace GFX
         return glm::vec3(transformedVec);
     }
 
+    glm::vec3 Vector3f::Perpendicular(const glm::vec3 &v)
+    {
+        // Handle the special case where the vector is very close to (1, 0, 0)
+        glm::vec3 perpendicularVec = glm::cross(v, glm::vec3(1.0f, 0.0f, 0.0f));
+
+        // If the result is a zero vector, then v was parallel to (1, 0, 0), so use a different vector
+        if (glm::length(perpendicularVec) < 1e-6f)
+        {
+            perpendicularVec = glm::cross(v, glm::vec3(0.0f, 1.0f, 0.0f));
+        }
+
+        // Normalize the perpendicular vector to ensure it has unit length
+        return glm::normalize(perpendicularVec);
+    }
+
     bool Vector3f::IsNan(const glm::vec3 &v)
     {
         if(std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z))

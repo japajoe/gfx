@@ -16,6 +16,7 @@ protected:
     void OnUpdate() override;
     void OnFixedUpdate() override;
     void OnGUI() override;
+    void OnPostProcess(uint32_t shaderId) override;
 };
 
 #endif

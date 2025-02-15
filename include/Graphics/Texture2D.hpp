@@ -15,6 +15,7 @@ namespace GFX
 	public:
 		Texture2D();
 		Texture2D(const Image *image);
+		Texture2D(const uint8_t *data, size_t size, uint32_t width, uint32_t height, uint32_t channels);
 		Texture2D(uint32_t id, uint32_t width, uint32_t height);
 		Texture2D(uint32_t width, uint32_t height, const Color &color);
         Texture2D(const Texture2D &other);

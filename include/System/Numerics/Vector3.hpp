@@ -29,6 +29,7 @@ namespace GFX
         static glm::vec3 Transform(const glm::vec3 &v, const glm::quat &r);
         static glm::vec3 TransformPosition(const glm::vec3 &v, const glm::mat4 &m);
         static glm::vec3 TransformVector(const glm::vec3 &v, const glm::mat4 &m);
+        static glm::vec3 Perpendicular(const glm::vec3 &v);
         static bool IsNan(const glm::vec3 &v);
         static std::string ToString(const glm::vec3 &v);
     };

@@ -11,10 +11,12 @@
 #include "Shaders/LineShader.hpp"
 #include "Shaders/SkyboxShader.hpp"
 #include "Shaders/PostProcessingShader.hpp"
-#include "Shaders/PostProcessing/BlurShader.hpp"
+#include "Shaders/PostProcessing/HorizontalBlurShader.hpp"
+#include "Shaders/PostProcessing/VerticalBlurShader.hpp"
 #include "Shaders/PostProcessing/GrayscaleShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
 #include "Shaders/TerrainShader.hpp"
+#include "Shaders/WaterShader.hpp"
 #include "../External/glad/glad.h"
 #include "../Core/Application.hpp"
 #include "../Core/Constants.hpp"
@@ -188,10 +190,6 @@ namespace GFX
 		}
 
 		postProcessingRenderer.Render(0, shader->GetId(), texture);
-
-		//postProcessingRenderer.Render(framebuffers[1].GetId(), grayscaleShader->GetId(), framebuffers[0].GetTextureId());
-		//postProcessingRenderer.Render(framebuffers[2].GetId(), blurShader->GetId(), framebuffers[1].GetTextureId());
-		//postProcessingRenderer.Render(0, shader->GetId(), framebuffers[2].GetTextureId());
 	}
 
 	void Graphics::Render2DPass()
@@ -269,11 +267,11 @@ namespace GFX
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
 		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
+		auto waterShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderWater), WaterShader::Create());
 		auto postProcessingShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderPostProcessing), PostProcessingShader::Create());
-
-		auto blurShader = Resources::AddShader("Blur", BlurShader::Create());
-		auto grayscaleShader = Resources::AddShader("Grayscale", GrayscaleShader::Create());
-
+		auto horizontalBlurShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderHorizontalBlur), HorizontalBlurShader::Create());
+		auto verticalBlurShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderVerticalBlur), VerticalBlurShader::Create());
+		auto grayscaleShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderGrayscale), GrayscaleShader::Create());
 
 		BindShaderToUniformBuffers(diffuseShader);
 		BindShaderToUniformBuffers(depthShader);
@@ -281,28 +279,24 @@ namespace GFX
 		BindShaderToUniformBuffers(skyboxShader);
 		BindShaderToUniformBuffers(proceduralSkyboxShader);
 		BindShaderToUniformBuffers(terrainShader);
+		BindShaderToUniformBuffers(waterShader);
 		BindShaderToUniformBuffers(postProcessingShader);
-		BindShaderToUniformBuffers(blurShader);
+		BindShaderToUniformBuffers(horizontalBlurShader);
+		BindShaderToUniformBuffers(verticalBlurShader);
 		BindShaderToUniformBuffers(grayscaleShader);
 
 		depthMaterial = std::make_unique<DepthMaterial>();
 
 		shadow.Generate();
-
-		//AddPostProcessingShader(blurShader, 0);
-		//AddPostProcessingShader(blurShader, 2);
-		//AddPostProcessingShader(grayscaleShader, 3);
 	}
 
 	void Graphics::CreateTextures()
 	{
 		//Create default textures
 		auto defaultTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
-		//auto depthTexture = Resources::AddTexture3D(Constants::GetString(ConstantString::TextureDepth), Texture3D(2048, 2048, 5));
 		auto defaultCubemap = Resources::AddTextureCubeMap(Constants::GetString(ConstantString::TextureDefaultCubeMap), TextureCubeMap(2, 2, Color::White()));
 
 		defaultTexture->ObjectLabel("TextureDefault");
-		//depthTexture->ObjectLabel("TextureDepth");
 		defaultCubemap->ObjectLabel("TextureDefaultCubeMap");
 	}
 
@@ -410,7 +404,7 @@ namespace GFX
         }
 	}
 
-	void Graphics::AddPostProcessingShader(Shader *shader, int order)
+	void Graphics::AddPostProcessingShader(Shader *shader)
 	{
         if(!shader)
             return;
@@ -449,5 +443,10 @@ namespace GFX
         return renderers[index];
     }
 
-
+	FrameBufferObject *Graphics::GetFrameBufferByIndex(size_t index)
+	{
+        if(index >= framebuffers.size())
+            return nullptr;
+        return &framebuffers[index];
+	}
 }

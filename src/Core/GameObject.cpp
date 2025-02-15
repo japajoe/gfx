@@ -6,6 +6,7 @@
 #include "../Graphics/Materials/DiffuseMaterial.hpp"
 #include "../Graphics/Materials/SkyboxMaterial.hpp"
 #include "../Graphics/Materials/ProceduralSkyboxMaterial.hpp"
+#include "../Graphics/Materials/WaterMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
 #include "../Graphics/Renderers/Terrain.hpp"
 
@@ -176,6 +177,20 @@ namespace GFX
                 auto renderer = g->AddComponent<Terrain>();
                 renderer->SetCastShadows(false);
                 renderer->SetReceiveShadows(true);
+                break;
+            }
+            case PrimitiveType::Water:
+            {
+                auto mesh = std::make_shared<Mesh>(MeshGenerator::CreateTerrain(128, 128, Vector3(1, 1, 1)));
+                auto material = std::make_shared<WaterMaterial>();
+                material->SetReceiveShadows(true);
+                auto renderer = g->AddComponent<MeshRenderer>();
+                renderer->Add(mesh, material);
+                renderer->SetCastShadows(false);
+                auto settings = renderer->GetSettings(0);
+                settings->cullFace = true;
+                settings->depthTest = true;
+                settings->alphaBlend = true;
                 break;
             }
             default:

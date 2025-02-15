@@ -3,23 +3,14 @@
 namespace GFX
 {
 	static std::string vertexSource = R"(#version 330 core
-
-const vec2[6] positions = vec2[](
-	vec2(  1.0,  1.0),
-	vec2( -1.0,  1.0),
-	vec2( -1.0, -1.0),
-
-	vec2( -1.0, -1.0),
-	vec2(  1.0, -1.0),
-	vec2(  1.0,  1.0)
-);
+layout (location = 0) in vec3 aPosition;
+layout (location = 1) in vec2 aUV;
 
 out vec2 oUV;
 
 void main() {
-    vec2 vertexPos = positions[gl_VertexID];
-	gl_Position = vec4(vertexPos, 0.0, 1.0);
-	oUV = 0.5 * (vertexPos + vec2(1.0, 1.0));
+	gl_Position = vec4(aPosition, 1.0);
+	oUV = aUV;
 })";
 
 	static std::string fragmentSource = R"(#version 330 core

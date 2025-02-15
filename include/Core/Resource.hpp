@@ -29,6 +29,9 @@ namespace GFX
 		ResourceLoadResult result;
         std::string name;
         std::vector<uint8_t> data;
+        uint32_t width;
+        uint32_t height;
+        uint32_t channels;
     };
 
     struct ResourceBatch
