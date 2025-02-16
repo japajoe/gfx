@@ -20,6 +20,8 @@ namespace GFX
 				return "Capsule";
 			case ConstantString::MeshCube:
 				return "Cube";
+			case ConstantString::MeshCylinder:
+				return "Cylinder";
 			case ConstantString::MeshPlane:
 				return "Plane";
 			case ConstantString::MeshQuad:

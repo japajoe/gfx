@@ -190,6 +190,21 @@ namespace GFX
 		return rect.Contains(Input::GetMousePosition());
 	}
 
+	void GUI::Box(const Rectangle &rect)
+	{
+		Initialize();
+		int64_t currentId = GetId(rect, WidgetType_Box);
+
+		Vector2 position = GetPositionFromRectangle(rect);
+		Vector2 size = GetSizeFromRectangle(rect);
+		Color color = style.GetColor(GUIColor_FrameNormal);
+
+		if(style.frameRounding > 0)
+			Graphics2D::AddRectangleRounded(position, size, 0, style.frameRounding, color);
+		else
+			Graphics2D::AddRectangle(position, size, 0, color);
+	}
+
 	void GUI::Text(const Rectangle &rect, const std::string &text)
 	{
 		Initialize();
@@ -793,8 +808,24 @@ namespace GFX
 	Vector2 GUI::CalculateTextSize(const std::string &text)
 	{
 		Initialize();
-		float w, h;
-		font->CalculateBounds(text.c_str(), text.size(), style.fontSize, w, h);
-		return Vector2(w, h);
+		Vector2 size;
+		font->CalculateBounds(text.c_str(), text.size(), style.fontSize, size.x, size.y);
+		return size;
+	}
+
+	float GUI::CalculateTextWidth(const std::string &text)
+	{
+		Initialize();
+		Vector2 size;
+		font->CalculateBounds(text.c_str(), text.size(), style.fontSize, size.x, size.y);
+		return size.x;
+	}
+
+	float GUI::CalculateTextHeight(const std::string &text)
+	{
+		Initialize();
+		Vector2 size;
+		font->CalculateBounds(text.c_str(), text.size(), style.fontSize, size.x, size.y);
+		return size.y;
 	}
 }

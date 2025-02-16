@@ -1,12 +1,12 @@
-#ifndef GFX_ROBOTOMONOREGULAR_HPP
-#define GFX_ROBOTOMONOREGULAR_HPP
+#ifndef GFX_JETBRAINSMONOREGULAR_HPP
+#define GFX_JETBRAINSMONOREGULAR_HPP
 
 #include <cstdint>
 #include <cstdlib>
 
 namespace GFX
 {
-	class RobotoMonoRegular
+	class JetBrainsMonoRegular
 	{
 	public:
         static const uint8_t *GetData();

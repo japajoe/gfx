@@ -116,6 +116,13 @@ namespace GFX
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
+            case PrimitiveType::Cylinder:
+            {
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCylinder));
+                auto renderer = g->AddComponent<MeshRenderer>();
+                renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
             case PrimitiveType::Hemisphere:
             {
                 auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));

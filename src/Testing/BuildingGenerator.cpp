@@ -7,15 +7,14 @@ void BuildingGenerator::OnInitialize()
 
 	GameObject::CreatePrimitive(PrimitiveType::ProceduralSkybox);
 
-	//CreateTerrain();
-
-	auto water = GameObject::CreatePrimitive(PrimitiveType::Water);
-	waterMaterial = water->GetComponent<MeshRenderer>()->GetMaterial<WaterMaterial>(0);
+	CreateTerrain();
 
 	building = GameObject::CreatePrimitive(PrimitiveType::Plane);
 	renderer = building->GetComponent<MeshRenderer>();
 	auto material = renderer->GetMaterial<DiffuseMaterial>(0);
-	material->SetDiffuseColor(Color::Gray());
+	//material->SetDiffuseColor(Color::Gray());
+	material->SetDiffuseTexture(Resources::FindTexture2D("../res/Textures/Mud.png"));
+
 	material->SetReceiveShadows(false);
 	mesh = renderer->GetMesh(0);
 }
@@ -30,37 +29,7 @@ void BuildingGenerator::OnUpdate()
 
 void BuildingGenerator::OnGUI()
 {
-	if(ImGui::Begin("Water Settings"))
-	{
-		if(ImGui::SliderInt("Number of waves", &numWaves, 1, 10))
-		{
-			waterMaterial->SetWaveCount(numWaves);
-		}
 
-		auto waves = waterMaterial->GetWaves();
-
-		for(int i = 0; i < numWaves; i++)
-		{
-			std::string header = "Wave " + std::to_string(i + 1);
-
-			if(ImGui::CollapsingHeader(header.c_str()))
-			{
-				std::string Direction = "Direction##" + std::to_string(i);
-				std::string Steepness = "Steepness##" + std::to_string(i);
-				std::string WaveLength = "Wave length##" + std::to_string(i);
-				std::string Amplitude = "Amplitude##" + std::to_string(i);
-				std::string Speed = "Speed##" + std::to_string(i);
-
-				ImGui::InputFloat2(Direction.c_str(), &waves[i].direction.x);
-				ImGui::InputFloat(Steepness.c_str(), &waves[i].steepness);
-				ImGui::InputFloat(WaveLength.c_str(), &waves[i].waveLength);
-				ImGui::InputFloat(Amplitude.c_str(), &waves[i].amplitude);
-				ImGui::InputFloat(Speed.c_str(), &waves[i].speed);
-			}
-		}
-
-		ImGui::End();
-	}
 }
 
 void BuildingGenerator::Generate()
@@ -182,7 +151,7 @@ void BuildingGenerator::GenerateBuildingMesh(const std::vector<Vector2> &polygon
 		// Base vertices (y = 0)
 		vertices.push_back({{polygon[i].x, 0.0f, polygon[i].y}, {0, -1, 0}, {0, 0}});
 		// Top vertices (y = height)
-		vertices.push_back({{polygon[i].x, height, polygon[i].y}, {0, 1, 0}, {0, 0}});
+		vertices.push_back({{polygon[i].x, height, polygon[i].y}, {0, 1, 0}, {1, 1}});
 	}
 
 	// Add side faces indices

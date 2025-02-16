@@ -45,13 +45,33 @@ void GameManager::OnUpdate()
 			rb->GetGameObject()->SetIsActive(!rb->GetGameObject()->GetIsActive());
 		}
 
+		auto convertVelocityToKmh = [] (const Vector3& velocity) {
+			// Calculate the magnitude in m/s
+			float magnitudeMps = glm::sqrt(velocity.x * velocity.x + 
+											velocity.y * velocity.y + 
+											velocity.z * velocity.z);
+			
+			// Conversion factor from m/s to km/h
+			const float conversionFactor = 3.6f;
+
+			// Convert magnitude to km/h
+			return magnitudeMps * conversionFactor;
+		};
+
 		auto pos = rb->GetTransform()->GetPosition();
-		auto strPos = Vector3f::ToString(pos);
-		auto strFPS = std::to_string(Time::GetFPS());
+		float speed = convertVelocityToKmh(rb->GetLinearVelocity());
+		auto strPos =   "{00FF00FF}Position {FFFFFFFF}" + Vector3f::ToString(pos);
+		auto strFPS =   "{00FF00FF}FPS      {FFFFFFFF}" + std::to_string(Time::GetFPS());
+		auto strSpeed = "{00FF00FF}Speed    {FFFFFFFF}" + std::to_string(speed) + " km/h";
+		auto size = GUI::CalculateTextSize(strPos);
+
 		GUI::BeginFrame();
-		GUI::Button(Rectangle(10, 10, 300, 20), strPos);
-		GUI::Button(Rectangle(10, 40, 300, 20), strFPS);
+		GUI::Box(Rectangle(5, 5, 320, 65));
+		GUI::Text(Rectangle(10, 10, 300, 20), strPos);
+		GUI::Text(Rectangle(10, 30, 300, 20), strFPS);
+		GUI::Text(Rectangle(10, 50, 300, 20), strSpeed);
 		GUI::EndFrame();
+		
 	}
 }
 
@@ -59,7 +79,7 @@ void GameManager::OnFixedUpdate()
 {
 	if(Input::GetKey(KeyCode::Space))
 	{
-		rb->AddForce(Vector3f::UnitY() * 10000.0f);
+		rb->AddForce(Vector3f::UnitY() * 100000.0f);
 	}
 
 	float vertical = Input::GetAxis("Vertical");
@@ -82,7 +102,7 @@ void GameManager::OnFixedUpdate()
 		// Create and apply camera relative movement
 		Vector3 cameraRelativeMovement = Vector3f::Normalize(forwardRelativeVerticalInput + rightRelativeHorizontalInput);
 
-		rb->AddForce(cameraRelativeMovement * 5000.0f);
+		rb->AddForce(cameraRelativeMovement * 50000.0f);
 	}
 
 }
@@ -111,64 +131,36 @@ void GameManager::CreateBall()
 
 void GameManager::CreateCube()
 {
-	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
-	auto cube = GameObject::Create();
-	
-	auto cubeObj = GameObject::CreatePrimitive(PrimitiveType::Cube);
-	cubeObj->GetTransform()->SetParent(cube->GetTransform());
 	Vector3 size(2.2f, 1.6f, 4.2f);
-	cubeObj->GetTransform()->SetScale(size);
-	
-	auto collider = cube->AddComponent<BoxCollider>();
-	collider->SetSize(size);
 
-	auto wheelFronLeft = cube->AddComponent<SphereCollider>();
-	auto wheelFrontRight = cube->AddComponent<SphereCollider>();
-	auto wheelRearLeft = cube->AddComponent<SphereCollider>();
-	auto wheelRearRight = cube->AddComponent<SphereCollider>();
-
-	wheelFronLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
-	wheelFrontRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
-	wheelRearLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
-	wheelRearRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
-
-	{
-		auto objWheelFronLeft = GameObject::CreatePrimitive(PrimitiveType::Sphere);
-		auto objWheelFrontRight = GameObject::CreatePrimitive(PrimitiveType::Sphere);
-		auto objWheelRearLeft = GameObject::CreatePrimitive(PrimitiveType::Sphere);
-		auto objWheelRearRight = GameObject::CreatePrimitive(PrimitiveType::Sphere);
-
-		objWheelFronLeft->GetTransform()->SetParent(cube->GetTransform());
-		objWheelFrontRight->GetTransform()->SetParent(cube->GetTransform());
-		objWheelRearLeft->GetTransform()->SetParent(cube->GetTransform());
-		objWheelRearRight->GetTransform()->SetParent(cube->GetTransform());
-
-		objWheelFronLeft->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
-		objWheelFrontRight->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
-		objWheelRearLeft->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
-		objWheelRearRight->GetTransform()->SetLocalPosition(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
-
-
-	}
-
-
-	rb = cube->AddComponent<Rigidbody>(100.0f);
-	rb->SetBounciness(0);
-	cubeObj->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
+	GameObject *cube = GameObject::Create();
+	auto orbit = Camera::GetMain()->GetGameObject()->AddComponent<MouseOrbit>();
 	orbit->SetTarget(cube->GetTransform());
 
-	cube->GetTransform()->SetPosition(Vector3(20, 30, -20));
+	GameObject *body = GameObject::CreatePrimitive(PrimitiveType::Cube);
+	BoxCollider *collider = cube->AddComponent<BoxCollider>();
+	collider->SetSize(size);
+	body->GetTransform()->SetParent(cube->GetTransform());
+	body->GetTransform()->SetScale(size);
+	body->GetComponent<MeshRenderer>()->GetMaterial<DiffuseMaterial>(0)->SetDiffuseColor(Color::Orange());
 
-	// auto wheelFronLeft = cube->AddComponent<WheelCollider>();
-	// auto wheelFrontRight = cube->AddComponent<WheelCollider>();
-	// auto wheelRearLeft = cube->AddComponent<Wheel>();
-	// auto wheelRearRight = cube->AddComponent<Wheel>();
+	auto createWheel = [] (const Vector3 &position, GameObject *parent) -> GameObject* {
+		GameObject *obj = GameObject::CreatePrimitive(PrimitiveType::Cylinder);
+		obj->GetTransform()->SetParent(parent->GetTransform());
+		obj->GetTransform()->SetLocalPosition(position);
+		obj->GetTransform()->SetRotation(Quaternionf::Euler(glm::radians(90.0f), glm::radians(90.0f), 0));
+		obj->AddComponent<SphereCollider>();
+		return obj;
+	};
 
-	// wheelFronLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * -1.2f));
-	// wheelFrontRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * -1.2f));
+	createWheel(Vector3(size.x * 1.0 * -1.0f, -1.0f, size.z * -1.2f), cube);
+	createWheel(Vector3(size.x * 1.0, 		  -1.0f, size.z * -1.2f), cube);
+	createWheel(Vector3(size.x * 1.0 * -1.0f, -1.0f, size.z *  1.2f), cube);
+	createWheel(Vector3(size.x * 1.0, 		  -1.0f, size.z *  1.2f), cube);
 
-	// wheelRearLeft->SetCenter(Vector3(size.x * 1.0 * -1.0f,  -1.0f, size.z * 1.2f));
-	// wheelRearRight->SetCenter(Vector3(size.x * 1.0, 		-1.0f, size.z * 1.2f));
+	rb = cube->AddComponent<Rigidbody>(1000.0f);
+	rb->SetBounciness(0);
+	rb->MovePosition(Vector3(20, 50, -20));
 }
 
 void GameManager::CreateTerrain()

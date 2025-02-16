@@ -14,6 +14,7 @@ namespace GFX
 	    SphereCollider();
 	    void SetRadius(float radius);
 	    float GetRadius() const;
+		void RenderShape() override;
 	};
 }
 

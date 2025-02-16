@@ -57,6 +57,7 @@ namespace GFX
         static Mesh Combine(const std::vector<Mesh*> &meshes);
         static Mesh CreateCapsule(const Vector3 &scale);
         static Mesh CreateCube(const Vector3 &scale);
+        static Mesh CreateCylinder(const Vector3 &scale);
         static Mesh CreatePlane(const Vector3 &scale);
         static Mesh CreateSkybox(const Vector3 &scale);
         static Mesh CreateQuad(const Vector3 &scale);

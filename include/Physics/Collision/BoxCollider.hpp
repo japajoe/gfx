@@ -14,6 +14,7 @@ namespace GFX
 	    BoxCollider();
 	    void SetSize(const Vector3 &size);
 	    Vector3 GetSize() const;
+		void RenderShape() override;
 	};
 }
 

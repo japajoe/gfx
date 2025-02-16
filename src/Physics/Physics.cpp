@@ -491,17 +491,20 @@ namespace GFX
 
         if(narrowPhase.CastRay(ray, result))
         {
-            JPH::Vec3 point = from + (JPH::Vec3(direction.x, direction.y, direction.z) * result.mFraction);
-            hit.point = Vector3(point.GetX(), point.GetY(), point.GetZ());
-            hit.distance = Vector3f::Distance(origin, hit.point);
-
             auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
             JPH::uint64 userData = bodyInterface.GetUserData(result.mBodyID);
             Rigidbody *rb = reinterpret_cast<Rigidbody*>(userData);
 
+            //JPH::Vec3 point = from + (JPH::Vec3(direction.x, direction.y, direction.z) * result.mFraction);
+            JPH::Vec3 point = ray.mOrigin + ray.mDirection * result.mFraction;
+            hit.point = Vector3(point.GetX(), point.GetY(), point.GetZ());
+            hit.distance = Vector3f::Distance(origin, hit.point);
+
             if(rb != nullptr)
             {
                 hit.transform = rb->GetTransform();
+                JPH::Vec3 normal = rb->GetBody()->GetWorldSpaceSurfaceNormal(result.mSubShapeID2, point);
+                hit.normal = Vector3(normal.GetX(), normal.GetY(), normal.GetZ());
             }
             else
             {

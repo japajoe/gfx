@@ -5,9 +5,7 @@ class BuildingGenerator : public GameBehaviour
 private:
 	GameObject *building = nullptr;
 	MeshRenderer *renderer = nullptr;
-	WaterMaterial *waterMaterial = nullptr;
 	Mesh *mesh = nullptr;
-	int numWaves = 1;
 	void Generate();
 	std::vector<Vector2> GenerateRandomPolygon(int sides, float radius);
 	std::vector<Vector2> GenerateRandomPolygon2(int sides, float radius);

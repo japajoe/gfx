@@ -27,6 +27,7 @@
 #include "../Core/Light.hpp"
 #include "../Core/Resources.hpp"
 #include "../Embedded/RobotoMonoRegular.hpp"
+#include "../Embedded/JetBrainsMonoRegular.hpp"
 #include "Graphics2D.hpp"
 #include "Renderers/Renderer.hpp"
 #include "Renderers/LineRenderer.hpp"
@@ -304,7 +305,7 @@ namespace GFX
 	{
 		//Create default font
 		Font font;
-		if(font.LoadFromMemory(RobotoMonoRegular::GetData(), RobotoMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
+		if(font.LoadFromMemory(JetBrainsMonoRegular::GetData(), JetBrainsMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
 		{
 			if(font.GenerateTexture())
 			{				
@@ -317,6 +318,7 @@ namespace GFX
 	{
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshCapsule), MeshGenerator::CreateCapsule(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshCube), MeshGenerator::CreateCube(Vector3f::One()));
+		Resources::AddMesh(Constants::GetString(ConstantString::MeshCylinder), MeshGenerator::CreateCylinder(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshPlane), MeshGenerator::CreatePlane(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshQuad), MeshGenerator::CreateQuad(Vector3f::One()));
 		Resources::AddMesh(Constants::GetString(ConstantString::MeshSphere), MeshGenerator::CreateSphere(Vector3f::One()));

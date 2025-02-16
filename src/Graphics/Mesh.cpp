@@ -523,6 +523,92 @@ namespace GFX
         return mesh;
     }
 
+Mesh MeshGenerator::CreateCylinder(const Vector3 &scale)
+{
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+
+    const float height = 1.0f;
+    const float radius = 0.5f;
+    const uint32_t slices = 12;
+    float halfHeight = height / 2.0F;
+
+    // Generate the side vertices.
+    for (uint32_t slice = 0; slice <= slices; slice++) 
+    {
+        float angle = slice * glm::tau<float>() / slices;
+        float x = glm::cos(angle) * (radius / 2.0F);
+        float z = glm::sin(angle) * (radius / 2.0F);
+        float u = (float) slice / slices;
+
+        // Bottom vertex.
+        vertices.push_back(Vertex(  Vector3(x, -halfHeight, z),
+                                    Vector3f::Normalize(Vector3(x, 0.0F, z)),
+                                    Vector2(u, 1.0F)));
+
+        // Top vertex.
+        vertices.push_back(Vertex(  Vector3(x, halfHeight, z),
+                                    Vector3f::Normalize(Vector3(x, 0.0F, z)),
+                                    Vector2(u, 0.0F)));
+    }
+
+    // Generate the side indices with flipped winding order.
+    for (uint32_t slice = 0; slice < slices; slice++) 
+    {
+        uint32_t baseIndex = slice * 2;
+        uint32_t nextIndex = (slice + 1) * 2;
+
+        // Flip the winding order: swap the order of the indices
+        indices.push_back(baseIndex);
+        indices.push_back(baseIndex + 1);
+        indices.push_back(nextIndex);
+
+        indices.push_back(nextIndex);
+        indices.push_back(baseIndex + 1);
+        indices.push_back(nextIndex + 1);
+    }
+
+    // Generate the bottom cap with flipped winding order.
+    size_t bottomCenterIndex = vertices.size();
+
+    vertices.push_back(Vertex(  Vector3(0, -halfHeight, 0),
+                                -Vector3f::UnitY(),
+                                Vector2(0.5F, 0.5F)));
+
+    for (uint32_t slice = 0; slice < slices; slice++) 
+    {
+        uint32_t baseIndex = slice * 2;
+
+        // Flip the winding order
+        indices.push_back(bottomCenterIndex);
+        indices.push_back(baseIndex);
+        indices.push_back(baseIndex + 2);
+    }
+
+    // Generate the top cap with flipped winding order.
+    int topCenterIndex = vertices.size();
+
+    vertices.push_back(Vertex(  Vector3(0, halfHeight, 0),
+                                Vector3f::UnitY(),
+                                Vector2(0.5F, 0.5F)));
+
+    for (uint32_t slice = 0; slice < slices; slice++) 
+    {
+        uint32_t baseIndex = slice * 2 + 1;
+
+        // Flip the winding order
+        indices.push_back(topCenterIndex);
+        indices.push_back(baseIndex + 2);
+        indices.push_back(baseIndex);
+    }
+
+    SetScale(vertices, scale);
+    Mesh mesh(vertices, indices, true);
+    mesh.Generate();
+    return mesh;
+}
+
+
     Mesh MeshGenerator::CreatePlane(const Vector3 &scale)
     {
         std::vector<Vertex> vertices;

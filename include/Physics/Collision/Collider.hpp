@@ -27,6 +27,7 @@ namespace GFX
 		ColliderType GetType() const;
 	    void SetCenter(const Vector3 &center);
 	    Vector3 GetCenter() const;
+        virtual void RenderShape();
 	};
 }
 

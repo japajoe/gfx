@@ -19,6 +19,7 @@ namespace GFX
 		FontDefault,
 		MeshCapsule,
 		MeshCube,
+		MeshCylinder,
 		MeshPlane,
 		MeshQuad,
 		MeshSphere,

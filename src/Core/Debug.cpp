@@ -1,5 +1,7 @@
 #include "Debug.hpp"
 #include "../Graphics/Renderers/LineRenderer.hpp"
+#include "../System/Numerics/Vector3.hpp"
+#include "../System/Numerics/Matrix4.hpp"
 #include <map>
 #include <cstdlib> // for system()
 
@@ -73,13 +75,16 @@ namespace GFX
         LineRenderer::DrawLine(p1, p2, color);
     }
 
-    void Debug::DrawSphere(const Vector3 &center, float radius, const Color &color, int segments, int latitudeCount)
+    void Debug::DrawSphere(const Vector3 &center, float radius, const Quaternion &rotation, const Color &color, int segments, int latitudeCount)
     {
         // Ensure minimum divisions
         if (segments < 3)
             segments = 3;
         if (latitudeCount < 2)
             latitudeCount = 2;
+
+        Matrix4 rotationMatrix = Matrix4f::CreateRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+        
 
         // --- Draw latitude circles (horizontal slices, excluding poles) ---
         // latitude indices from 1 to latitudeCount-2,
@@ -105,6 +110,8 @@ namespace GFX
                 Vector3 currentPoint = center + Vector3(x, y, z);
                 if (seg > 0)
                 {
+                    Vector4 p1 = rotationMatrix * Vector4(previousPoint.x, previousPoint.y, previousPoint.z, 1.0f);
+                    Vector4 p2 = rotationMatrix * Vector4(currentPoint.x, currentPoint.y, currentPoint.z, 1.0f);
                     Debug::DrawLine(previousPoint, currentPoint, color);
                 }
                 previousPoint = currentPoint;
@@ -130,10 +137,54 @@ namespace GFX
                 Vector3 currentPoint = center + Vector3(x, y, z);
                 if (lat > 0)
                 {
-                    Debug::DrawLine(previousPoint, currentPoint, color);
+                    Vector4 p1 = rotationMatrix * Vector4(previousPoint.x, previousPoint.y, previousPoint.z, 1.0f);
+                    Vector4 p2 = rotationMatrix * Vector4(currentPoint.x, currentPoint.y, currentPoint.z, 1.0f);
+                    Debug::DrawLine(p1, p2, color);
                 }
                 previousPoint = currentPoint;
             }
         }
+    }
+
+    void Debug::DrawCube(const Vector3 &center, const Vector3 &size, const Quaternion &rotation, const Color &color)
+    {
+        // Half extents of the cube (since size is the full extent)
+        Vector3 halfSize = size * 0.5f;
+
+        // Cube vertices relative to the center
+        Vector3 vertices[8] = {
+            center + Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
+            center + Vector3(halfSize.x, -halfSize.y, -halfSize.z),
+            center + Vector3(halfSize.x, -halfSize.y, halfSize.z),
+            center + Vector3(-halfSize.x, -halfSize.y, halfSize.z),
+            center + Vector3(-halfSize.x, halfSize.y, -halfSize.z),
+            center + Vector3(halfSize.x, halfSize.y, -halfSize.z),
+            center + Vector3(halfSize.x, halfSize.y, halfSize.z),
+            center + Vector3(-halfSize.x, halfSize.y, halfSize.z)
+        };
+
+        // Apply rotation to each vertex
+        for (int i = 0; i < 8; ++i)
+        {
+            vertices[i] = rotation * (vertices[i] - center) + center;
+        }
+
+        // Bottom face
+        LineRenderer::DrawLine(vertices[0], vertices[1], color);
+        LineRenderer::DrawLine(vertices[1], vertices[2], color);
+        LineRenderer::DrawLine(vertices[2], vertices[3], color);
+        LineRenderer::DrawLine(vertices[3], vertices[0], color);
+
+        // Top face
+        LineRenderer::DrawLine(vertices[4], vertices[5], color);
+        LineRenderer::DrawLine(vertices[5], vertices[6], color);
+        LineRenderer::DrawLine(vertices[6], vertices[7], color);
+        LineRenderer::DrawLine(vertices[7], vertices[4], color);
+
+        // Vertical edges
+        LineRenderer::DrawLine(vertices[0], vertices[4], color);
+        LineRenderer::DrawLine(vertices[1], vertices[5], color);
+        LineRenderer::DrawLine(vertices[2], vertices[6], color);
+        LineRenderer::DrawLine(vertices[3], vertices[7], color);
     }
 }

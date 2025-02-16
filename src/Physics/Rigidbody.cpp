@@ -42,7 +42,7 @@ namespace GFX
 		static bool Create(Collider *c, JPH::RefConst<JPH::Shape> &outShape);
 	};
 
-	Rigidbody::Rigidbody()
+	Rigidbody::Rigidbody() : Component()
 	{
 		body = std::make_unique<PhysicsBody>();
 		body->handle = nullptr;
@@ -51,7 +51,7 @@ namespace GFX
 		isActive = true;
 	}
 
-	Rigidbody::Rigidbody(float mass)
+	Rigidbody::Rigidbody(float mass) : Component()
 	{
 		body = std::make_unique<PhysicsBody>();
 		body->handle = nullptr;
@@ -391,7 +391,8 @@ namespace GFX
 
 	bool Rigidbody::CreateShape()
 	{
-		auto colliders = GetGameObject()->GetComponentsOfType<Collider>();
+		auto colliders = GetGameObject()->GetComponentsOfTypeInChildren<Collider>();
+		//auto colliders = GetGameObject()->GetComponentsOfType<Collider>();
 
 		if(colliders.size() == 0)
 		{
@@ -409,7 +410,6 @@ namespace GFX
 		}
 		else
 		{
-			//Compound shape
 			JPH::StaticCompoundShapeSettings settings;
 
 			for(size_t i = 0; i < colliders.size(); i++)
@@ -423,13 +423,11 @@ namespace GFX
 					return false;
 				}
 				
-				Vector3 position = c->GetCenter();
+				Vector3 position = c->GetCenter() + c->GetTransform()->GetLocalPosition();
 				Quaternion rotation = Quaternionf::Identity();
 				settings.AddShape(JPH::Vec3(position.x, position.y, position.z), 
 									JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w),
 									shape, 0);
-
-				printf("Shape added\n");
 			}
 
 			JPH::Shape::ShapeResult result = settings.Create();

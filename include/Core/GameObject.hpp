@@ -23,6 +23,7 @@ namespace GFX
     {
         Capsule,
         Cube,
+        Cylinder,
         Hemisphere,
         Plane,
         Quad,
@@ -92,6 +93,38 @@ namespace GFX
                 }
             }
             return targets;
+        }
+
+        template <typename T>
+        std::vector<T*> GetComponentsOfTypeInChildren() const
+        {
+            static_assert(std::is_base_of<Component, T>::value, "GetComponentsOfTypeInChildren parameter must derive from Component");
+
+            std::vector<T*> allComponents;
+
+            // Get components of the current GameObject
+            for (size_t i = 0; i < components.size(); i++)
+            {
+                T* ptr = dynamic_cast<T*>(components[i].get());
+                if (ptr)
+                {
+                    allComponents.push_back(ptr);
+                }
+            }
+
+            // Recursively get components from children using the Transform's GetChildren
+            //auto &children = transform.GetChildren();
+
+            Transform *child = nullptr;
+            size_t index = 0;
+
+            while((child = transform.GetChild(index++)) != nullptr)
+            {
+                auto childComponents = child->GetGameObject()->GetComponentsOfTypeInChildren<T>();
+                allComponents.insert(allComponents.end(), childComponents.begin(), childComponents.end());
+            }
+
+            return allComponents;
         }
 
         template <typename T, typename... Param>

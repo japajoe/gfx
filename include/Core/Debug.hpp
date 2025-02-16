@@ -2,6 +2,7 @@
 #define GFX_DEBUG_HPP
 
 #include "../System/Numerics/Vector3.hpp"
+#include "../System/Numerics/Quaternion.hpp"
 #include "../Graphics/Color.hpp"
 #include <string>
 #include <functional>
@@ -43,7 +44,8 @@ namespace GFX
         static void WriteError(const std::string &text);
         static void SetCallback(const DebugLogCallback &callback);
         static void DrawLine(const Vector3 &p1, const Vector3 &p2, const Color &color);
-        static void DrawSphere(const Vector3 &center, float radius, const Color &color, int segments = 36, int latitudeCount = 8);
+        static void DrawSphere(const Vector3 &center, float radius, const Quaternion &rotation, const Color &color, int segments = 36, int latitudeCount = 8);
+        static void DrawCube(const Vector3 &center, const Vector3 &size, const Quaternion &rotation, const Color &color);
 
         template<typename... Args>
         static void Write(const std::string &format, Args... args) 

@@ -109,6 +109,7 @@ namespace GFX
 
 	enum WidgetType
 	{
+		WidgetType_Box,
 		WidgetType_Button,
 		WidgetType_CheckBox,
 		WidgetType_ComboBox,
@@ -157,6 +158,7 @@ namespace GFX
 		static bool IsMousePressed();
 		static bool IsMouseDown();
 		static bool IsMouseUp();
+		static void Box(const Rectangle &rect);
 		static void Text(const Rectangle &rect, const std::string &text);
 		static bool Button(const Rectangle &rect, const std::string &text);
 		static bool CheckBox(const Rectangle &rect, bool &value);
@@ -164,6 +166,8 @@ namespace GFX
 		static bool ComboBox(const Rectangle &rect, const std::vector<std::string> &items, int &selectedIndex);
 		static Font *GetDefaultFont();
 		static Vector2 CalculateTextSize(const std::string &text);
+		static float CalculateTextWidth(const std::string &text);
+		static float CalculateTextHeight(const std::string &text);
 	};
 }
 

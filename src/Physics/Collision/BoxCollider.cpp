@@ -1,4 +1,6 @@
 #include "BoxCollider.hpp"
+#include "../../Core/Debug.hpp"
+#include "../../Core/Transform.hpp"
 
 namespace GFX
 {
@@ -16,5 +18,10 @@ namespace GFX
     Vector3 BoxCollider::GetSize() const
     {
         return size;
+    }
+
+    void BoxCollider::RenderShape()
+    {
+        Debug::DrawCube(center + GetTransform()->GetPosition(), size, GetTransform()->GetLocalRotation(), Color::Red());
     }
 }

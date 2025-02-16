@@ -27,4 +27,9 @@ namespace GFX
     {
         return center;
     }
+
+	void Collider::RenderShape()
+	{
+
+	}
 }
