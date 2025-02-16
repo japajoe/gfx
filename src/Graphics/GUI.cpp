@@ -37,7 +37,7 @@ namespace GFX
 
 	static int64_t GetId(const Rectangle &rect, WidgetType type)
 	{
-		size_t size = sizeof(Rectangle) + sizeof(WidgetType);
+		constexpr size_t size = sizeof(Rectangle) + sizeof(WidgetType);
 		uint8_t data[size];
 		const void *pRect = (const void*)&rect;
 		memcpy(data, pRect, sizeof(Rectangle));

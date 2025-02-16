@@ -214,28 +214,28 @@ namespace GFX
 		{
             for(size_t i = 0; i < size; i += 3) 
 			{
-                uint8_t r = static_cast<uint8_t>(clamp(r * 255, 0.0, 255.0));
-                uint8_t g = static_cast<uint8_t>(clamp(g * 255, 0.0, 255.0));
-                uint8_t b = static_cast<uint8_t>(clamp(b * 255, 0.0, 255.0));
+                uint8_t R = static_cast<uint8_t>(clamp(r * 255, 0.0, 255.0));
+                uint8_t G = static_cast<uint8_t>(clamp(g * 255, 0.0, 255.0));
+                uint8_t B = static_cast<uint8_t>(clamp(b * 255, 0.0, 255.0));
 
-                data[i+0] = r;
-                data[i+1] = g;
-                data[i+2] = b;
+                data[i+0] = R;
+                data[i+1] = G;
+                data[i+2] = B;
             }
         } 
 		else 
 		{
             for(size_t i = 0; i < size; i += 4) 
 			{
-                uint8_t r = static_cast<uint8_t>(clamp(r * 255, 0.0, 255.0));
-                uint8_t g = static_cast<uint8_t>(clamp(g * 255, 0.0, 255.0));
-                uint8_t b = static_cast<uint8_t>(clamp(b * 255, 0.0, 255.0));
-                uint8_t a = static_cast<uint8_t>(clamp(a * 255, 0.0, 255.0));
+                uint8_t R = static_cast<uint8_t>(clamp(r * 255, 0.0, 255.0));
+                uint8_t G = static_cast<uint8_t>(clamp(g * 255, 0.0, 255.0));
+                uint8_t B = static_cast<uint8_t>(clamp(b * 255, 0.0, 255.0));
+                uint8_t A = static_cast<uint8_t>(clamp(a * 255, 0.0, 255.0));
 
-                data[i+0] = r;
-                data[i+1] = g;
-                data[i+2] = b;
-                data[i+3] = a;
+                data[i+0] = R;
+                data[i+1] = G;
+                data[i+2] = B;
+                data[i+3] = A;
             }
         }
         

@@ -24,7 +24,7 @@ jobs:
         mkdir build
         cd build
         cmake -A ${{ matrix.name }} ..
-        cmake --build .
+        cmake --build . -- /m
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:

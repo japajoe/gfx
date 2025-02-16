@@ -175,7 +175,7 @@ namespace GFX
         std::vector<Rigidbody*> bodies;
     };
 
-    static bool JoltAssertFailed(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
+    static bool JoltAssertFailed(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
     {
         printf("%s:%u | %s | %s \n", inFile, inLine, inExpression, inMessage);
         return true; //Trigger breakpoint
@@ -210,7 +210,8 @@ namespace GFX
 	    physicsManager->physicsSystem.SetContactListener(&physicsManager->contactListener);
 
     #ifdef JPH_ENABLE_ASSERTS
-        JPH::AssertFailed = JoltAssertFailed;
+        typedef bool(*AssertFunction)(const char *, const char *, const char *, JPH::uint);
+        JPH::AssertFailed = (AssertFunction)JoltAssertFailed;
     #endif
     }
 
