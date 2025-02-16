@@ -23,7 +23,7 @@ jobs:
         git submodule update --init --recursive
         mkdir build
         cd build
-        cmake -A ${{ matrix.name }}
+        cmake -A ${{ matrix.name }} ..
         cmake --build .
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
