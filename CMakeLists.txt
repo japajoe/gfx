@@ -50,6 +50,7 @@ set(JPH_DOUBLE_PRECISION ON CACHE BOOL "Compiles the library so that all positio
 set(JPH_USE_STD_VECTOR ON CACHE BOOL "Use std::vector instead of Jolt's own Array class.")
 set(JPH_PROFILE_ENABLED ON CACHE BOOL "Turns on the internal profiler.")
 set(JPH_ENABLE_ASSERTS ON CACHE BOOL "Compiles the library so that it rises an assert in case of failures. The library ignores these failures otherwise.")
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use the static MSVC runtime library.")
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/miniaudioex)

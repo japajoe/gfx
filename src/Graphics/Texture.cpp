@@ -15,7 +15,7 @@ namespace GFX
 
 	void *Texture::GetHandle() const
 	{
-		return reinterpret_cast<void*>(id);
+		return reinterpret_cast<void*>(static_cast<uint64_t>(id));
 	}
 
 	void Texture::ObjectLabel(const std::string &label)
