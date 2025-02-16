@@ -325,7 +325,7 @@ namespace GFX
                 String::Replace(lines[i], ">", "");
                 String::Replace(lines[i], "#include ", "");
 
-                if(includesMap.contains(lines[i]) > 0)
+                if(includesMap.contains(lines[i]))
                 {
                     lines[i] = includesMap[lines[i]];
                     modified = true;

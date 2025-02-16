@@ -41,7 +41,7 @@ set(ASSIMP_BUILD_FBX_IMPORTER ON BOOL)
 set(ASSIMP_BUILD_GLTF_IMPORTER ON BOOL)
 set(ASSIMP_INSTALL OFF CACHE BOOL "Install Assimp library. Disable this if you want to use Assimp as a submodule")
 set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "Install MSVC debug files")
-set(USE_STATIC_CRT ON CACHE BOOL "Link against the static MSVC runtime libraries")
+set(USE_STATIC_CRT OFF CACHE BOOL "Link against the static MSVC runtime libraries")
 set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "Build Assimp view tool (requires DirectX)")
 
 # JoltPhysics settings

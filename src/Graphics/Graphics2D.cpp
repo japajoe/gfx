@@ -1172,7 +1172,8 @@ namespace GFX
             std::vector<char> buf;
             buf.resize((int)(log_length + 1));
             glGetShaderInfoLog(handle, log_length, nullptr, &buf[0]);
-            fprintf(stderr, "%s\n", buf.begin());
+            char *pBuffer = (char*)buf.data();
+            fprintf(stderr, "%s\n", pBuffer);
         }
 
         return (GLboolean)status == GL_TRUE;
@@ -1190,7 +1191,8 @@ namespace GFX
             std::vector<char> buf;
             buf.resize((int)(log_length + 1));
             glGetProgramInfoLog(handle, log_length, nullptr, &buf[0]);
-            fprintf(stderr, "%s\n", buf.begin());
+            char *pBuffer = (char*)buf.data();
+            fprintf(stderr, "%s\n", pBuffer);
         }
         return (GLboolean)status == GL_TRUE;
     }
