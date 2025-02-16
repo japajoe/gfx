@@ -3,6 +3,9 @@ project(gfx)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# Windows dependant setting
+set(GFX_STATIC_MSVC_RUNTIME ON CACHE BOOL "Link against the static MSVC runtime libraries")
+
 # GLFW settings
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
@@ -41,8 +44,13 @@ set(ASSIMP_BUILD_FBX_IMPORTER ON BOOL)
 set(ASSIMP_BUILD_GLTF_IMPORTER ON BOOL)
 set(ASSIMP_INSTALL OFF CACHE BOOL "Install Assimp library. Disable this if you want to use Assimp as a submodule")
 set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "Install MSVC debug files")
-set(USE_STATIC_CRT OFF CACHE BOOL "Link against the static MSVC runtime libraries")
 set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "Build Assimp view tool (requires DirectX)")
+
+if(GFX_STATIC_MSVC_RUNTIME)
+	set(USE_STATIC_CRT ON CACHE BOOL "Link against the static MSVC runtime libraries")
+elseif()
+	set(USE_STATIC_CRT OFF CACHE BOOL "Link against the static MSVC runtime libraries")
+endif()
 
 # JoltPhysics settings
 set(JPH_SHARED_LIBRARY OFF CACHE BOOL "Use the Jolt library as a shared library. Use JPH_BUILD_SHARED_LIBRARY to build Jolt as a shared library.")
@@ -51,6 +59,12 @@ set(JPH_USE_STD_VECTOR ON CACHE BOOL "Use std::vector instead of Jolt's own Arra
 set(JPH_PROFILE_ENABLED ON CACHE BOOL "Turns on the internal profiler.")
 set(JPH_ENABLE_ASSERTS ON CACHE BOOL "Compiles the library so that it rises an assert in case of failures. The library ignores these failures otherwise.")
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use the static MSVC runtime library.")
+
+if(GFX_STATIC_MSVC_RUNTIME)
+	set(USE_STATIC_MSVC_RUNTIME_LIBRARY ON CACHE BOOL "Use the static MSVC runtime library.")
+elseif()
+	set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "Use the static MSVC runtime library.")
+endif()
 
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/miniaudioex)
