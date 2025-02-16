@@ -2,6 +2,7 @@
 #include "../../Core/Resources.hpp"
 #include "../../Core/Constants.hpp"
 #include "../../External/glad/glad.h"
+#include "../../External/glm/glm.hpp"
 #include "../../System/Random.hpp"
 
 namespace GFX
@@ -193,7 +194,7 @@ namespace GFX
 
     void WaterMaterial::SetWaveCount(int count)
     {
-        numWaves = std::clamp(count, 1, MAX_WAVES);
+        numWaves = glm::clamp(count, 1, MAX_WAVES);
     }
 
     int WaterMaterial::GetMaxWaveCount() const

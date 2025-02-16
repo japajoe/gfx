@@ -265,7 +265,7 @@ namespace GFX
 		float br = glm::max(0.0f, roundBottomRight + roundEdges);
 		float tl = glm::max(0.0f, roundTopLeft + roundEdges);
 		float tr = glm::max(0.0f, roundTopRight + roundEdges);
-		float f = (float)(M_PI * 0.5f / (cornerVertexCount - 1));
+		float f = (float)(glm::pi<float>() * 0.5f / (cornerVertexCount - 1));
 		float a1 = 1.0f;
 		float a2 = 1.0f;
 		float x = 1.0f;
@@ -405,7 +405,7 @@ namespace GFX
 
         for (int i = 0; i < segments; ++i) 
 		{
-            float angle = 2.0f * M_PI * i / segments;
+            float angle = 2.0f * glm::pi<float>() * i / segments;
             vertexBufferTemp[i].position = Vector2(radius * cos(angle), radius * sin(angle));
             vertexBufferTemp[i].uv = Vector2(0.5f + 0.5f * cos(angle), 0.5f + 0.5f * sin(angle));
             vertexBufferTemp[i].color = color;
@@ -446,8 +446,8 @@ namespace GFX
         const float radius = size.x / sqrt(3); // Calculate the radius
 
         Vector2 vertex1(position.x, position.y + radius); // Top vertex
-        Vector2 vertex2(position.x - radius * glm::sin(M_PI / 3), position.y - radius * glm::cos(M_PI / 3)); // Bottom-left vertex
-        Vector2 vertex3(position.x + radius * glm::sin(M_PI / 3), position.y - radius * glm::cos(M_PI / 3)); // Bottom-right vertex
+        Vector2 vertex2(position.x - radius * glm::sin(glm::pi<float>() / 3), position.y - radius * glm::cos(glm::pi<float>() / 3)); // Bottom-left vertex
+        Vector2 vertex3(position.x + radius * glm::sin(glm::pi<float>() / 3), position.y - radius * glm::cos(glm::pi<float>() / 3)); // Bottom-right vertex
 
         Vector2 uv1(0.5f, 1.0f); // Top vertex UV
         Vector2 uv2(0.0f, 0.0f); // Bottom-left vertex UV
@@ -1078,7 +1078,7 @@ namespace GFX
         centerX /= numVertices;
         centerY /= numVertices;
 
-        float radians = angleDegrees * (M_PI / 180.0f);
+        float radians = angleDegrees * (glm::pi<float>() / 180.0f);
         float cosAngle = cos(radians);
         float sinAngle = sin(radians);
 

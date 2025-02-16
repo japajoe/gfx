@@ -39,7 +39,7 @@ namespace GFX
     {
         static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
         static constexpr JPH::BroadPhaseLayer MOVING(1);
-        static constexpr uint NUM_LAYERS(2);
+        static constexpr JPH::uint NUM_LAYERS(2);
     };
 
     /// Class that determines if two object layers can collide
@@ -72,7 +72,7 @@ namespace GFX
             mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
         }
 
-        uint GetNumBroadPhaseLayers() const override
+        JPH::uint GetNumBroadPhaseLayers() const override
         {
             return BroadPhaseLayers::NUM_LAYERS;
         }
