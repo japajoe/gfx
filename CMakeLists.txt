@@ -4,7 +4,7 @@ project(gfx)
 set(CMAKE_CXX_STANDARD 20)
 
 # Windows dependant setting
-set(GFX_STATIC_MSVC_RUNTIME ON CACHE BOOL "Link against the static MSVC runtime libraries")
+set(GFX_STATIC_MSVC_RUNTIME OFF CACHE BOOL "Link against the static MSVC runtime libraries")
 
 # GLFW settings
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
