@@ -70,7 +70,7 @@ namespace GFX
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
     }
 
-    GLuint ElementBufferObject::GetId() const
+    uint32_t ElementBufferObject::GetId() const
     {
         return id;
     }

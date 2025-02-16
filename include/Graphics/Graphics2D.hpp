@@ -104,12 +104,12 @@ namespace GFX
         static std::vector<uint32_t> uniforms;
         static std::vector<DrawListItem> items;
         static std::vector<Vertex2D> vertices;
-        static std::vector<uint> indices;
+        static std::vector<uint32_t> indices;
         static uint32_t itemCount;
         static uint32_t vertexCount;
         static uint32_t indiceCount;
         static std::vector<Vertex2D> vertexBufferTemp; //Temporary buffer used by some 'Add' functions with dynamic size requirements
-        static std::vector<uint> indexBufferTemp; //Temporary buffer used by some 'Add' functions with dynamic size requirements
+        static std::vector<uint32_t> indexBufferTemp; //Temporary buffer used by some 'Add' functions with dynamic size requirements
         static std::vector<TextColorInfo> textColorInfoTemp;
         static GLStateInfo glState;
         static uint32_t numDrawCalls;

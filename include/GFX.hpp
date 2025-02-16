@@ -66,7 +66,6 @@
 #include "Graphics/GUI.hpp"
 #include "Graphics/Graphics3D.hpp"
 #include "Graphics/Texture2D.hpp"
-#include "Graphics/GUITest.hpp"
 #include "Graphics/Texture.hpp"
 #include "Graphics/Buffers/UniformBufferObject.hpp"
 #include "Graphics/Buffers/FrameBufferObject.hpp"

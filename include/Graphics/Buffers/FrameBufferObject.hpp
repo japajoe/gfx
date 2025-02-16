@@ -2,6 +2,7 @@
 #define GFX_FRAMEBUFFEROBJECT_HPP
 
 #include "../../External/glad/glad.h"
+#include <cstdint>
 
 namespace GFX
 {

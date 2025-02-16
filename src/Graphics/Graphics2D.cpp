@@ -14,12 +14,12 @@ namespace GFX
 	std::vector<uint32_t> Graphics2D::uniforms;
 	std::vector<DrawListItem> Graphics2D::items;
 	std::vector<Vertex2D> Graphics2D::vertices;
-	std::vector<uint> Graphics2D::indices;
+	std::vector<uint32_t> Graphics2D::indices;
 	uint32_t Graphics2D::itemCount = 0;
 	uint32_t Graphics2D::vertexCount = 0;
 	uint32_t Graphics2D::indiceCount = 0;
 	std::vector<Vertex2D> Graphics2D::vertexBufferTemp;
-	std::vector<uint> Graphics2D::indexBufferTemp;
+	std::vector<uint32_t> Graphics2D::indexBufferTemp;
 	std::vector<TextColorInfo> Graphics2D::textColorInfoTemp;
 	GLStateInfo Graphics2D::glState;
 	uint32_t Graphics2D::numDrawCalls = 0;

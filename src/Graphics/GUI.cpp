@@ -2,6 +2,7 @@
 #include "../Core/Constants.hpp"
 #include "../Core/Resources.hpp"
 #include "Graphics2D.hpp"
+#include <cstring>
 
 namespace GFX
 {

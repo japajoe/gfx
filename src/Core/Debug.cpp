@@ -75,6 +75,10 @@ namespace GFX
         LineRenderer::DrawLine(p1, p2, color);
     }
 
+    #ifndef M_PI
+    #define M_PI 3.14159265358979323846
+    #endif
+
     void Debug::DrawSphere(const Vector3 &center, float radius, const Quaternion &rotation, const Color &color, int segments, int latitudeCount)
     {
         // Ensure minimum divisions

@@ -80,7 +80,7 @@ namespace GFX
 		keyboard.SetState(keycode, state);
 	}
 
-	void Input::AddInputCharacter(uint codepoint)
+	void Input::AddInputCharacter(uint32_t codepoint)
 	{
 		keyboard.AddInputCharacter(codepoint);
 	}
