@@ -15,6 +15,7 @@
 #include "Shaders/PostProcessing/VerticalBlurShader.hpp"
 #include "Shaders/PostProcessing/GrayscaleShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
+#include "Shaders/ProceduralSkybox2Shader.hpp"
 #include "Shaders/TerrainShader.hpp"
 #include "Shaders/WaterShader.hpp"
 #include "../External/glad/glad.h"
@@ -28,6 +29,7 @@
 #include "../Core/Resources.hpp"
 #include "../Embedded/RobotoMonoRegular.hpp"
 #include "../Embedded/JetBrainsMonoRegular.hpp"
+#include "../Embedded/DejaVuSansMono.hpp"
 #include "Graphics2D.hpp"
 #include "Renderers/Renderer.hpp"
 #include "Renderers/LineRenderer.hpp"
@@ -58,7 +60,7 @@ namespace GFX
 		auto lightObject = GameObject::Create();
 		auto light = lightObject->AddComponent<Light>();
 		lightObject->GetTransform()->SetPosition(Vector3(100, 100, 100));
-		lightObject->GetTransform()->LookAt(camObject->GetTransform());
+		lightObject->GetTransform()->SetRotation(Quaternionf::Euler(glm::radians(45.0f), 0, 0));
 		light->SetType(LightType::Directional);
 		light->SetStrength(0.1f);
 
@@ -267,6 +269,7 @@ namespace GFX
 		auto lineShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderLine), LineShader::Create());
 		auto skyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderSkybox), SkyboxShader::Create());
 		auto proceduralSkyboxShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox), ProceduralSkyboxShader::Create());
+		auto proceduralSkyboxShader2 = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox2), ProceduralSkybox2Shader::Create());
 		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
 		auto waterShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderWater), WaterShader::Create());
 		auto postProcessingShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderPostProcessing), PostProcessingShader::Create());
@@ -279,6 +282,7 @@ namespace GFX
 		BindShaderToUniformBuffers(lineShader);
 		BindShaderToUniformBuffers(skyboxShader);
 		BindShaderToUniformBuffers(proceduralSkyboxShader);
+		BindShaderToUniformBuffers(proceduralSkyboxShader2);
 		BindShaderToUniformBuffers(terrainShader);
 		BindShaderToUniformBuffers(waterShader);
 		BindShaderToUniformBuffers(postProcessingShader);
@@ -305,7 +309,7 @@ namespace GFX
 	{
 		//Create default font
 		Font font;
-		if(font.LoadFromMemory(JetBrainsMonoRegular::GetData(), JetBrainsMonoRegular::GetSize(), 32, FontRenderMethod::SDF))
+		if(font.LoadFromMemory(DejaVuSansMono::GetData(), DejaVuSansMono::GetSize(), 32, FontRenderMethod::SDF))
 		{
 			if(font.GenerateTexture())
 			{				

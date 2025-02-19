@@ -25,6 +25,8 @@ namespace GFX
 		float minLength;
 		float maxLength;
 		float radius;
+		bool isEnabled;
+		bool isGrounded;
 		void ApplySpringForce(float rayDistance, float unused);
 		void ApplySpringForce(RaycastHit hit);
 		Vector3 GetWheelOffset() const;
@@ -36,6 +38,15 @@ namespace GFX
 		Wheel();
 		void SetCenter(const Vector3 &center);
 		Vector3 GetCenter() const;
+		void SetRestLength(float length);
+		float GetRestLength() const;
+		void SetSpringDamper(float value);
+		float GetSpringDamper() const;
+		void SetSpringStrength(float value);
+		float GetSpringStrength() const;
+    	void SetIsEnabled(bool isEnabled);
+    	bool GetIsEnabled() const;
+		bool GetIsGrounded() const;
 	};
 }
 

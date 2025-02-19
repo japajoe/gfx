@@ -14,6 +14,7 @@ namespace GFX
         static glm::vec3 UnitZ();
         static glm::vec3 Zero();
         static glm::vec3 One();
+        static glm::vec3 FromSphericalCoordinates(float radius, float phi, float theta);
         static glm::vec3 Clamp(const glm::vec3 &v, const glm::vec3 &min, const glm::vec3 &max);
         static glm::vec3 Cross(const glm::vec3 &v1, const glm::vec3 &v2);
         static float Dot(const glm::vec3 &v1, const glm::vec3 &v2);

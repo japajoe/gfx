@@ -334,22 +334,22 @@ namespace GFX
 
 	void Rigidbody::SetLinearDrag(float drag)
 	{
-
+		body->handle->GetMotionProperties()->SetLinearDamping(drag);
 	}
 
 	float Rigidbody::GetLinearDrag() const
 	{
-		return 0;
+		return body->handle->GetMotionProperties()->GetLinearDamping();
 	}
 
 	void Rigidbody::SetAngularDrag(float drag)
 	{
-
+		body->handle->GetMotionProperties()->SetAngularDamping(drag);
 	}
 
 	float Rigidbody::GetAngularDrag() const
 	{
-		return 0;
+		return body->handle->GetMotionProperties()->GetAngularDamping();
 	}
 
 	void Rigidbody::SetCollisionDetectionMode(CollisionDetectionMode mode)

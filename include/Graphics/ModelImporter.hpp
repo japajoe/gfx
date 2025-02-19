@@ -14,6 +14,8 @@
 
 struct aiNode;
 struct aiScene;
+struct aiTexture;
+struct aiMaterial;
 
 namespace GFX
 {
@@ -53,10 +55,13 @@ namespace GFX
         ModelFlags_GenBoundingBoxes = 0x80000000
     };
 
+    class Texture2D;
+
     class ModelImporter
     {
     private:
-        static void ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ);        
+        static void ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ);
+        static Texture2D *LoadEmbeddedTexture(const aiMaterial *pMaterial, const aiTexture *pTexture);
     public:
         static GameObject *LoadFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);
         static GameObject *LoadFromMemory(const void *memory, size_t size, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);

@@ -27,6 +27,7 @@ namespace GFX
         float springVelocity;
         float springForce;
         float damperForce;
+        float motorForce;
         Vector3 suspensionForce;
         Vector3 velocity; //Velocity of the wheel in local space
         Rigidbody *rigidBody;
@@ -57,6 +58,8 @@ namespace GFX
         bool GetIsGrounded() const;
         void SetIsEnabled(bool isEnabled);
         bool GetIsEnabled() const;
+        void SetMotorForce(float force);
+        float GetMotorForce() const;
     };
 }
 

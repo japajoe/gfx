@@ -6,6 +6,7 @@
 #include "../Graphics/Materials/DiffuseMaterial.hpp"
 #include "../Graphics/Materials/SkyboxMaterial.hpp"
 #include "../Graphics/Materials/ProceduralSkyboxMaterial.hpp"
+#include "../Graphics/Materials/ProceduralSkybox2Material.hpp"
 #include "../Graphics/Materials/WaterMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
 #include "../Graphics/Renderers/Terrain.hpp"
@@ -144,11 +145,25 @@ namespace GFX
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
                 break;
             }
-            case PrimitiveType::ProceduralSkybox:
+            case PrimitiveType::ProceduralSkybox1:
             {
                 auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
                 auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<ProceduralSkyboxMaterial>());
+                renderer->SetCastShadows(false);
+                renderer->SetReceiveShadows(false);
+                renderer->SetRenderOrder(999);
+                auto settings = renderer->GetSettings(0);
+                settings->cullFace = false;
+                settings->depthTest = false;
+                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
+                break;
+            }
+            case PrimitiveType::ProceduralSkybox2:
+            {
+                auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshCube));
+                auto renderer = g->AddComponent<MeshRenderer>();
+                renderer->Add(mesh, std::make_shared<ProceduralSkybox2Material>());
                 renderer->SetCastShadows(false);
                 renderer->SetReceiveShadows(false);
                 renderer->SetRenderOrder(999);

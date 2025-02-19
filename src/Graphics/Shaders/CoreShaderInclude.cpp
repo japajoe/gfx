@@ -185,6 +185,11 @@ float saturate(float x) {
     return clamp(x, 0.0, 1.0);
 }
 
+vec4 exposure(vec4 color, float value) {
+	color.rgb = vec3(1.0) - exp(-color.rgb * value);
+	return color;
+}
+
 float calculate_fog_by_height(float density, float gradient, vec3 camPosition, vec3 fragPosition) {
     vec3 fogOrigin = camPosition;
     vec3 fogDirection = normalize(fogOrigin - fragPosition);

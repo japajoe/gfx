@@ -27,6 +27,15 @@ namespace GFX
         return glm::vec3(1.0f, 1.0f, 1.0f);
     }
 
+    glm::vec3 Vector3f::FromSphericalCoordinates(float radius, float phi, float theta)
+    {
+		const float sinPhiRadius = glm::sin( phi ) * radius;
+		float x = sinPhiRadius * glm::sin( theta );
+		float y = glm::cos( phi ) * radius;
+		float z = sinPhiRadius * glm::cos( theta );
+        return Vector3(x, y, z);
+    }
+
     glm::vec3 Vector3f::Clamp(const glm::vec3 &v, const glm::vec3 &min, const glm::vec3 &max)
     {
         return glm::clamp(v, min, max);

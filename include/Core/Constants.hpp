@@ -34,6 +34,7 @@ namespace GFX
 		ShaderParticle,
 		ShaderPostProcessing,
 		ShaderProceduralSkybox,
+		ShaderProceduralSkybox2,
 		ShaderSkybox,
 		ShaderTerrain,
 		ShaderWater,

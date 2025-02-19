@@ -5,6 +5,7 @@
 #include "../../Core/Debug.hpp"
 #include "../../Core/GameObject.hpp"
 #include "../../Core/Transform.hpp"
+#include "../../Core/Input.hpp"
 #include "../../Graphics/Color.hpp"
 #include "../../External/glm/glm.hpp"
 
@@ -14,17 +15,17 @@ namespace GFX
     {
         radius = 0.5f;
         restLength = 0.5f;
-        springTravel = 0.2f;
-        springStiffness = 10.0f;
-        damperStiffness = 15.0f;
+        springTravel = 0.25f;
+        springStiffness = 20000;
+        damperStiffness = 10000;
 
         minLength = 0.0f;
         maxLength = 0.0f;
         lastLength = 0.0f;
         springLength = 0.5f;
         springVelocity = 0.0f;
-        springForce = 10.0f;
-        damperForce = 100.0f;
+        springForce = 0.0f;
+        damperForce = 0.0f;
 
         center = Vector3(0.0f, 0.0f, 0.0f);
         suspensionForce = Vector3(0.0f, 0.0f, 0.0f);
@@ -52,36 +53,36 @@ namespace GFX
         SetMinMaxLength();
 
         Transform *transform = GetTransform();
-
-        Vector3 offset = GetWheelOffset();
-        Vector3 start = transform->GetPosition() + offset;
-        Vector3 end = start + (-transform->GetUp() * (maxLength + radius));
+        Vector3 start = transform->GetPosition() +  GetWheelOffset();
+        float length = maxLength + radius;
 
         RaycastHit hit;
 
-        if (Physics::RayTest(start, end, maxLength, hit))
+        if (Physics::RayTest(start, -transform->GetUp(), length, hit))
         {
             if(hit.transform->GetRoot() != transform->GetRoot())
             {
                 isGrounded = true;
                 lastLength = springLength;
-                springLength = glm::clamp((hit.distance - radius), minLength, maxLength);
+                springLength = glm::clamp((hit.distance - radius), -minLength, maxLength);
                 springVelocity = (lastLength - springLength) / Time::GetDeltaTime();
                 springForce = springStiffness * (restLength - springLength);
                 damperForce = damperStiffness * springVelocity;
-                
-                suspensionForce = (springForce + damperForce) * Vector3f::UnitY();
+                suspensionForce = (springForce + damperForce) * transform->GetUp();
+                //suspensionForce = (springForce + damperForce) * hit.normal;
 
                 velocity = rigidBody->GetPointVelocity(hit.point);
-
                 float fX = 0.0f * springForce;
                 float fY = velocity.x * springForce;
-
                 Vector3 force = suspensionForce + (fX * transform->GetForward()) + (fY * -transform->GetRight());
 
-                Vector3 localPosition = (hit.point - rigidBody->GetCenterOfMass());
+                auto point = Vector3(hit.point.x, hit.point.y + radius, hit.point.z);
+                rigidBody->AddForceAtPoint(suspensionForce, point - transform->GetPosition());
 
-                rigidBody->AddForceAtPoint(force, localPosition, ForceMode::Force);
+                if(glm::abs(motorForce) > 0.0f)
+                {
+                    rigidBody->AddForceAtPoint(transform->GetForward() * motorForce, point - transform->GetPosition());
+                }
             }
             else
             {
@@ -92,6 +93,8 @@ namespace GFX
         {
             isGrounded = false;
         }
+
+
 
         DrawDebugLines();
     }
@@ -110,13 +113,16 @@ namespace GFX
         Vector3 start = transform->GetPosition() + offset;
         Vector3 end = start + (-transform->GetUp() * (springLength + radius));
 
-        Debug::DrawLine(start, end, Color::White());
+        Color color = isGrounded ? Color::Red() : Color::Green();
+        Debug::DrawLine(start, end, color);
         
         Quaternion rotation = transform->GetRotation();
         DrawCircle(start, radius, rotation);
 
         end = start + (forceDirection * 2.0f);
-        Debug::DrawLine(start, end, Color::Red());
+
+        
+        //Debug::DrawLine(start, end, color);
     }
 
     void WheelCollider::DrawCircle(const Vector3 &center, float radius, const Quaternion &rotation)
@@ -225,4 +231,130 @@ namespace GFX
     {
         return isEnabled;
     }
+
+    void WheelCollider::SetMotorForce(float force)
+    {
+        motorForce = force;
+    }
+
+    float WheelCollider::GetMotorForce() const
+    {
+        return motorForce;
+    }
+
+    // WheelCollider::WheelCollider() : GameBehaviour()
+    // {
+    //     rigidbody = nullptr;
+    //     restDistance = 0.75f;
+    //     springStrength = 20000.0f;
+    //     previousSpringLength = 0.0f;
+    //     springDamper = 2000.0f;
+    //     radius = 0.5f;
+    //     center = Vector3(0, 0, 0);
+    //     isGrounded = false;
+    // }
+
+    // void WheelCollider::OnInitialize()
+    // {
+    //     rigidbody = GetTransform()->GetRoot()->GetGameObject()->GetComponent<Rigidbody>();
+    // }
+
+    // void WheelCollider::OnFixedUpdate()
+    // {
+    //     if(rigidbody == nullptr)
+    //         return;
+
+    //     const Transform *transform = GetTransform();
+    //     const Vector3 offset = GetWheelOffset();
+    //     const Vector3 start = transform->GetPosition() + offset;
+    //     const float length = restDistance + radius;
+    //     const Vector3 end = start + (-transform->GetUp() * length);
+
+    //     RaycastHit hit;
+
+    //     if (Physics::RayTest(start, -transform->GetUp(), restDistance, hit))
+    //     {
+    //         if(hit.transform->GetRoot() != transform->GetRoot())
+    //         {
+    //             isGrounded = true;
+    //             auto raycastDestination = hit.point;
+    //             auto distance = Vector3f::Distance(hit.point, start);
+    //             auto springLength = glm::clamp(distance - length, 0.0f, restDistance);
+    //             auto springVelocity = (previousSpringLength - springLength) / Time::GetDeltaTime();
+    //             previousSpringLength = springLength;
+    //             printf("%f\n", springVelocity);
+    //             auto springForce = springStrength + (restDistance - springLength);
+    //             auto damperForce = springDamper * springVelocity;
+    //             auto suspensionForce = (springForce + damperForce);
+    //             auto point = Vector3(raycastDestination.x, raycastDestination.y + radius, raycastDestination.z);
+    //             rigidbody->AddForceAtPoint(transform->GetUp() * suspensionForce, point - transform->GetPosition());
+    //         }
+    //         else
+    //         {
+    //             isGrounded = false;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         isGrounded = false;
+    //     }
+
+    //     Color color = isGrounded ? Color::Red() : Color::Green();
+    //     Debug::DrawLine(start, end, color);
+    // }
+
+    // void WheelCollider::SetCenter(const Vector3 &center)
+    // {
+    //     this->center = center;
+    // }
+    
+    // Vector3 WheelCollider::GetCenter() const
+    // {
+    //     return center;
+    // }
+
+    // bool WheelCollider::IsGrounded() const
+    // {
+    //     return isGrounded;
+    // }
+
+    // Vector3 WheelCollider::GetWheelOffset() const
+    // {
+    //     Transform *transform = GetTransform();
+    //     Vector3 center = GetCenter();
+    //     Vector3 offset =    center.x * transform->GetRight() +
+    //                         center.y * transform->GetUp() +
+    //                         center.z * transform->GetForward();
+    //     return offset;
+    // }
+
+    // void WheelCollider::SetRadius(float value)
+    // {
+    //     radius = value;
+    // }
+
+    // float WheelCollider::GetRadius() const
+    // {
+    //     return radius;
+    // }
+
+    // void WheelCollider::SetSpringStrength(float value)
+    // {
+    //     springStrength = value;
+    // }
+
+    // float WheelCollider::GetSpringStrength() const
+    // {
+    //     return springStrength;
+    // }
+
+    // void WheelCollider::SetSpringDamping(float value)
+    // {
+    //     springDamper = value;
+    // }
+
+    // float WheelCollider::GetSpringDamping() const
+    // {
+    //     return springDamper;
+    // }
 }

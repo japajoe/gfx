@@ -1,7 +1,5 @@
 #include "GFX.hpp"
-#include "Testing/GameManager.hpp"
-#include "Testing/BuildingGenerator.hpp"
-#include "Testing/SolarSystem.hpp"
+#include "Testing/Example.hpp"
 
 void CreateAssetPack();
 
@@ -11,7 +9,7 @@ int main(int argc, char **argv)
     
     application.loaded = [] () {
         auto g = GameObject::Create();
-        g->AddComponent<GameManager>();        
+        g->AddComponent<Example>();
     };
     
     application.Run();

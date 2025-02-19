@@ -2,6 +2,7 @@
 #include "Vertex.hpp"
 #include "Mesh.hpp"
 #include "MeshRenderer.hpp"
+#include "Texture2D.hpp"
 #include "Materials/DiffuseMaterial.hpp"
 #include "../Core/Resources.hpp"
 #include "../Core/Debug.hpp"
@@ -263,7 +264,31 @@ namespace GFX
 
             auto material = std::make_shared<DiffuseMaterial>();
             material->SetName(aMaterial->GetName().C_Str());
-            material->SetDiffuseTexture(texture);
+
+            aiString texturePath;
+
+            if(aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
+            {
+                auto embeddedTexture = scene->GetEmbeddedTexture(texturePath.C_Str());
+
+                if(embeddedTexture)
+                {
+                    auto pTexture = LoadEmbeddedTexture(aMaterial, embeddedTexture);
+
+                    if(pTexture != nullptr)
+                        material->SetDiffuseTexture(pTexture);
+                    else
+                        material->SetDiffuseTexture(texture);
+                }
+                else
+                {
+                    material->SetDiffuseTexture(texture);
+                }
+            }
+            else
+            {
+                material->SetDiffuseTexture(texture);
+            }
             
             renderer->Add(mesh, material);
         }
@@ -276,5 +301,18 @@ namespace GFX
             child->GetTransform()->SetParent(parent->GetTransform());
             ProcessNode(child, node->mChildren[i], scene, scale, flipYZ);
         }
+    }
+
+    Texture2D *ModelImporter::LoadEmbeddedTexture(const aiMaterial *pMaterial, const aiTexture *pTexture)
+    {
+        unsigned int size = pTexture->mWidth;
+        Image image((uint8_t*)pTexture->pcData, size);
+
+        if(image.IsLoaded())
+        {
+            return Resources::AddTexture2D(pTexture->mFilename.C_Str(), Texture2D(&image));
+        }
+
+        return nullptr;
     }
 }

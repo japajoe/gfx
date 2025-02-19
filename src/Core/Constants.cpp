@@ -50,6 +50,8 @@ namespace GFX
 				return "PostProcessing";
 			case ConstantString::ShaderProceduralSkybox:
 				return "ProceduralSkybox";
+			case ConstantString::ShaderProceduralSkybox2:
+				return "ProceduralSkybox2";
 			case ConstantString::ShaderSkybox:
 				return "Skybox";
 			case ConstantString::ShaderWater:

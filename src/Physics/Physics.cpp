@@ -42,6 +42,26 @@ namespace GFX
         static constexpr JPH::uint NUM_LAYERS(2);
     };
 
+    class ExcludeBodiesFilter : public JPH::BodyFilter 
+    {
+    public:
+        bool ShouldCollide(const JPH::BodyID& body_id) const override 
+        {
+            return !HasIgnoreRaycast(body_id);
+        }
+
+    private:
+        std::vector<JPH::BodyID> mExcludeBodies;
+        bool HasIgnoreRaycast(const JPH::BodyID& body_id) const
+        {
+            JPH::uint64 userData = Physics::GetBodyInterface()->GetUserData(body_id);
+            Rigidbody *rb = reinterpret_cast<Rigidbody*>(userData);
+            if(rb)
+                return rb->GetGameObject()->GetLayer() == Layer_IgnoreRaycast;
+            return false;
+        }
+    };
+
     /// Class that determines if two object layers can collide
     class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
     {
@@ -172,6 +192,7 @@ namespace GFX
         ObjectLayerPairFilterImpl objectLayerFilter;
         MyBodyActivationListener bodyActivationListener;
         MyContactListener contactListener;
+        ExcludeBodiesFilter excludeBodiesFilter;
         std::vector<Rigidbody*> bodies;
     };
 
@@ -490,7 +511,7 @@ namespace GFX
         JPH::RRayCast ray(from, (to - from));
         JPH::RayCastResult result;
 
-        if(narrowPhase.CastRay(ray, result))
+        if(narrowPhase.CastRay(ray, result, {}, {}, physicsManager->excludeBodiesFilter))
         {
             auto &bodyInterface = physicsManager->physicsSystem.GetBodyInterface();
             JPH::uint64 userData = bodyInterface.GetUserData(result.mBodyID);
