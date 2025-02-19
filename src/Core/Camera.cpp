@@ -3,6 +3,7 @@
 #include "GameObject.hpp"
 #include "Resources.hpp"
 #include "Constants.hpp"
+#include "Input.hpp"
 #include "../Graphics/Buffers/UniformBufferObject.hpp"
 #include "../Graphics/Graphics.hpp"
 #include "../External/glm/glm.hpp"
@@ -193,6 +194,7 @@ namespace GFX
         info.position = Vector4(camera->GetTransform()->GetPosition(), 1.0f);
         info.direction = Vector4(camera->GetTransform()->GetForward(), 1.0f);
         info.resolution = Vector4(viewport.width, viewport.height, 0, 0);
+        info.mouse = Vector4(Input::GetMousePosition(), 0, 0);
 
         ubo->Bind();
         ubo->BufferSubData(0, sizeof(UniformCameraInfo), &info);

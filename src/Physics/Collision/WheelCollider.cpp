@@ -11,78 +11,71 @@
 
 namespace GFX
 {
-    WheelCollider::WheelCollider() : GameBehaviour()
+    void WheelCollider::OnInitialize()
     {
-        radius = 0.5f;
-        restLength = 0.5f;
-        springTravel = 0.25f;
-        springStiffness = 20000;
-        damperStiffness = 10000;
-
+        rb = GetTransform()->GetRoot()->GetGameObject()->GetComponent<Rigidbody>();
         minLength = 0.0f;
         maxLength = 0.0f;
         lastLength = 0.0f;
-        springLength = 0.5f;
+        springLength = 0.0f;
         springVelocity = 0.0f;
         springForce = 0.0f;
         damperForce = 0.0f;
-
-        center = Vector3(0.0f, 0.0f, 0.0f);
-        suspensionForce = Vector3(0.0f, 0.0f, 0.0f);
-        velocity = Vector3(0.0f, 0.0f, 0.0f);
-        forceDirection = Vector3(0.0f, 0.0f, 0.0f);
-
-        isEnabled = true;
-
-        SetName("WheelCollider");
+        suspensionForce = Vector3(0, 0, 0);
+        
+        restLength = 0.5f;
+        springTravel = 0.2f;
+        springStiffness = 2000.0f;
+        damperStiffness = 250.0f;
+        wheelRadius = 0.5f;
+        steerAngle = 0.0f;
+        center = Vector3(0, 0, 0);
     }
 
-    void WheelCollider::OnInitialize()
+    void WheelCollider::OnUpdate()
     {
-        rigidBody = GetTransform()->GetRoot()->GetGameObject()->GetComponent<Rigidbody>();
+        if(!rb)
+            return;
+
+        auto transform = GetTransform();
+        Vector3 currentEuler = Quaternionf::ToEulerAngles(transform->GetLocalRotation());
+        auto rotation = Quaternion(Vector3(currentEuler.x, glm::radians(steerAngle), currentEuler.z));
+        transform->SetLocalRotation(rotation);
     }
 
     void WheelCollider::OnFixedUpdate()
     {
-        if(rigidBody == nullptr)
+        if(!rb)
             return;
 
-        if(!isEnabled)
-            return;
+        minLength = restLength - springTravel;
+        maxLength = restLength + springTravel;
 
-        SetMinMaxLength();
-
-        Transform *transform = GetTransform();
-        Vector3 start = transform->GetPosition() +  GetWheelOffset();
-        float length = maxLength + radius;
-
+        auto transform = GetTransform();
+        Vector3 from = transform->GetPosition() + GetWheelOffset();
+        Vector3 direction = Vector3f::Normalize(-transform->GetUp());
         RaycastHit hit;
 
-        if (Physics::RayTest(start, -transform->GetUp(), length, hit))
+        if (Physics::RayTest(from, direction, maxLength + wheelRadius, hit))
         {
-            if(hit.transform->GetRoot() != transform->GetRoot())
+            if(hit.transform->GetRoot() != GetTransform()->GetRoot())
             {
-                isGrounded = true;
                 lastLength = springLength;
-                springLength = glm::clamp((hit.distance - radius), -minLength, maxLength);
+                springLength = hit.distance - wheelRadius;
+                springLength = glm::clamp(springLength, minLength, maxLength);
                 springVelocity = (lastLength - springLength) / Time::GetDeltaTime();
                 springForce = springStiffness * (restLength - springLength);
                 damperForce = damperStiffness * springVelocity;
                 suspensionForce = (springForce + damperForce) * transform->GetUp();
-                //suspensionForce = (springForce + damperForce) * hit.normal;
 
-                velocity = rigidBody->GetPointVelocity(hit.point);
-                float fX = 0.0f * springForce;
-                float fY = velocity.x * springForce;
-                Vector3 force = suspensionForce + (fX * transform->GetForward()) + (fY * -transform->GetRight());
+                auto wheelVelocity = transform->InverseTransformDirection(rb->GetPointVelocity(hit.point));
+                float fX = glm::abs(motorTorque ) > 0 ? glm::sign(motorTorque) * springForce : 0.0f;
+                float fY = wheelVelocity.x * springForce;
 
-                auto point = Vector3(hit.point.x, hit.point.y + radius, hit.point.z);
-                rigidBody->AddForceAtPoint(suspensionForce, point - transform->GetPosition());
+                Vector3 frictionForce = (fX * transform->GetForward()) + (fY * -transform->GetRight());
 
-                if(glm::abs(motorForce) > 0.0f)
-                {
-                    rigidBody->AddForceAtPoint(transform->GetForward() * motorForce, point - transform->GetPosition());
-                }
+                rb->AddForceAtPoint(suspensionForce + frictionForce, hit.point);
+                isGrounded = true;
             }
             else
             {
@@ -94,15 +87,26 @@ namespace GFX
             isGrounded = false;
         }
 
-
+        if(glm::abs(motorTorque) > 0.0f)
+        {
+            rb->AddForceAtPoint(transform->GetForward() * motorTorque, hit.point);
+        }
 
         DrawDebugLines();
     }
 
-    void WheelCollider::SetMinMaxLength()
+    Vector3 WheelCollider::GetWheelOffset() const
     {
-        minLength = restLength - springTravel;
-        maxLength = restLength + springTravel;
+        Transform *transform = GetTransform();
+        Vector3 offset =    center.x * transform->GetRight() +
+                            center.y * transform->GetUp() +
+                            center.z * transform->GetForward();
+        return offset;
+    }
+
+    Vector3 WheelCollider::GetWheelPosition() const
+    {
+        return GetTransform()->GetPosition() + GetWheelOffset();
     }
 
     void WheelCollider::DrawDebugLines()
@@ -111,18 +115,17 @@ namespace GFX
 
         Vector3 offset = GetWheelOffset();
         Vector3 start = transform->GetPosition() + offset;
-        Vector3 end = start + (-transform->GetUp() * (springLength + radius));
+        Vector3 end = start + (-transform->GetUp() * (springLength + wheelRadius));
 
         Color color = isGrounded ? Color::Red() : Color::Green();
         Debug::DrawLine(start, end, color);
         
         Quaternion rotation = transform->GetRotation();
-        DrawCircle(start, radius, rotation);
+        DrawCircle(start, wheelRadius, rotation);
 
-        end = start + (forceDirection * 2.0f);
-
+        //end = start + (forceDirection * 2.0f);
         
-        //Debug::DrawLine(start, end, color);
+        Debug::DrawLine(start, end, color);
     }
 
     void WheelCollider::DrawCircle(const Vector3 &center, float radius, const Quaternion &rotation)
@@ -146,215 +149,4 @@ namespace GFX
             Debug::DrawLine(start, end, Color::White());
         }
     }
-
-    Vector3 WheelCollider::GetWheelOffset() const
-    {
-        Transform *transform = GetTransform();
-        Vector3 center = GetCenter();
-        Vector3 offset =    center.x * transform->GetRight() +
-                            center.y * transform->GetUp() +
-                            center.z * transform->GetForward();
-        return offset;
-    }
-
-    void WheelCollider::SetRadius(float radius)
-    {
-        this->radius = radius;
-    }
-
-    float WheelCollider::GetRadius() const
-    {
-        return radius;
-    }
-
-    void WheelCollider::SetRestLength(float restLength)
-    {
-        this->restLength = restLength;
-    }
-
-    float WheelCollider::GetRestLength() const
-    {
-        return restLength;
-    }
-
-    void WheelCollider::SetSpringTravel(float springTravel)
-    {
-        this->springTravel = springTravel;
-    }
-
-    float WheelCollider::GetSpringTravel() const
-    {
-        return springTravel;             
-    }
-
-    void WheelCollider::SetSpringStiffness(float springStiffness)
-    {
-        this->springStiffness = springStiffness;
-    }
-
-    float WheelCollider::GetSpringStiffness() const
-    {
-        return springStiffness;
-    }
-
-    void WheelCollider::SetDamperStiffness(float damperStiffness)
-    {
-        this->damperStiffness = damperStiffness;
-    }
-
-    float WheelCollider::GetDamperStiffness() const
-    {
-        return damperStiffness;
-    }
-
-    void WheelCollider::SetCenter(const Vector3 &center)
-    {
-        this->center = center;
-    }
-    
-    Vector3 WheelCollider::GetCenter() const
-    {
-        return center;
-    }
-
-    bool WheelCollider::GetIsGrounded() const
-    {
-        return isGrounded;
-    }
-
-    void WheelCollider::SetIsEnabled(bool isEnabled)
-    {
-        this->isEnabled = isEnabled;    
-    }
-
-    bool WheelCollider::GetIsEnabled() const
-    {
-        return isEnabled;
-    }
-
-    void WheelCollider::SetMotorForce(float force)
-    {
-        motorForce = force;
-    }
-
-    float WheelCollider::GetMotorForce() const
-    {
-        return motorForce;
-    }
-
-    // WheelCollider::WheelCollider() : GameBehaviour()
-    // {
-    //     rigidbody = nullptr;
-    //     restDistance = 0.75f;
-    //     springStrength = 20000.0f;
-    //     previousSpringLength = 0.0f;
-    //     springDamper = 2000.0f;
-    //     radius = 0.5f;
-    //     center = Vector3(0, 0, 0);
-    //     isGrounded = false;
-    // }
-
-    // void WheelCollider::OnInitialize()
-    // {
-    //     rigidbody = GetTransform()->GetRoot()->GetGameObject()->GetComponent<Rigidbody>();
-    // }
-
-    // void WheelCollider::OnFixedUpdate()
-    // {
-    //     if(rigidbody == nullptr)
-    //         return;
-
-    //     const Transform *transform = GetTransform();
-    //     const Vector3 offset = GetWheelOffset();
-    //     const Vector3 start = transform->GetPosition() + offset;
-    //     const float length = restDistance + radius;
-    //     const Vector3 end = start + (-transform->GetUp() * length);
-
-    //     RaycastHit hit;
-
-    //     if (Physics::RayTest(start, -transform->GetUp(), restDistance, hit))
-    //     {
-    //         if(hit.transform->GetRoot() != transform->GetRoot())
-    //         {
-    //             isGrounded = true;
-    //             auto raycastDestination = hit.point;
-    //             auto distance = Vector3f::Distance(hit.point, start);
-    //             auto springLength = glm::clamp(distance - length, 0.0f, restDistance);
-    //             auto springVelocity = (previousSpringLength - springLength) / Time::GetDeltaTime();
-    //             previousSpringLength = springLength;
-    //             printf("%f\n", springVelocity);
-    //             auto springForce = springStrength + (restDistance - springLength);
-    //             auto damperForce = springDamper * springVelocity;
-    //             auto suspensionForce = (springForce + damperForce);
-    //             auto point = Vector3(raycastDestination.x, raycastDestination.y + radius, raycastDestination.z);
-    //             rigidbody->AddForceAtPoint(transform->GetUp() * suspensionForce, point - transform->GetPosition());
-    //         }
-    //         else
-    //         {
-    //             isGrounded = false;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         isGrounded = false;
-    //     }
-
-    //     Color color = isGrounded ? Color::Red() : Color::Green();
-    //     Debug::DrawLine(start, end, color);
-    // }
-
-    // void WheelCollider::SetCenter(const Vector3 &center)
-    // {
-    //     this->center = center;
-    // }
-    
-    // Vector3 WheelCollider::GetCenter() const
-    // {
-    //     return center;
-    // }
-
-    // bool WheelCollider::IsGrounded() const
-    // {
-    //     return isGrounded;
-    // }
-
-    // Vector3 WheelCollider::GetWheelOffset() const
-    // {
-    //     Transform *transform = GetTransform();
-    //     Vector3 center = GetCenter();
-    //     Vector3 offset =    center.x * transform->GetRight() +
-    //                         center.y * transform->GetUp() +
-    //                         center.z * transform->GetForward();
-    //     return offset;
-    // }
-
-    // void WheelCollider::SetRadius(float value)
-    // {
-    //     radius = value;
-    // }
-
-    // float WheelCollider::GetRadius() const
-    // {
-    //     return radius;
-    // }
-
-    // void WheelCollider::SetSpringStrength(float value)
-    // {
-    //     springStrength = value;
-    // }
-
-    // float WheelCollider::GetSpringStrength() const
-    // {
-    //     return springStrength;
-    // }
-
-    // void WheelCollider::SetSpringDamping(float value)
-    // {
-    //     springDamper = value;
-    // }
-
-    // float WheelCollider::GetSpringDamping() const
-    // {
-    //     return springDamper;
-    // }
 }

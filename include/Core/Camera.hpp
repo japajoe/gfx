@@ -21,6 +21,7 @@ namespace GFX
         Vector4 position;
         Vector4 direction;
         Vector4 resolution;
+        Vector4 mouse;
     };
 
     class Camera : public Component

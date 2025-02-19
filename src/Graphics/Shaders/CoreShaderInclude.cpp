@@ -35,6 +35,7 @@ layout(std140) uniform Camera {
     vec4 position;
     vec4 direction;
     vec4 resolution;
+    vec4 mouse;
 } uCamera;
 
 layout(std140) uniform World {

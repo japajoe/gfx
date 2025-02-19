@@ -187,7 +187,7 @@ namespace GFX
 		if(!isActive)
 			return;
 
-		if(Vector3f::IsNan(force))
+		if(Vector3f::IsNan(force) || Vector3f::IsNan(point))
 			return;
 
 		JPH::Vec3 f(force.x, force.y, force.z);
