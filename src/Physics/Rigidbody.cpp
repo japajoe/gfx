@@ -20,6 +20,7 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Constraints/Constraint.h>
 #include <Jolt/Physics/Constraints/HingeConstraint.h>
 #include <vector>
@@ -67,6 +68,17 @@ namespace GFX
 		Initialize();
 	}
 
+	bool Rigidbody::IsInitialized() const
+	{
+		if(!body)
+			return false;
+		if(!body->handle)
+			return false;
+		if(!body->interface)
+			return false;
+		return true;
+	}
+
 	void Rigidbody::OnDestroy()
 	{
 		if(body->handle)
@@ -81,6 +93,9 @@ namespace GFX
 			Physics::Remove(this);
 		}
 
+		body->handle = nullptr;
+		body->interface = nullptr;
+		body.reset();
 		body = nullptr;
 	}
 
@@ -138,7 +153,7 @@ namespace GFX
 	{
 		isActive = true;
 
-		if(!body->handle)
+		if(!IsInitialized())
 			return;
 		body->interface->ActivateBody(body->id);
 	}
@@ -147,7 +162,7 @@ namespace GFX
 	{
 		isActive = false;
 
-		if(!body->handle)
+		if(!IsInitialized())
 			return;
 		body->interface->DeactivateBody(body->id);
 	}
@@ -169,6 +184,9 @@ namespace GFX
 
 	void Rigidbody::AddForce(const Vector3 &force, ForceMode mode)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -184,6 +202,9 @@ namespace GFX
 
 	void Rigidbody::AddForceAtPoint(const Vector3 &force, const Vector3 &point, ForceMode mode)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -200,6 +221,9 @@ namespace GFX
 
 	void Rigidbody::AddRelativeForce(const Vector3 &force, ForceMode mode)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -217,6 +241,9 @@ namespace GFX
 
 	void Rigidbody::AddTorque(const Vector3 &torque)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -229,6 +256,9 @@ namespace GFX
 
 	void Rigidbody::AddRelativeTorque(const Vector3 &torque)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -243,6 +273,9 @@ namespace GFX
 
 	void Rigidbody::SetLinearVelocity(const Vector3 &velocity)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -255,12 +288,18 @@ namespace GFX
 
 	Vector3 Rigidbody::GetLinearVelocity() const
 	{
+		if(!IsInitialized())
+			return Vector3(0, 0, 0);
+
 		auto v = body->interface->GetLinearVelocity(body->id);
 		return Vector3(v.GetX(), v.GetY(), v.GetZ());
 	}
 
 	void Rigidbody::SetAngularVelocity(const Vector3 &velocity)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -273,6 +312,9 @@ namespace GFX
 
 	void Rigidbody::MovePosition(const Vector3 &position)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -285,6 +327,9 @@ namespace GFX
 
 	void Rigidbody::MoveRotation(const Quaternion &rotation)
 	{
+		if(!IsInitialized())
+			return;
+
 		if(!isActive)
 			return;
 
@@ -297,68 +342,92 @@ namespace GFX
 
 	Vector3 Rigidbody::GetPointVelocity(const Vector3 &relativePosition)
 	{
+		if(!IsInitialized())
+			return Vector3(0, 0, 0);
+
 		if(Vector3f::IsNan(relativePosition))
 			return Vector3(0, 0, 0);
+
+		auto result = body->handle->GetPointVelocity(JPH::Vec3(relativePosition.x, relativePosition.y, relativePosition.z));
+		return Vector3(result.GetX(), result.GetY(), result.GetZ());
 		
-		JPH::RVec3 com = body->interface->GetCenterOfMassPosition(body->id);
-        JPH::RVec3 relPos(relativePosition.x - com.GetX(), relativePosition.y - com.GetY(), relativePosition.z - com.GetZ());
+		// JPH::RVec3 com = body->interface->GetCenterOfMassPosition(body->id);
+        // JPH::RVec3 relPos(relativePosition.x - com.GetX(), relativePosition.y - com.GetY(), relativePosition.z - com.GetZ());
 
-		auto getPushVelocityInLocalPoint = [&] (const JPH::Vec3& rel_pos) -> JPH::Vec3 	{
-			JPH::RVec3 linearVelocity = body->interface->GetLinearVelocity(body->id);
-			JPH::RVec3 angularVelocity = body->interface->GetAngularVelocity(body->id);
-			// Compute the velocity at the given local position
-			return linearVelocity + angularVelocity.Cross(rel_pos);
-		};
+		// auto getPushVelocityInLocalPoint = [&] (const JPH::Vec3& rel_pos) -> JPH::Vec3 	{
+		// 	JPH::RVec3 linearVelocity = body->interface->GetLinearVelocity(body->id);
+		// 	JPH::RVec3 angularVelocity = body->interface->GetAngularVelocity(body->id);
+		// 	// Compute the velocity at the given local position
+		// 	return linearVelocity + angularVelocity.Cross(rel_pos);
+		// };
 
-        JPH::RVec3 result = getPushVelocityInLocalPoint(relPos);
-        return Vector3(result.GetX(), result.GetY(), result.GetZ());
+        // JPH::RVec3 result = getPushVelocityInLocalPoint(relPos);
+        // return Vector3(result.GetX(), result.GetY(), result.GetZ());
 	}
 
 	Vector3 Rigidbody::GetCenterOfMass()
 	{
+		if(!IsInitialized())
+			return Vector3(0, 0, 0);
+
 		JPH::RVec3 com = body->interface->GetCenterOfMassPosition(body->id);
 		return Vector3(com.GetX(), com.GetY(), com.GetZ());
 	}
 
 	void Rigidbody::SetBounciness(float bounciness)
 	{
-		if(!body->handle)
+		if(!IsInitialized())
 			return;
 		body->handle->SetRestitution(bounciness);
 	}
 
 	float Rigidbody::GetBounciness() const
 	{
+		if(!IsInitialized())
+			return 0.0f;
 		return body->interface->GetRestitution(body->id);
 	}
 
 	void Rigidbody::SetLinearDrag(float drag)
 	{
+		if(!IsInitialized())
+			return;
 		body->handle->GetMotionProperties()->SetLinearDamping(drag);
 	}
 
 	float Rigidbody::GetLinearDrag() const
 	{
+		if(!IsInitialized())
+			return 0.0f;
 		return body->handle->GetMotionProperties()->GetLinearDamping();
 	}
 
 	void Rigidbody::SetAngularDrag(float drag)
 	{
+		if(!IsInitialized())
+			return;
 		body->handle->GetMotionProperties()->SetAngularDamping(drag);
 	}
 
 	float Rigidbody::GetAngularDrag() const
 	{
+		if(!IsInitialized())
+			return 0.0f;
 		return body->handle->GetMotionProperties()->GetAngularDamping();
 	}
 
 	void Rigidbody::SetCollisionDetectionMode(CollisionDetectionMode mode)
 	{
+		if(!IsInitialized())
+			return;
 		body->interface->SetMotionQuality(body->id, static_cast<JPH::EMotionQuality>(mode));
 	}
 
 	CollisionDetectionMode Rigidbody::GetCollisionDetectionMode() const
 	{
+		if(!IsInitialized())
+			return CollisionDetectionMode::Discrete;
+
 		auto quality = body->interface->GetMotionQuality(body->id);
 		return static_cast<CollisionDetectionMode>(quality);
 	}
@@ -366,26 +435,35 @@ namespace GFX
 	
 	void Rigidbody::SetGravityFactor(float factor)
 	{
+		if(!IsInitialized())
+			return;
 		body->interface->SetGravityFactor(body->id, factor);
 	}
 
 	float Rigidbody::GetGravityFactor() const
 	{
+		if(!IsInitialized())
+			return 1.0f;
 		return body->interface->GetGravityFactor(body->id);
 	}
 
 	bool Rigidbody::IsSleeping() const
 	{
+		if(!IsInitialized())
+			return false;
 		return body->interface->IsActive(body->id) == false;
 	}
 
 	void Rigidbody::SetConstraints(RigidbodyConstraints constraints)
 	{
-
+		if(!IsInitialized())
+			return;
 	}
 
 	RigidbodyConstraints Rigidbody::GetConstraints() const
 	{
+		if(!IsInitialized())
+			return RigidbodyConstraints::None;
 		return static_cast<RigidbodyConstraints>(body->handle->GetMotionProperties()->GetAllowedDOFs());
 	}
 
@@ -405,7 +483,6 @@ namespace GFX
 
 			if(!ShapeHelper::Create(c, body->shape))
 				return false;
-			
 			return true;
 		}
 		else
@@ -452,14 +529,25 @@ namespace GFX
 			{
 				BoxCollider *collider = static_cast<BoxCollider*>(c);
 				Vector3 h = collider->GetSize() * 0.5f;
+				Vector3 c = collider->GetCenter();
 				JPH::Vec3 halfExtent(h.x, h.y, h.z);
+				JPH::RVec3 center(c.x, c.y, c.z);
 				JPH::BoxShapeSettings settings(halfExtent);
 				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
 				if(result.IsValid())
 				{
-					outShape = result.Get();
-					return true;
+					JPH::RotatedTranslatedShapeSettings offsetShape(center, JPH::Quat::sIdentity(), result.Get());
+
+					auto r = offsetShape.Create();
+
+					if(r.IsValid())
+					{
+						outShape = r.Get();
+						return true;
+					}
+					
+					return false;
 				}
 
 				break;
@@ -469,13 +557,24 @@ namespace GFX
 				CylinderCollider *collider = static_cast<CylinderCollider*>(c);
 				float halfHeight = collider->GetHeight() * 0.5f;
 				float radius = collider->GetRadius();
+				Vector3 c = collider->GetCenter();
+				JPH::RVec3 center(c.x, c.y, c.z);
 				JPH::CapsuleShapeSettings settings(halfHeight, radius);
 				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
 				if(result.IsValid())
 				{
-					outShape = result.Get();
-					return true;
+					JPH::RotatedTranslatedShapeSettings offsetShape(center, JPH::Quat::sIdentity(), result.Get());
+
+					auto r = offsetShape.Create();
+
+					if(r.IsValid())
+					{
+						outShape = r.Get();
+						return true;
+					}
+					
+					return false;
 				}
 
 				break;
@@ -485,13 +584,24 @@ namespace GFX
 				CylinderCollider *collider = static_cast<CylinderCollider*>(c);
 				float halfHeight = collider->GetHeight() * 0.5f;
 				float radius = collider->GetRadius();
+				Vector3 c = collider->GetCenter();
+				JPH::RVec3 center(c.x, c.y, c.z);
 				JPH::CylinderShapeSettings settings(halfHeight, radius);
 				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
 				if(result.IsValid())
 				{
-					outShape = result.Get();
-					return true;
+					JPH::RotatedTranslatedShapeSettings offsetShape(center, JPH::Quat::sIdentity(), result.Get());
+
+					auto r = offsetShape.Create();
+
+					if(r.IsValid())
+					{
+						outShape = r.Get();
+						return true;
+					}
+					
+					return false;
 				}
 
 				break;
@@ -542,13 +652,24 @@ namespace GFX
 			case ColliderType::Sphere:
 			{
 				SphereCollider *collider = static_cast<SphereCollider*>(c);
+				Vector3 c = collider->GetCenter();
+				JPH::RVec3 center(c.x, c.y, c.z);
 				JPH::SphereShapeSettings settings(collider->GetRadius());
 				JPH::ShapeSettings::ShapeResult result = settings.Create();
 
 				if(result.IsValid())
 				{
-					outShape = result.Get();
-					return true;
+					JPH::RotatedTranslatedShapeSettings offsetShape(center, JPH::Quat::sIdentity(), result.Get());
+
+					auto r = offsetShape.Create();
+
+					if(r.IsValid())
+					{
+						outShape = r.Get();
+						return true;
+					}
+					
+					return false;
 				}
 
 				break;

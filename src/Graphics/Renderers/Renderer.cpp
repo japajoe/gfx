@@ -1,5 +1,4 @@
 #include "Renderer.hpp"
-#include "../Graphics.hpp"
 
 namespace GFX
 {
@@ -16,14 +15,6 @@ namespace GFX
     {
         castShadows = true;
         renderOrder = 1000;
-
-        //Maybe move this to OnInitialize?
-        Graphics::Add(this);
-    }
-
-    void Renderer::OnDestroy()
-    {
-        Graphics::Remove(this);
     }
 
     Mesh *Renderer::GetMesh(size_t index) const

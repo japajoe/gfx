@@ -4,6 +4,7 @@
 #include "../../Core/Transform.hpp"
 #include "../../External/glad/glad.h"
 #include "../GL.hpp"
+#include "../Graphics.hpp"
 
 namespace GFX
 {
@@ -25,6 +26,16 @@ namespace GFX
     {
         type = RendererType::Mesh;
         SetName("MeshRenderer");
+    }
+
+    void MeshRenderer::OnInitialize()
+    {
+        Graphics::Add(this);
+    }
+
+    void MeshRenderer::OnDestroy()
+    {
+        Graphics::Remove(this);
     }
 
     void MeshRenderer::Add(Mesh *mesh, const std::shared_ptr<Material> &material)

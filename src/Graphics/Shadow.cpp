@@ -133,11 +133,11 @@ namespace GFX
         const auto lightView = glm::lookAt(center + lightDir, center, Vector3(0.0f, 1.0f, 0.0f));
 
         float minX = std::numeric_limits<float>::max();
-        float maxX = std::numeric_limits<float>::lowest();
+        float maxX = std::numeric_limits<float>::min();
         float minY = std::numeric_limits<float>::max();
-        float maxY = std::numeric_limits<float>::lowest();
+        float maxY = std::numeric_limits<float>::min();
         float minZ = std::numeric_limits<float>::max();
-        float maxZ = std::numeric_limits<float>::lowest();
+        float maxZ = std::numeric_limits<float>::min();
 
         for (const auto& v : corners)
         {

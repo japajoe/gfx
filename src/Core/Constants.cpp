@@ -64,6 +64,8 @@ namespace GFX
 				return "DefaultCubeMap";
 			case ConstantString::TextureDepth:
 				return "Depth";
+			case ConstantString::TextureParticle:
+				return "Particle";
 			default:
 				return "Unknown";
 		}

@@ -25,6 +25,7 @@ namespace GFX
     class Physics
     {
     friend class Application;
+    friend class GameBehaviour;
     private:
         static std::unique_ptr<PhysicsManager> physicsManager;
         static bool LineIntersects(const Vector3 &l1p1, const Vector3 &l1p2, const Vector3 &l2p1, const Vector3 &l2p2, Vector3 &hitpoint);

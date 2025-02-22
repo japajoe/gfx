@@ -286,6 +286,26 @@ namespace GFX
         return Vector3f::Normalize(dir);
     }
 
+    Vector3 Transform::InverseTransformPoint(const Vector3 &point)
+    {
+        // Step 1: Translate the point to the origin
+        Vector3 pointRelativeToOrigin = point - GetPosition();
+
+        // Step 2: Rotate the point back using the inverse of the rotation
+        Quaternion inverseRotation = Quaternionf::Invert(GetRotation());
+        Vector3 localPoint = Vector3f::Transform(pointRelativeToOrigin, inverseRotation);
+
+        // Step 3: Scale the point back (if needed)
+        // Note: Scaling is usually applied in the forward transform, so we may not need to apply it here.
+        // If you want to consider scaling, you can divide by the scale factors.
+        Vector3 scale = GetScale();
+        localPoint.x /= scale.x;
+        localPoint.y /= scale.y;
+        localPoint.z /= scale.z;
+
+        return localPoint;
+    }
+
     void Transform::LookAt(Transform *target)
     {
         LookAt(target, Vector3f::UnitY());

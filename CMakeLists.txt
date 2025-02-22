@@ -106,7 +106,6 @@ include_directories(
 	"${PROJECT_SOURCE_DIR}/include/System/IO"
 	"${PROJECT_SOURCE_DIR}/include/System/Numerics"
 	"${PROJECT_SOURCE_DIR}/include/Testing"
-	"${PROJECT_SOURCE_DIR}/include/Testing/FlightPhysics"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

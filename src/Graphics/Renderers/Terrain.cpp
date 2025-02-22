@@ -35,10 +35,13 @@ namespace GFX
 
         mesh = MeshGenerator::CreateTerrain(width, depth, Vector3(scale, scale, scale));
         mesh.Generate();
+
+        Graphics::Add(this);
     }
 
     void Terrain::OnDestroy()
     {
+        Graphics::Remove(this);
         mesh.Delete();
     }
 

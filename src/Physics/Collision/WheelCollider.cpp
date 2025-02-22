@@ -22,6 +22,7 @@ namespace GFX
         springForce = 0.0f;
         damperForce = 0.0f;
         suspensionForce = Vector3(0, 0, 0);
+        slipRatio = 0.1f;
         
         restLength = 0.5f;
         springTravel = 0.2f;
@@ -30,6 +31,11 @@ namespace GFX
         wheelRadius = 0.5f;
         steerAngle = 0.0f;
         center = Vector3(0, 0, 0);
+
+        isEnabled = true;
+        rpm = 0;
+        velocity = Vector3(0, 0, 0);
+        debugLines = false;
     }
 
     void WheelCollider::OnUpdate()
@@ -37,15 +43,30 @@ namespace GFX
         if(!rb)
             return;
 
-        auto transform = GetTransform();
-        Vector3 currentEuler = Quaternionf::ToEulerAngles(transform->GetLocalRotation());
-        auto rotation = Quaternion(Vector3(currentEuler.x, glm::radians(steerAngle), currentEuler.z));
-        transform->SetLocalRotation(rotation);
+        if(!isEnabled)
+            return;
+
+        GetTransform()->SetLocalRotation(Quaternionf::Euler(Vector3f::UnitY() * glm::radians(steerAngle)));
+    }
+
+    void WheelCollider::OnLateUpdate()
+    {
+        if(!rb)
+            return;
+
+        if(!isEnabled)
+            return;
+        
+        if(debugLines)
+            DrawDebugLines();
     }
 
     void WheelCollider::OnFixedUpdate()
     {
         if(!rb)
+            return;
+
+        if(!isEnabled)
             return;
 
         minLength = restLength - springTravel;
@@ -60,21 +81,8 @@ namespace GFX
         {
             if(hit.transform->GetRoot() != GetTransform()->GetRoot())
             {
-                lastLength = springLength;
-                springLength = hit.distance - wheelRadius;
-                springLength = glm::clamp(springLength, minLength, maxLength);
-                springVelocity = (lastLength - springLength) / Time::GetDeltaTime();
-                springForce = springStiffness * (restLength - springLength);
-                damperForce = damperStiffness * springVelocity;
-                suspensionForce = (springForce + damperForce) * transform->GetUp();
-
-                auto wheelVelocity = transform->InverseTransformDirection(rb->GetPointVelocity(hit.point));
-                float fX = glm::abs(motorTorque ) > 0 ? glm::sign(motorTorque) * springForce : 0.0f;
-                float fY = wheelVelocity.x * springForce;
-
-                Vector3 frictionForce = (fX * transform->GetForward()) + (fY * -transform->GetRight());
-
-                rb->AddForceAtPoint(suspensionForce + frictionForce, hit.point);
+                UpdateSuspensionForce(hit);
+                UpdateMotorForce(hit);
                 isGrounded = true;
             }
             else
@@ -87,12 +95,69 @@ namespace GFX
             isGrounded = false;
         }
 
+        CalculateRPM();
+
+        if(glm::abs(motorTorque) > glm::epsilon<float>())
+        {
+            auto calculateMomentOfInertia = [this] () -> float {
+                // Moment of inertia for a solid cylinder (wheel)
+                const float mass = 40.0f;
+                return 0.5f * mass * wheelRadius * wheelRadius;
+            };
+
+            float angularAcceleration = motorTorque / calculateMomentOfInertia();
+            angularVelocity = angularAcceleration * Time::GetDeltaTime();
+        }
+        else
+        {
+            //angularVelocity = (transform->InverseTransformDirection(transform->GetPosition()).z * glm::length(rb->GetLinearVelocity())) / wheelRadius;
+            angularVelocity = velocity.z / wheelRadius;
+            angularVelocity *= -1.0f;
+        }
+    }
+
+    void WheelCollider::UpdateSuspensionForce(const RaycastHit &hit)
+    {
+        auto transform = GetTransform();
+
+        lastLength = springLength;
+        springLength = hit.distance - wheelRadius;
+        springLength = glm::clamp(springLength, minLength, maxLength);
+        springVelocity = (lastLength - springLength) / Time::GetDeltaTime();
+        springForce = springStiffness * (restLength - springLength);
+        damperForce = damperStiffness * springVelocity;
+        suspensionForce = (springForce + damperForce) * transform->GetUp();
+
+        velocity = rb->GetPointVelocity(hit.point);
+        velocity = transform->InverseTransformDirection(velocity) * glm::length(velocity);
+
+        float fX = glm::abs(motorTorque ) > 0 ? glm::sign(motorTorque) * springForce : 0.0f;
+        float fY = velocity.x * springForce * slipRatio;
+        Vector3 frictionForce = (fX * transform->GetForward()) + (fY * -transform->GetRight());
+        rb->AddForceAtPoint(suspensionForce + frictionForce, hit.point);
+
+    }
+
+    void WheelCollider::UpdateMotorForce(const RaycastHit &hit)
+    {
+        auto transform = GetTransform();
+
         if(glm::abs(motorTorque) > 0.0f)
         {
             rb->AddForceAtPoint(transform->GetForward() * motorTorque, hit.point);
         }
+    }
 
-        DrawDebugLines();
+    void WheelCollider::CalculateRPM()
+    {
+        // Get the velocity of the wheel's contact point in world space
+        Vector3 contactVelocity = rb->GetLinearVelocity();
+        // The wheel speed in world space (only considering the forward speed in the x-direction)
+        float wheelSpeed = glm::length(contactVelocity);
+
+        const float wheelCircumference = 2 * glm::pi<float>() * wheelRadius;
+        // Convert to RPM (rotations per minute)
+        rpm = wheelSpeed / wheelCircumference * 60.0f * 0.01f;
     }
 
     Vector3 WheelCollider::GetWheelOffset() const
@@ -107,6 +172,131 @@ namespace GFX
     Vector3 WheelCollider::GetWheelPosition() const
     {
         return GetTransform()->GetPosition() + GetWheelOffset();
+    }
+
+    void WheelCollider::GetWorldPose(Vector3 &position, Quaternion &rotation)
+    {
+        auto transform = GetTransform();
+        position = transform->GetPosition();
+
+        //float deltaRotation = rpm * Time::GetDeltaTime() * 360.0f / 60.0f;
+        //rotation = transform->GetRotation() * Quaternionf::Euler(deltaRotation, 0.0f, 0.0f);
+        rotation = transform->GetRotation() * Quaternionf::Euler(angularVelocity, 0.0f, 0.0f);
+    }
+
+    void WheelCollider::SetRigidbody(Rigidbody *body)
+    {
+        rb = body;
+    }
+
+    float WheelCollider::GetRestLength() const
+    {
+        return restLength;
+    }
+
+    void WheelCollider::SetRestLength(float length)
+    {
+        restLength = length;
+    }
+
+    float WheelCollider::GetSpringTravel() const
+    {
+        return springTravel;
+    }
+
+    void WheelCollider::SetSpringTravel(float travel)
+    {
+        springTravel = travel;
+    }
+
+    float WheelCollider::GetSpringStiffness() const
+    {
+        return springStiffness;
+    }
+
+    void WheelCollider::SetSpringStiffness(float stiffness)
+    {
+        springStiffness = stiffness;
+    }
+
+    float WheelCollider::GetDamperStiffness() const
+    {
+        return damperStiffness;
+    }
+
+    void WheelCollider::SetDamperStiffness(float stiffness)
+    {
+        damperStiffness = stiffness;
+    }
+
+    float WheelCollider::GetWheelRadius() const
+    {
+        return wheelRadius;
+    }
+
+    void WheelCollider::SetWheelRadius(float radius)
+    {
+        wheelRadius = radius;
+    }
+
+    float WheelCollider::GetMotorTorque() const
+    {
+        return motorTorque;
+    }
+
+    void WheelCollider::SetMotorTorque(float torque)
+    {
+        motorTorque = torque;
+    }
+
+    float WheelCollider::GetSteerAngle() const
+    {
+        return steerAngle;
+    }
+
+    void WheelCollider::SetSteerAngle(float angle)
+    {
+        steerAngle = angle;
+    }
+
+    const Vector3& WheelCollider::GetCenter() const
+    {
+        return center;
+    }
+
+    void WheelCollider::SetCenter(const Vector3& newCenter)
+    {
+        center = newCenter;
+    }
+
+    bool WheelCollider::IsEnabled() const
+    {
+        return isEnabled;
+    }
+
+    void WheelCollider::SetEnabled(bool enabled)
+    {
+        isEnabled = enabled;
+    }
+
+    bool WheelCollider::IsGrounded() const
+    {
+        return isEnabled;
+    }
+
+    void WheelCollider::SetDebugLines(bool visible)
+    {
+        debugLines = visible;
+    }
+
+    void WheelCollider::SetSlipRatio(float value)
+    {
+        slipRatio = value;
+    }
+
+    float WheelCollider::GetSlipRatio() const
+    {
+        return slipRatio;
     }
 
     void WheelCollider::DrawDebugLines()

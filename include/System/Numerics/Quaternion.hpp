@@ -11,6 +11,7 @@ namespace GFX
     public:
         static glm::quat Conjugate(const glm::quat &v);
         static glm::quat Euler(float x, float y, float z);
+        static glm::quat Euler(const glm::vec3 eulerAngles);
         static glm::quat FromAxisAngle(const glm::vec3 &axis, float angle);
         static glm::quat FromMatrix(const glm::mat3 &v);
         static glm::quat FromMatrix(const glm::mat4 &v);

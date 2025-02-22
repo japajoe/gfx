@@ -22,6 +22,9 @@ namespace GFX
     {
     private:
         std::vector<MeshRendererData> data;
+    protected:
+        void OnInitialize() override;
+        void OnDestroy() override;
     public:
         MeshRenderer();
         void SetMesh(Mesh *mesh);

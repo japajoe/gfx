@@ -2,6 +2,7 @@
 #include "GameObject.hpp"
 #include "Application.hpp"
 #include "Time.hpp"
+#include "../Physics/Physics.hpp"
 
 namespace GFX
 {
@@ -175,6 +176,8 @@ namespace GFX
             if(behaviour->GetGameObject()->GetIsActive())
                 behaviour->OnFixedUpdate();
         }
+
+        Physics::NewFrame();
     }
 
     void GameBehaviour::OnBehaviourGUI()

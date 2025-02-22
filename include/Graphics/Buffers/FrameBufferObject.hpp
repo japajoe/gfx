@@ -26,6 +26,7 @@ namespace GFX
     	void Bind();
     	void Unbind();
     	void Resize(uint32_t width, uint32_t height);
+		void Resolve();
     	GLuint GetId() const;
     	GLuint GetTextureId() const;
 		GLuint GetDepthId() const;

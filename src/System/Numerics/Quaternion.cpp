@@ -12,6 +12,11 @@ namespace GFX
         return glm::quat(glm::vec3(x, y, z));
     }
 
+    glm::quat Quaternionf::Euler(const glm::vec3 eulerAngles)
+    {
+        return glm::quat(eulerAngles);
+    }
+
     glm::quat Quaternionf::FromAxisAngle(const glm::vec3 &axis, float angle)
     {
         return glm::angleAxis(angle, axis);

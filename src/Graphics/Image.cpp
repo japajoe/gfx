@@ -4,6 +4,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../External/stb/stb_image_write.h"
 #include <cstring>
+#include <vector>
 
 namespace GFX 
 {
@@ -245,5 +246,64 @@ namespace GFX
     bool Image::SaveAsPNG(const std::string &filepath, const void *data, size_t size, size_t width, size_t height, size_t channels) 
 	{
         return stbi_write_png(filepath.c_str(), width, height, channels, data, width * channels) > 0;
+    }
+
+    Image Image::CreateGradientCircle(uint32_t width, uint32_t height, const Color &color1, const Color &color2)
+    {
+        uint32_t channels = 4;
+        std::vector<uint8_t> pixels;
+        pixels.resize(width * height * channels);
+
+        memset(pixels.data(), 0, pixels.size());
+
+        // Calculate the center of the circle
+        float centerX = width / 2.0f;
+        float centerY = height / 2.0f;
+        float maxRadius = std::min(centerX, centerY);
+
+        for (uint32_t y = 0; y < height; ++y)
+        {
+            for (uint32_t x = 0; x < width; ++x)
+            {
+                // Calculate the distance from the center
+                float dx = x - centerX;
+                float dy = y - centerY;
+                float distance = std::sqrt(dx * dx + dy * dy);
+
+                // Normalize the distance to a value between 0 and 1
+                float normalizedDistance = distance / maxRadius;
+                normalizedDistance = std::min(normalizedDistance, 1.0f); // Clamp to [0, 1]
+
+                // Interpolate between color1 and color2 based on the normalized distance
+                Color currentColor;
+                currentColor.r = (1.0f - normalizedDistance) * color1.r + normalizedDistance * color2.r;
+                currentColor.g = (1.0f - normalizedDistance) * color1.g + normalizedDistance * color2.g;
+                currentColor.b = (1.0f - normalizedDistance) * color1.b + normalizedDistance * color2.b;
+
+                // Check if the pixel is outside the circle
+                if (distance > maxRadius)
+                {
+                    // Set the pixel to transparent
+                    currentColor.a = 0.0f; // Fully transparent
+                }
+                else
+                {
+                    // Set the alpha value based on the gradient
+                    currentColor.a = (1.0f - normalizedDistance) * color1.a + normalizedDistance * color2.a;
+                }
+
+                // Set the pixel values in the buffer
+                size_t index = (y * width + x) * channels;
+                pixels[index] = static_cast<uint8_t>(currentColor.r * 255);
+                pixels[index + 1] = static_cast<uint8_t>(currentColor.g * 255);
+                pixels[index + 2] = static_cast<uint8_t>(currentColor.b * 255);
+                if (channels == 4) 
+                {
+                    pixels[index + 3] = static_cast<uint8_t>(currentColor.a * 255);
+                }
+            }
+        }
+
+        return Image(pixels.data(), pixels.size(), width, height, channels);
     }
 }

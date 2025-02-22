@@ -68,6 +68,7 @@ namespace GFX
         Transform *GetRoot() const;
         Vector3 TransformDirection(const Vector3 &direction);
         Vector3 InverseTransformDirection(const Vector3 &direction);
+        Vector3 InverseTransformPoint(const Vector3 &point);
         void LookAt(Transform *target);
         void LookAt(Transform *target, const Vector3 &worldUp);
         void LookAt(const Vector3 &worldPosition, const Vector3 &worldUp);

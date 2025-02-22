@@ -49,6 +49,7 @@ namespace GFX
 		bool isActive;
 		bool CreateShape();
 		bool Initialize();
+		bool IsInitialized() const;
     protected:
         void OnInitialize() override;
         void OnDestroy() override;

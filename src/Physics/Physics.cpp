@@ -243,6 +243,9 @@ namespace GFX
         JPH::Factory::sInstance = nullptr;
     }
 
+    static double currentTime = 0.0;
+    static double lastPhysicsUpdateTime = 0.0;
+
     void Physics::NewFrame()
     {
         const float cDeltaTime = 1.0f / 60.0f;
@@ -251,6 +254,10 @@ namespace GFX
         physicsManager->physicsSystem.Update(cDeltaTime, cCollisionSteps, &physicsManager->allocator, &physicsManager->jobSystem);
 
         auto interface = GetBodyInterface();
+
+        currentTime = Time::GetTimeAsDouble();
+
+        float t = (currentTime - lastPhysicsUpdateTime) / Time::GetDeltaTime();
 
         for(size_t i = 0; i < physicsManager->bodies.size(); i++)
         {
@@ -268,8 +275,20 @@ namespace GFX
             auto rot = interface->GetRotation(id);
             Vector3 position(pos.GetX(), pos.GetY(), pos.GetZ());
             Quaternion rotation(rot.GetW(), rot.GetX(), rot.GetY(), rot.GetZ());
+
+            if(t < 1.0f)
+            {
+                rotation = Quaternionf::Slerp(physicsManager->bodies[i]->GetTransform()->GetRotation(), rotation, t);
+                position = Vector3f::Lerp(physicsManager->bodies[i]->GetTransform()->GetPosition(), position, t);
+            }
+
             physicsManager->bodies[i]->GetTransform()->SetPosition(position);
             physicsManager->bodies[i]->GetTransform()->SetRotation(rotation);
+        }
+
+        if (t >= 1.0f) 
+        {
+            lastPhysicsUpdateTime = currentTime; // Update the last physics update time
         }
     }
 

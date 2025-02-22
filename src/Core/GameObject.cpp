@@ -9,6 +9,7 @@
 #include "../Graphics/Materials/ProceduralSkybox2Material.hpp"
 #include "../Graphics/Materials/WaterMaterial.hpp"
 #include "../Graphics/Renderers/MeshRenderer.hpp"
+#include "../Graphics/Renderers/ParticleSystem.hpp"
 #include "../Graphics/Renderers/Terrain.hpp"
 
 namespace GFX
@@ -129,6 +130,13 @@ namespace GFX
                 auto mesh = Resources::FindMesh(Constants::GetString(ConstantString::MeshSphere));
                 auto renderer = g->AddComponent<MeshRenderer>();
                 renderer->Add(mesh, std::make_shared<DiffuseMaterial>());
+                break;
+            }
+            case PrimitiveType::ParticleSystem:
+            {
+                g->SetLayer(Layer_Default | Layer_IgnoreCulling | Layer_IgnoreRaycast, true);
+                auto renderer = g->AddComponent<ParticleSystem>();
+                renderer->SetRenderOrder(1002);
                 break;
             }
             case PrimitiveType::Plane:

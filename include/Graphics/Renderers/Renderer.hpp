@@ -38,7 +38,6 @@ namespace GFX
         bool receiveShadows;
         uint32_t renderOrder;
         RendererType type;
-        void OnDestroy() override;
     public:
         Renderer();
         virtual void OnRender() = 0;

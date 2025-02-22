@@ -14,6 +14,7 @@
 #include "Shaders/PostProcessing/HorizontalBlurShader.hpp"
 #include "Shaders/PostProcessing/VerticalBlurShader.hpp"
 #include "Shaders/PostProcessing/GrayscaleShader.hpp"
+#include "Shaders/ParticleShader.hpp"
 #include "Shaders/ProceduralSkyboxShader.hpp"
 #include "Shaders/ProceduralSkybox2Shader.hpp"
 #include "Shaders/TerrainShader.hpp"
@@ -272,6 +273,7 @@ namespace GFX
 		auto proceduralSkyboxShader2 = Resources::AddShader(Constants::GetString(ConstantString::ShaderProceduralSkybox2), ProceduralSkybox2Shader::Create());
 		auto terrainShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderTerrain), TerrainShader::Create());
 		auto waterShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderWater), WaterShader::Create());
+		auto particleShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderParticle), ParticleShader::Create());
 		auto postProcessingShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderPostProcessing), PostProcessingShader::Create());
 		auto horizontalBlurShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderHorizontalBlur), HorizontalBlurShader::Create());
 		auto verticalBlurShader = Resources::AddShader(Constants::GetString(ConstantString::ShaderVerticalBlur), VerticalBlurShader::Create());
@@ -285,6 +287,7 @@ namespace GFX
 		BindShaderToUniformBuffers(proceduralSkyboxShader2);
 		BindShaderToUniformBuffers(terrainShader);
 		BindShaderToUniformBuffers(waterShader);
+		BindShaderToUniformBuffers(particleShader);
 		BindShaderToUniformBuffers(postProcessingShader);
 		BindShaderToUniformBuffers(horizontalBlurShader);
 		BindShaderToUniformBuffers(verticalBlurShader);
@@ -300,6 +303,15 @@ namespace GFX
 		//Create default textures
 		auto defaultTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureDefault), Texture2D(2, 2, Color::White()));
 		auto defaultCubemap = Resources::AddTextureCubeMap(Constants::GetString(ConstantString::TextureDefaultCubeMap), TextureCubeMap(2, 2, Color::White()));
+		auto particleTexture = Resources::AddTexture2D(Constants::GetString(ConstantString::TextureParticle), Texture2D(64, 64, Color::White()));
+
+		Color color1 = Color::White();
+		//Color color2 = Color(1.0f, 1.0f, 1.0f, 0.0f);
+		Color color2 = Color::Black();
+		Image image = Image::CreateGradientCircle(particleTexture->GetWidth(), particleTexture->GetHeight(), color1, color2);
+		particleTexture->Bind(0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, particleTexture->GetWidth(), particleTexture->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetData());
+		particleTexture->Unbind();
 
 		defaultTexture->ObjectLabel("TextureDefault");
 		defaultCubemap->ObjectLabel("TextureDefaultCubeMap");

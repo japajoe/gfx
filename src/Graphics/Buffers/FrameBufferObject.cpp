@@ -144,6 +144,14 @@ namespace GFX
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
+    void FrameBufferObject::Resolve()
+    {
+        // Resolve the multisampled framebuffer to the default framebuffer or a regular non-multisampled texture
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);  // Default framebuffer (screen)
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
     GLuint FrameBufferObject::GetId() const
     {
         return id;

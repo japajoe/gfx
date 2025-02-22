@@ -19,7 +19,7 @@ struct aiMaterial;
 
 namespace GFX
 {
-    enum ModelFlags : unsigned int
+    enum ModelFlags_ : unsigned int
     {
         ModelFlags_CalcTangentSpace = 0x1,
         ModelFlags_JoinIdenticalVertices = 0x2,
@@ -54,6 +54,8 @@ namespace GFX
         ModelFlags_DropNormals = 0x40000000,
         ModelFlags_GenBoundingBoxes = 0x80000000
     };
+
+    typedef unsigned int ModelFlags;
 
     class Texture2D;
 

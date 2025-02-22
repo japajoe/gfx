@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include "Color.hpp"
 
 namespace GFX 
 {
@@ -26,6 +27,7 @@ namespace GFX
         size_t GetDataSize() const;
         bool IsLoaded() const;
         static bool SaveAsPNG(const std::string &filepath, const void *data, size_t size, size_t width, size_t height, size_t channels);
+        static Image CreateGradientCircle(uint32_t width, uint32_t height, const Color &color1, const Color &color2);
     private:
         uint8_t *data;
         uint32_t width;

@@ -41,6 +41,7 @@ namespace GFX
 		TextureDefault,
 		TextureDefaultCubeMap,
 		TextureDepth,
+		TextureParticle,
 		UniformBufferCamera,
 		UniformBufferLights,
 		UniformBufferShadow,
