@@ -55,7 +55,8 @@ void main() {
         lighting.rgb = mix(uWorld.fogColor.rgb, lighting.rgb, visibility);
     }
 
-    FragColor = gamma_correction(vec4(lighting, texColor.a));
+    vec4 outputColor = tone_map(vec4(lighting, texColor.a));
+    FragColor = gamma_correction(outputColor);
 })";
 
 	Shader ParticleShader::Create()

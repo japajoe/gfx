@@ -32,6 +32,9 @@ namespace GFX
         steerAngle = 0.0f;
         center = Vector3(0, 0, 0);
 
+        motorTorque = 0.0f;
+        brakeTorque = 0.0f;
+
         isEnabled = true;
         rpm = 0;
         velocity = Vector3(0, 0, 0);
@@ -69,8 +72,11 @@ namespace GFX
         if(!isEnabled)
             return;
 
-        minLength = restLength - springTravel;
-        maxLength = restLength + springTravel;
+        //minLength = restLength - springTravel;
+        //maxLength = restLength + springTravel;
+
+        minLength = 0;
+        maxLength = restLength;
 
         auto transform = GetTransform();
         Vector3 from = transform->GetPosition() + GetWheelOffset();
@@ -97,7 +103,7 @@ namespace GFX
 
         CalculateRPM();
 
-        if(glm::abs(motorTorque) > glm::epsilon<float>())
+        if(glm::abs(motorTorque) > glm::epsilon<float>() || glm::abs(brakeTorque) > glm::epsilon<float>())
         {
             auto calculateMomentOfInertia = [this] () -> float {
                 // Moment of inertia for a solid cylinder (wheel)
@@ -105,7 +111,8 @@ namespace GFX
                 return 0.5f * mass * wheelRadius * wheelRadius;
             };
 
-            float angularAcceleration = motorTorque / calculateMomentOfInertia();
+            float totalTorque = motorTorque - brakeTorque;
+            float angularAcceleration = totalTorque / calculateMomentOfInertia();
             angularVelocity = angularAcceleration * Time::GetDeltaTime();
         }
         else
@@ -131,20 +138,39 @@ namespace GFX
         velocity = rb->GetPointVelocity(hit.point);
         velocity = transform->InverseTransformDirection(velocity) * glm::length(velocity);
 
+        auto getWheelDirection = [&]() -> float {
+            Vector3 carRight = rb->GetTransform()->GetRight();
+
+            // Calculate the direction from the car to the wheel
+            Vector3 directionToWheel = transform->GetPosition() - rb->GetTransform()->GetPosition();
+
+            // Normalize the direction vector
+            directionToWheel = glm::normalize(directionToWheel);
+
+            // Use the dot product to determine the side
+            float dotProduct = glm::dot(carRight, directionToWheel);
+
+            if (dotProduct < 0)
+                return -1.0f;
+            else
+                return 1.0f;
+        };
+
         float fX = glm::abs(motorTorque ) > 0 ? glm::sign(motorTorque) * springForce : 0.0f;
         float fY = velocity.x * springForce * slipRatio;
         Vector3 frictionForce = (fX * transform->GetForward()) + (fY * -transform->GetRight());
         rb->AddForceAtPoint(suspensionForce + frictionForce, hit.point);
-
+        hitPoint = hit.point;
     }
 
     void WheelCollider::UpdateMotorForce(const RaycastHit &hit)
     {
         auto transform = GetTransform();
 
-        if(glm::abs(motorTorque) > 0.0f)
+        if(glm::abs(motorTorque) > 0.0f || glm::abs(brakeTorque) > 0.0f)
         {
-            rb->AddForceAtPoint(transform->GetForward() * motorTorque, hit.point);
+            float totalTorque = motorTorque - brakeTorque;
+            rb->AddForceAtPoint(transform->GetForward() * totalTorque, hit.point);
         }
     }
 
@@ -177,7 +203,9 @@ namespace GFX
     void WheelCollider::GetWorldPose(Vector3 &position, Quaternion &rotation)
     {
         auto transform = GetTransform();
-        position = transform->GetPosition();
+        //position = transform->GetPosition();
+
+        position = GetWheelPosition() - transform->GetUp() * (wheelRadius - springLength);
 
         //float deltaRotation = rpm * Time::GetDeltaTime() * 360.0f / 60.0f;
         //rotation = transform->GetRotation() * Quaternionf::Euler(deltaRotation, 0.0f, 0.0f);
@@ -249,6 +277,16 @@ namespace GFX
         motorTorque = torque;
     }
 
+    float WheelCollider::GetBrakeTorque() const
+    {
+        return brakeTorque;
+    }
+
+    void WheelCollider::SetBrakeTorque(float torque)
+    {
+        brakeTorque = torque;
+    }
+
     float WheelCollider::GetSteerAngle() const
     {
         return steerAngle;
@@ -297,6 +335,14 @@ namespace GFX
     float WheelCollider::GetSlipRatio() const
     {
         return slipRatio;
+    }
+
+    bool WheelCollider::GetGroundHit(Vector3 &point)
+    {
+        if(!isGrounded)
+            return false;
+        point = hitPoint;
+        return true;
     }
 
     void WheelCollider::DrawDebugLines()

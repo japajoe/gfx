@@ -165,7 +165,7 @@ void main() {
 	vec3 retColor = pow( texColor, vec3( 1.0 / ( 1.2 + ( 1.2 * oSunfade ) ) ) );
 
 	vec4 outputColor = vec4(retColor, 1.0);
-	outputColor = exposure(outputColor, uExposure);
+	outputColor = tone_map_exposure(outputColor, uExposure);
 	FragColor = gamma_correction(outputColor);
 })";
 

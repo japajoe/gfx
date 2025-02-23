@@ -25,7 +25,7 @@ vec4 gamma_correction(vec4 color) {
 }
 
 void main() {
-    FragColor = gamma_correction(oColor);
+	FragColor = gamma_correction(oColor);
 })";
 
 	Shader LineShader::Create()

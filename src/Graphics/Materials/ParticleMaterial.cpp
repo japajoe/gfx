@@ -13,7 +13,7 @@ namespace GFX
 		uvScale = Vector2(1, 1);
 		uvOffset = Vector2(0, 0);
 		alphaCutOff = 0.5f;
-		ambientStrength = 0.5f;
+		ambientStrength = Constants::GetFloat(ConstantFloat::MaterialAmbientStrength);
 		shininess = 16.0f;
 		receiveShadows = false;
 

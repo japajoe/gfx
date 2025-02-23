@@ -132,7 +132,9 @@ void main() {
         lighting = mix(uWorld.fogColor.rgb, lighting, visibility);
     }
 
-    FragColor = gamma_correction(vec4(lighting, texColor.a * uDiffuseColor.a));
+    vec4 outputColor = tone_map(vec4(lighting, texColor.a * uDiffuseColor.a));
+    FragColor = gamma_correction(outputColor);
+
 })";
 
 	Shader WaterShader::Create()

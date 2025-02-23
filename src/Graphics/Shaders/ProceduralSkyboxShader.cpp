@@ -118,8 +118,8 @@ vec4 calculate_sky_color() {
 	// Dithering Noise
 	color.rgb += noise(pos * 1000) * 0.01;
 
-	color = gamma_correction(color);
-	return color;
+    vec4 outputColor = tone_map(color);
+    return gamma_correction(outputColor);
 }
 
 void main() {

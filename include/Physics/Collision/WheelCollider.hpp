@@ -22,6 +22,7 @@ namespace GFX
         float damperStiffness;
         float wheelRadius;
         float motorTorque;
+        float brakeTorque;
         float steerAngle;
         float slipRatio;
         Vector3 center;
@@ -37,6 +38,7 @@ namespace GFX
         bool isGrounded;
         float rpm;
         Vector3 velocity;
+        Vector3 hitPoint;
         bool debugLines;
         float angularVelocity;
         void UpdateSuspensionForce(const RaycastHit &hit);
@@ -66,6 +68,8 @@ namespace GFX
         void SetWheelRadius(float radius);
         float GetMotorTorque() const;
         void SetMotorTorque(float torque);
+        float GetBrakeTorque() const;
+        void SetBrakeTorque(float torque);
         float GetSteerAngle() const;
         void SetSteerAngle(float angle);
         const Vector3& GetCenter() const;
@@ -76,6 +80,7 @@ namespace GFX
         void SetDebugLines(bool visible);
         void SetSlipRatio(float value);
         float GetSlipRatio() const;
+        bool GetGroundHit(Vector3 &point);
     };
 }
 

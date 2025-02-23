@@ -37,9 +37,9 @@ void main() {
     vec3 uv = oUV;
     uv.y *= -1.0;
     vec4 result = texture(uTexture, uv) * uDiffuseColor;
-	result = gamma_correction(result);
-
-	FragColor = result;
+	
+    vec4 outputColor = tone_map(result);
+    FragColor = gamma_correction(outputColor);
 })";
 
 	Shader SkyboxShader::Create()

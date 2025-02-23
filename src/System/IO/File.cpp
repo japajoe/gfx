@@ -2,8 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <sys/stat.h>
-#include <iostream>
 #include <algorithm>
 #include <filesystem>
 
@@ -28,6 +26,7 @@ namespace GFX
             name = File::GetName(path);
             extension = File::GetExtension(path);
             size = File::GetSize(path);
+            directoryPath = fs::path(path).parent_path();
         }
     }
 
@@ -49,6 +48,11 @@ namespace GFX
     size_t File::GetSize() const
     {
         return size;
+    }
+
+    std::string File::GetDirectoryPath() const
+    {
+        return directoryPath;
     }
 
     std::string File::ReadAllText(const std::string &filepath)

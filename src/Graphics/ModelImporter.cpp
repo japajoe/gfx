@@ -3,11 +3,13 @@
 #include "Mesh.hpp"
 #include "MeshRenderer.hpp"
 #include "Texture2D.hpp"
+#include "Image.hpp"
 #include "Materials/DiffuseMaterial.hpp"
 #include "../Core/Resources.hpp"
 #include "../Core/Debug.hpp"
 #include "../Core/Constants.hpp"
 #include "../External/assimp/assimp.hpp"
+#include "../System/IO/File.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -39,6 +41,88 @@ namespace GFX
         return mat;
     }
 
+    static void DumpTextureNames(aiMaterial *aMaterial)
+    {
+        aiTextureType types[19] = {
+            aiTextureType_NONE,
+            aiTextureType_DIFFUSE,
+            aiTextureType_SPECULAR,
+            aiTextureType_AMBIENT,
+            aiTextureType_EMISSIVE,
+            aiTextureType_HEIGHT,
+            aiTextureType_NORMALS,
+            aiTextureType_SHININESS,
+            aiTextureType_OPACITY,
+            aiTextureType_DISPLACEMENT,
+            aiTextureType_LIGHTMAP,
+            aiTextureType_REFLECTION,
+            aiTextureType_BASE_COLOR,
+            aiTextureType_NORMAL_CAMERA,
+            aiTextureType_EMISSION_COLOR,
+            aiTextureType_METALNESS,
+            aiTextureType_DIFFUSE_ROUGHNESS,
+            aiTextureType_AMBIENT_OCCLUSION,
+            aiTextureType_UNKNOWN
+        };
+
+        for(size_t i = 0; i < 19; i++)
+        {
+            uint32_t textureCount = aMaterial->GetTextureCount(types[i]);
+
+            if(textureCount > 0)
+                printf("Texture count %zu\n", textureCount);
+
+            for(uint32_t j = 0; j < textureCount; j++)
+            {
+                aiString path;
+                if (aMaterial->GetTexture(types[i], j, &path) == AI_SUCCESS) 
+                {
+                    std::cout << " Texture " << j << ": " << path.C_Str() << std::endl;
+                }
+            }
+        }
+    }
+
+    static Texture2D *LoadDiffuseTexture(aiMaterial *aMaterial, const std::string modelBaseDirectory)
+    {
+        uint32_t count = aMaterial->GetTextureCount(aiTextureType_DIFFUSE);
+        
+        if(count == 0)
+            return nullptr;
+        
+        aiString path;
+
+        if (aMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &path) != AI_SUCCESS) 
+            return nullptr;
+        
+        std::string filepath = modelBaseDirectory + "/" + std::string(path.C_Str());
+
+        if(!std::filesystem::exists(filepath))
+        {
+            filepath = modelBaseDirectory + "/Textures/" + File::GetName( std::string(path.C_Str()));
+
+            if(!std::filesystem::exists(filepath))
+                return nullptr;
+        }
+
+        //Check if texture already exists
+        Texture2D *texture = Resources::FindTexture2D(filepath);
+        
+        if(texture)
+            return texture;
+
+        //Texture doesn't exist yet, check if the file exists
+
+        
+        //File exists, try to load the image
+        Image image(filepath);
+        
+        if(!image.IsLoaded())
+            return nullptr;
+        
+        return Resources::AddTexture2D(filepath, Texture2D(&image));
+    }
+
     GameObject *ModelImporter::LoadFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ)
     {
 		if(!std::filesystem::exists(filepath))
@@ -58,7 +142,9 @@ namespace GFX
 
         GameObject *model = GameObject::Create();
 
-        ProcessNode(model, scene->mRootNode, scene, scale, flipYZ);
+        File file(filepath);
+
+        ProcessNode(model, scene->mRootNode, scene, scale, flipYZ, file.GetDirectoryPath());
 
         return model;
     }
@@ -82,7 +168,7 @@ namespace GFX
 
         GameObject *model = GameObject::Create();
 
-        ProcessNode(model, scene->mRootNode, scene, scale, flipYZ);
+        ProcessNode(model, scene->mRootNode, scene, scale, flipYZ, "");
 
         return model;
     }
@@ -173,7 +259,7 @@ namespace GFX
         return meshes;
     }
 
-    void ModelImporter::ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ)
+    void ModelImporter::ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ, const std::string directoryPath)
     {
         auto transformation = ToMatrix4(node->mTransformation);
         parent->GetTransform()->SetPosition(Matrix4f::ExtractTranslation(transformation) * scale);
@@ -258,6 +344,8 @@ namespace GFX
             uint32_t materialIndex = aMesh->mMaterialIndex;
             aiMaterial *aMaterial = scene->mMaterials[materialIndex];
 
+            //DumpTextureNames(aMaterial);
+
             auto mesh = std::make_shared<Mesh>(vertices, indices, false);
             mesh->Generate();
             mesh->SetName(aMaterial->GetName().C_Str());
@@ -282,7 +370,8 @@ namespace GFX
                 }
                 else
                 {
-                    material->SetDiffuseTexture(texture);
+                    auto tex = LoadDiffuseTexture(aMaterial, directoryPath);
+                    material->SetDiffuseTexture(tex != nullptr ? tex : texture);
                 }
             }
             else
@@ -299,7 +388,7 @@ namespace GFX
             auto child = GameObject::Create();
             child->SetName(std::string(node->mChildren[i]->mName.C_Str()));
             child->GetTransform()->SetParent(parent->GetTransform());
-            ProcessNode(child, node->mChildren[i], scene, scale, flipYZ);
+            ProcessNode(child, node->mChildren[i], scene, scale, flipYZ, directoryPath);
         }
     }
 

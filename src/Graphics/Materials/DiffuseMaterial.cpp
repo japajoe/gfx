@@ -11,7 +11,7 @@ namespace GFX
 		diffuseTexture = Resources::FindTexture2D(Constants::GetString(ConstantString::TextureDefault));
 		depthMap = Resources::FindTexture3D(Constants::GetString(ConstantString::TextureDepth));
 		diffuseColor = Color::White();
-		ambientStrength = 0.5f;
+		ambientStrength = Constants::GetFloat(ConstantFloat::MaterialAmbientStrength);
 		shininess = 16.0f;
 		uvScale = Vector2(1, 1);
 		uvOffset = Vector2(0, 0);

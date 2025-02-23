@@ -48,10 +48,16 @@ namespace GFX
 		UniformBufferWorld
 	};
 
+	enum class ConstantFloat
+	{
+		MaterialAmbientStrength
+	};
+
 	class Constants
 	{
 	public:
 		static std::string GetString(ConstantString n);
+		static float GetFloat(ConstantFloat n);
 	};
 }
 

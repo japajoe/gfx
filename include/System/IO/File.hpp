@@ -12,6 +12,7 @@ namespace GFX
         std::string path;
         std::string name;
         std::string extension;
+        std::string directoryPath;
         size_t size;
     public:
         File();
@@ -19,6 +20,7 @@ namespace GFX
         std::string GetPath() const;
         std::string GetName() const;
         std::string GetExtension() const;
+        std::string GetDirectoryPath() const;
         size_t GetSize() const;
 
         static std::string ReadAllText(const std::string& filepath);

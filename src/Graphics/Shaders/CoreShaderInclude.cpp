@@ -64,6 +64,17 @@ vec4 gamma_correction(vec4 color) {
     return vec4(pow(vec3(color.xyz), vec3(1.0/2.2)), color.a);
 }
 
+vec4 tone_map(vec4 color) {
+    // reinhard tone mapping
+    vec3 mapped = color.rgb / (color.rgb + vec3(1.0));
+    return vec4(mapped, color.a);
+}
+
+vec4 tone_map_exposure(vec4 color, float exposure) {
+    vec3 mapped = vec3(1.0) - exp(-color.rgb * exposure);
+    return vec4(mapped, color.a);
+}
+
 float calculate_shadow(vec3 fragPosWorldSpace, mat4 view, vec3 normal, vec3 lightDirection) {
     if(uReceiveShadows < 1)
         return 0.0;

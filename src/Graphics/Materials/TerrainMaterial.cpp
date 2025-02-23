@@ -17,7 +17,7 @@ namespace GFX
 		texture3 = defaultTexture;
 		texture4 = defaultTexture;		
 		diffuseColor = Color::White();
-		ambientStrength = 0.5f;
+		ambientStrength = Constants::GetFloat(ConstantFloat::MaterialAmbientStrength);
 		shininess = 16.0f;
 		uvScale1 =Vector2(1, 1);
 		uvScale2 =Vector2(1, 1);

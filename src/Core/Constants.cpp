@@ -70,4 +70,15 @@ namespace GFX
 				return "Unknown";
 		}
 	}
+
+	float Constants::GetFloat(ConstantFloat n)
+	{
+		switch(n)
+		{
+			case ConstantFloat::MaterialAmbientStrength:
+				return 0.5f;
+			default:
+				return 0.0f;
+		}
+	}
 }

@@ -62,7 +62,7 @@ namespace GFX
     class ModelImporter
     {
     private:
-        static void ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ);
+        static void ProcessNode(GameObject *parent, const aiNode* node, const aiScene* scene, const Vector3 &scale, bool flipYZ, const std::string directoryPath);
         static Texture2D *LoadEmbeddedTexture(const aiMaterial *pMaterial, const aiTexture *pTexture);
     public:
         static GameObject *LoadFromFile(const std::string &filepath, ModelFlags modelFlags, const Vector3 &scale, bool flipYZ = false);
