@@ -1,0 +1,15 @@
+[submodule "gfx/libs/assimp"]
+	path = gfx/libs/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "gfx/libs/JoltPhysics"]
+	path = gfx/libs/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "gfx/libs/miniaudioex"]
+	path = gfx/libs/miniaudioex
+	url = https://github.com/japajoe/miniaudioex.git
+[submodule "gfx/libs/glfw"]
+	path = gfx/libs/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "gfx/libs/freetype"]
+	path = gfx/libs/freetype
+	url = https://github.com/freetype/freetype.git

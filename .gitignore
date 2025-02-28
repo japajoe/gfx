@@ -1,0 +1,9 @@
+/build
+/.vscode
+/gfx/build
+/gfx/test
+/gfx/testapp
+/demo/include/VehicleDemo.hpp
+/demo/src/VehicleDemo.cpp
+/demo/include/Vehicle.hpp
+/demo/src/Vehicle.cpp

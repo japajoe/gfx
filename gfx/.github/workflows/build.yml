@@ -1,0 +1,32 @@
+# name: Build script for Windows
+
+# on: [push, pull_request]
+
+# jobs:
+#   build-windows:
+#     runs-on: windows-latest
+#     strategy:
+#       matrix:
+#         name: [x64]
+
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+
+#     - name: Set up dependencies on Windows
+#       run: |
+#         echo "Setting up dependencies on Windows ${{ matrix.name }}"
+#         choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+#     - name: Build the project on Windows
+#       run: |
+#         echo "Building project on Windows ${{ matrix.name }}"
+#         git submodule update --init --recursive
+#         mkdir build
+#         cd build
+#         cmake -A ${{ matrix.name }} ..
+#         cmake --build . -- /m
+#     - name: Upload build artifacts
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: gfx-build-windows-${{ matrix.name }}
+#         path: build/
