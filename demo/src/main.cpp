@@ -1,4 +1,6 @@
 #include "GFX.hpp"
+#include "CharacterDemo.hpp"
+#include "VehicleDemo.hpp"
 #include "PhysicsDemo.hpp"
 
 void OnLoaded();

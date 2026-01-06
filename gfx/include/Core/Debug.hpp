@@ -46,6 +46,7 @@ namespace GFX
         static void DrawLine(const Vector3 &p1, const Vector3 &p2, const Color &color);
         static void DrawSphere(const Vector3 &center, float radius, const Quaternion &rotation, const Color &color, int segments = 36, int latitudeCount = 8);
         static void DrawCube(const Vector3 &center, const Vector3 &size, const Quaternion &rotation, const Color &color);
+        static void DrawBounds(const Vector3 &min, const Vector3 &max, const Vector3 &position, const Quaternion &rotation, const Color &color);
 
         template<typename... Args>
         static void Write(const std::string &format, Args... args) 

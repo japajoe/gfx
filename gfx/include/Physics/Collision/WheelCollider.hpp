@@ -41,6 +41,8 @@ namespace GFX
         Vector3 hitPoint;
         bool debugLines;
         float angularVelocity;
+        double distanceTraveled;
+        Vector3 lastPosition;
         void UpdateSuspensionForce(const RaycastHit &hit);
         void UpdateMotorForce(const RaycastHit &hit);
         void CalculateRPM();

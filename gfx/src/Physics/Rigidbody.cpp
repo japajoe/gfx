@@ -49,6 +49,7 @@ namespace GFX
 		body->handle = nullptr;
 		body->interface = Physics::GetBodyInterface();
 		mass = 1.0f;
+		constraints = RigidbodyConstraints::All;
 		isActive = true;
 	}
 
@@ -58,6 +59,17 @@ namespace GFX
 		body->handle = nullptr;
 		body->interface = Physics::GetBodyInterface();
 		this->mass = mass;
+		constraints = RigidbodyConstraints::All;
+		isActive = true;
+	}
+
+	Rigidbody::Rigidbody(const RigidbodySettings &settings)
+	{
+		body = std::make_unique<PhysicsBody>();
+		body->handle = nullptr;
+		body->interface = Physics::GetBodyInterface();
+		mass = settings.mass;
+		constraints = settings.constraints;
 		isActive = true;
 	}
 
@@ -128,6 +140,7 @@ namespace GFX
 		settings.mAngularDamping = 0.1f;
 		settings.mRestitution = 0.35f;
 		settings.mAllowSleeping = true;
+		settings.mAllowedDOFs = static_cast<JPH::EAllowedDOFs>(constraints);
 
 		body->handle = body->interface->CreateBody(settings);
 
@@ -454,17 +467,9 @@ namespace GFX
 		return body->interface->IsActive(body->id) == false;
 	}
 
-	void Rigidbody::SetConstraints(RigidbodyConstraints constraints)
-	{
-		if(!IsInitialized())
-			return;
-	}
-
 	RigidbodyConstraints Rigidbody::GetConstraints() const
 	{
-		if(!IsInitialized())
-			return RigidbodyConstraints::None;
-		return static_cast<RigidbodyConstraints>(body->handle->GetMotionProperties()->GetAllowedDOFs());
+		return constraints;
 	}
 
 	bool Rigidbody::CreateShape()

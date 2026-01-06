@@ -191,4 +191,30 @@ namespace GFX
         LineRenderer::DrawLine(vertices[2], vertices[6], color);
         LineRenderer::DrawLine(vertices[3], vertices[7], color);
     }
+
+    void Debug::DrawBounds(const Vector3 &min, const Vector3 &max, const Vector3 &position, const Quaternion &rotation, const Color &color)
+    {
+        Vector3 p1 = rotation * Vector3(min.x, min.y, min.z) + position;
+        Vector3 p2 = rotation * Vector3(max.x, min.y, min.z) + position;
+        Vector3 p3 = rotation * Vector3(max.x, min.y, max.z) + position;
+        Vector3 p4 = rotation * Vector3(min.x, min.y, max.z) + position;
+
+        Vector3 p5 = rotation * Vector3(min.x, max.y, min.z) + position;
+        Vector3 p6 = rotation * Vector3(max.x, max.y, min.z) + position;
+        Vector3 p7 = rotation * Vector3(max.x, max.y, max.z) + position;
+        Vector3 p8 = rotation * Vector3(min.x, max.y, max.z) + position;
+
+        LineRenderer::DrawLine(p1, p2, color);
+        LineRenderer::DrawLine(p2, p3, color);
+        LineRenderer::DrawLine(p3, p4, color);
+        LineRenderer::DrawLine(p4, p1, color);
+        LineRenderer::DrawLine(p5, p6, color);
+        LineRenderer::DrawLine(p6, p7, color);
+        LineRenderer::DrawLine(p7, p8, color);
+        LineRenderer::DrawLine(p8, p5, color);
+        LineRenderer::DrawLine(p1, p5, color);
+        LineRenderer::DrawLine(p2, p6, color);
+        LineRenderer::DrawLine(p3, p7, color);
+        LineRenderer::DrawLine(p4, p8, color);
+    }
 }

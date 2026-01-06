@@ -12,6 +12,9 @@ namespace GFX
         static glm::vec3 UnitX();
         static glm::vec3 UnitY();
         static glm::vec3 UnitZ();
+        static glm::vec3 Right();
+        static glm::vec3 Up();
+        static glm::vec3 Forward();
         static glm::vec3 Zero();
         static glm::vec3 One();
         static glm::vec3 FromSphericalCoordinates(float radius, float phi, float theta);
@@ -31,6 +34,8 @@ namespace GFX
         static glm::vec3 TransformPosition(const glm::vec3 &v, const glm::mat4 &m);
         static glm::vec3 TransformVector(const glm::vec3 &v, const glm::mat4 &m);
         static glm::vec3 Perpendicular(const glm::vec3 &v);
+        static glm::vec3 ProjectOnPlane(const glm::vec3 &vector, const glm::vec3 &planeNormal);
+        static float Angle(const glm::vec3 &from, const glm::vec3 &to);
         static bool IsNan(const glm::vec3 &v);
         static std::string ToString(const glm::vec3 &v);
     };

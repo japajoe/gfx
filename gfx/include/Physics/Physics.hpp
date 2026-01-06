@@ -43,6 +43,7 @@ namespace GFX
         static bool BoxTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit, Layer layerMask = Layer_None);
         static bool RayTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, RaycastHit &hit);
         static bool SphereTest(const Vector3 &origin, const Vector3 &direction, float maxDistance, float radius, RaycastHit &hit);
+        static bool CheckSphere(const Vector3 &position, float radius);
         static void Add(Rigidbody *rb);
         static void Remove(Rigidbody *rb);
     };

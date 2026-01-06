@@ -17,6 +17,21 @@ namespace GFX
         return glm::vec3(0.0f, 0.0f, 1.0f);
     }
 
+    glm::vec3 Vector3f::Right()
+    {
+        return glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    glm::vec3 Vector3f::Up()
+    {
+        return glm::vec3(0.0f, 1.0f, 0.0f);
+    }
+
+    glm::vec3 Vector3f::Forward()
+    {
+        return glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+
     glm::vec3 Vector3f::Zero()
     {
         return glm::vec3(0.0f, 0.0f, 0.0f);
@@ -177,6 +192,46 @@ namespace GFX
 
         // Normalize the perpendicular vector to ensure it has unit length
         return glm::normalize(perpendicularVec);
+    }
+
+    glm::vec3 Vector3f::ProjectOnPlane(const glm::vec3 &vector, const glm::vec3 &planeNormal) 
+    {
+        // Check for zero normal vector (degenerate plane)
+        if (glm::length2(planeNormal) == 0.0f) 
+        {
+
+            return vector;
+        }
+
+        glm::vec3 normalizedNormal = glm::normalize(planeNormal);
+
+        // Calculate the projection of the vector onto the plane normal.
+        float dotProduct = glm::dot(vector, normalizedNormal);
+        glm::vec3 projectionOntoNormal = normalizedNormal * dotProduct;
+
+        // Subtract the projection onto the normal from the original vector to get the projection onto the plane.
+        glm::vec3 projectionOntoPlane = vector - projectionOntoNormal;
+
+        return projectionOntoPlane;
+    }
+
+    float Vector3f::Angle(const glm::vec3 &from, const glm::vec3 &to)
+    {
+        // Normalize the vectors to ensure they are unit vectors
+        glm::vec3 fromNormalized = glm::normalize(from);
+        glm::vec3 toNormalized = glm::normalize(to);
+
+        // Calculate the dot product
+        float dotProduct = glm::dot(fromNormalized, toNormalized);
+
+        // Clamp the dot product to the range [-1, 1] to avoid NaN from acos
+        dotProduct = glm::clamp(dotProduct, -1.0f, 1.0f);
+
+        // Calculate the angle in radians
+        float angleInRadians = std::acos(dotProduct);
+
+        // Convert radians to degrees
+        return glm::degrees(angleInRadians);
     }
 
     bool Vector3f::IsNan(const glm::vec3 &v)

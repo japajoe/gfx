@@ -34,6 +34,7 @@ namespace GFX
 
         motorTorque = 0.0f;
         brakeTorque = 0.0f;
+        distanceTraveled = 0.0f;
 
         isEnabled = true;
         rpm = 0;
@@ -99,6 +100,14 @@ namespace GFX
         else
         {
             isGrounded = false;
+        }
+
+        if(isGrounded)
+        {
+            const Vector3 previousPosition = lastPosition;
+            const Vector3 currentPosition = GetTransform()->GetPosition();
+            distanceTraveled += glm::distance(previousPosition, currentPosition);
+            lastPosition = currentPosition;
         }
 
         CalculateRPM();
@@ -203,13 +212,23 @@ namespace GFX
     void WheelCollider::GetWorldPose(Vector3 &position, Quaternion &rotation)
     {
         auto transform = GetTransform();
-        //position = transform->GetPosition();
 
         position = GetWheelPosition() - transform->GetUp() * (wheelRadius - springLength);
 
-        //float deltaRotation = rpm * Time::GetDeltaTime() * 360.0f / 60.0f;
-        //rotation = transform->GetRotation() * Quaternionf::Euler(deltaRotation, 0.0f, 0.0f);
-        rotation = transform->GetRotation() * Quaternionf::Euler(angularVelocity, 0.0f, 0.0f);
+		const Vector3 velocity = rb->GetLinearVelocity();
+		const float dotProduct = glm::dot(velocity, rb->GetTransform()->GetForward());
+		float direction = 1.0f;
+
+		if (dotProduct > 0)
+			direction = -1.0f;
+		else if (dotProduct < 0)
+			direction = 1.0f;
+		else
+			direction = 0.0f;
+		
+		const float circumference = 2 * glm::pi<float>() * wheelRadius;
+		const float rotationAmount = glm::radians((distanceTraveled / circumference) * 360);
+		rotation = Quaternion(Vector3(rotationAmount * direction, glm::radians(steerAngle), 0));
     }
 
     void WheelCollider::SetRigidbody(Rigidbody *body)

@@ -38,6 +38,12 @@ namespace GFX
 		Plane2D				= TranslationX | TranslationY | RotationZ,	///< Body can only move in X and Y axis and rotate around Z axis
 	};
 
+	struct RigidbodySettings
+	{
+		float mass;
+		RigidbodyConstraints constraints;
+	};
+
 	struct PhysicsBody;
 
 	class Rigidbody : public Component
@@ -47,6 +53,7 @@ namespace GFX
 		std::unique_ptr<PhysicsBody> body;
 		float mass;
 		bool isActive;
+		RigidbodyConstraints constraints;
 		bool CreateShape();
 		bool Initialize();
 		bool IsInitialized() const;
@@ -59,6 +66,7 @@ namespace GFX
 	public:
 		Rigidbody();
 		Rigidbody(float mass);
+		Rigidbody(const RigidbodySettings &settings);
 		~Rigidbody();
 		float GetMass() const;
 		void SetMass(float value);
@@ -85,7 +93,6 @@ namespace GFX
 		void SetGravityFactor(float factor);
 		float GetGravityFactor() const;
 		bool IsSleeping() const;
-		void SetConstraints(RigidbodyConstraints constraints);
 		RigidbodyConstraints GetConstraints() const;
 	};
 }

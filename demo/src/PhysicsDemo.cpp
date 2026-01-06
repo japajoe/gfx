@@ -1,4 +1,5 @@
 #include "PhysicsDemo.hpp"
+#include "PrefabUtility.hpp"
 
 void PhysicsDemo::OnInitialize()
 {
@@ -62,18 +63,7 @@ void PhysicsDemo::OnGUI()
 
 void PhysicsDemo::CreateGround()
 {
-	auto ground = GameObject::Create();
-	auto mesh = std::make_shared<Mesh>(MeshGenerator::CreatePlane(Vector3(10000, 1, 10000)));
-	auto material = std::make_shared<DiffuseMaterial>();
-	auto texture = Resources::FindTexture2D(Constants::GetString(ConstantString::TextureDefaultGrass));
-	material->SetDiffuseTexture(texture);
-	material->SetDiffuseColor(Color(152, 210, 124, 255));
-	material->SetUVScale(Vector2(10000, 10000));
-	auto renderer = ground->AddComponent<MeshRenderer>();
-	renderer->Add(mesh, material);
-	auto collider = ground->AddComponent<MeshCollider>();
-	collider->SetMesh(renderer->GetMesh(0));
-	ground->AddComponent<Rigidbody>(0);
+	PrefabUtility::CreateGround();
 }
 
 void PhysicsDemo::CreateBall()

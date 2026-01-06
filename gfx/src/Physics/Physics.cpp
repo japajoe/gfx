@@ -611,6 +611,30 @@ namespace GFX
         return false;
     }
 
+    bool Physics::CheckSphere(const Vector3 &position, float radius)
+    {
+        if(!physicsManager)
+            return false;
+            
+        JPH::Vec3 from = JPH::Vec3(position.x, position.y, position.z);
+        JPH::RMat44 inCenterOfMassStart = JPH::RMat44::sTranslation(from);
+		JPH::SphereShape shape(radius);
+		shape.SetEmbedded();
+		JPH::CollideShapeSettings settings;
+        JPH::ClosestHitCollisionCollector<JPH::CollideShapeCollector> collector;
+
+        auto &narrowPhase = physicsManager->physicsSystem.GetNarrowPhaseQuery();
+
+		narrowPhase.CollideShape(&shape, JPH::Vec3(1, 1, 1), inCenterOfMassStart, settings, from, collector, {}, {}, physicsManager->excludeBodiesFilter, {});
+
+        if(collector.HadHit())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     bool Physics::LineIntersects(const Vector3 &l1p1, const Vector3 &l1p2, const Vector3 &l2p1, const Vector3 &l2p2, Vector3 &hitpoint)
     {
         float x1 = l1p1.x;

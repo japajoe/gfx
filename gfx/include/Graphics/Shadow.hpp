@@ -39,7 +39,9 @@ namespace GFX
 		std::vector<Vector4> GetFrustumCornersWorldSpace(const Matrix4 &projview);
 		std::vector<Vector4> GetFrustumCornersWorldSpace(const Matrix4 &proj, const Matrix4 &view);
 		Matrix4 GetLightSpaceMatrix(const float nearPlane, const float farPlane);
+		std::vector<std::vector<Vector4>> GetClipPointByNDC();
 		std::vector<Matrix4> GetLightSpaceMatrices();
+		std::vector<Matrix4> GetLightSpaceMatrices2();
 	public:
 		Shadow();
 		void Generate();

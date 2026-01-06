@@ -76,9 +76,13 @@ namespace GFX
 		Graphics2D::Initialize();
 		LineRenderer::Initialize();
 
-		framebuffers.push_back(FrameBufferObject(width, height));
-		framebuffers.push_back(FrameBufferObject(width, height));
-		framebuffers.push_back(FrameBufferObject(width, height));
+		// framebuffers.push_back(FrameBufferObject(width, height));
+		// framebuffers.push_back(FrameBufferObject(width, height));
+		// framebuffers.push_back(FrameBufferObject(width, height));
+
+		framebuffers.push_back(FrameBufferObject(width, height, true, true));
+		framebuffers.push_back(FrameBufferObject(width, height, false, true));
+		framebuffers.push_back(FrameBufferObject(width, height, false, true));
 
 		for(size_t i = 0; i < framebuffers.size(); i++)
 			framebuffers[i].Generate();
@@ -157,6 +161,11 @@ namespace GFX
 		LineRenderer::NewFrame();
 
 		framebuffers[0].Unbind();
+
+		//framebuffers[0].Blit(0, viewport.width, viewport.height);
+
+		auto &fbo = framebuffers[1];
+		framebuffers[0].Blit(fbo.GetId(), fbo.GetWidth(), fbo.GetHeight());
 	}
 
 	void Graphics::RenderPostProcessingPass()
@@ -167,7 +176,7 @@ namespace GFX
 			shader = Resources::FindShader(Constants::GetString(ConstantString::ShaderPostProcessing));
 
 		uint32_t fbo = framebuffers[1].GetId();
-		uint32_t texture = framebuffers[0].GetTextureId();
+		uint32_t texture = framebuffers[1].GetTextureId();
 
 		if(postProcessingShaders.size() > 0)
 		{
